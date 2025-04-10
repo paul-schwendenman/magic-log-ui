@@ -15,11 +15,11 @@ export default defineConfig({
 	],
 	server: {
 		proxy: {
-		  '/query': 'http://localhost:3000',
-		  '/ws': {
-			target: 'ws://localhost:3000',
-			ws: true
-		  }
+			'/query': 'http://localhost:3000',
+			'/ws': {
+				target: 'ws://localhost:3000',
+				ws: true
+			}
 		}
 	},
 	test: {
