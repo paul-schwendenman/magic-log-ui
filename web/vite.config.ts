@@ -13,6 +13,15 @@ export default defineConfig({
 			outdir: './src/lib/paraglide'
 		})
 	],
+	server: {
+		proxy: {
+		  '/query': 'http://localhost:3000',
+		  '/ws': {
+			target: 'ws://localhost:3000',
+			ws: true
+		  }
+		}
+	},
 	test: {
 		workspace: [
 			{
