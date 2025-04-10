@@ -16,7 +16,7 @@
 	onMount(() => {
 		socket = new WebSocket(`ws://${location.host}/ws`);
 		socket.onmessage = (msg) => {
-			wsLogs = [JSON.parse(msg.data), ...wsLogs].slice(0, 100);
+			wsLogs = [JSON.parse(msg.data), ...wsLogs].slice(0, 10);
 		};
 	});
 </script>
@@ -28,12 +28,12 @@
 	>
 
 	<h2 class="text-xl font-bold">{m.live_logs()}</h2>
-	{#each wsLogs as log}
+	{#each wsLogs as log (log)}
 		<LogLine {log} />
 	{/each}
 
 	<h2 class="mt-6 text-xl font-bold">{m.query_results()}</h2>
-	{#each results as log}
+	{#each results as log (log)}
 		<LogLine {log} />
 	{/each}
 </div>
