@@ -6,17 +6,15 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
+	duckdb "github.com/marcboeker/go-duckdb"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
-
-	duckdb "github.com/marcboeker/go-duckdb"
-	"github.com/gorilla/websocket"
 )
 
-//go:embed ../static/*
+//go:embed static/*
 var staticFiles embed.FS
 
 type LogEntry map[string]any
