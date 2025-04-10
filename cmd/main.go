@@ -171,6 +171,19 @@ func handleWS(w http.ResponseWriter, r *http.Request) {
 	clients[conn] = true
 	clientsMu.Unlock()
 	log.Println("✅ WebSocket connected")
+
+	go func(c *websocket.Conn) {
+		for {
+			if _, _, err := c.NextReader(); err != nil {
+				log.Println("👋 WebSocket disconnected")
+				clientsMu.Lock()
+				delete(clients, c)
+				clientsMu.Unlock()
+				c.Close()
+				return
+			}
+		}
+	}(conn)
 }
 
 func broadcast(entry LogEntry) {
@@ -180,6 +193,7 @@ func broadcast(entry LogEntry) {
 		if err := conn.WriteJSON(entry); err != nil {
 			conn.Close()
 			delete(clients, conn)
+			log.Println("❌ Failed to write to WebSocket, removed client")
 		}
 	}
 }
