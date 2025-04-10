@@ -1,3 +1,1 @@
-{
-    "$schema": "https://inlang.com/schema/inlang-message-format",
-}
+{"$schema":"https://inlang.com/schema/inlang-message-format","live_logs":"Registros en vivo","query_results":"Resultados de la consulta","run_query":"Ejecutar consulta"}
