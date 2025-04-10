@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 
-    let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 100';
+    let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
     let results: any[] = [];
     let wsLogs: any[] = [];
     let socket: WebSocket;
