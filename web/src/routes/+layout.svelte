@@ -4,4 +4,6 @@
 	let { children } = $props();
 </script>
 
-{@render children()}
+<main class="p-4 bg-gray-900 text-white min-h-screen font-mono">
+	{@render children()}
+</main>
