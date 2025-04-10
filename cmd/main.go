@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 
@@ -60,6 +61,25 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFiles))))
 	go http.ListenAndServe(":3000", nil)
 	fmt.Println("🌐 Serving UI at http://localhost:3000")
+
+	// Open browser (macOS/Linux/Windows)
+	go func() {
+		url := "http://localhost:3000"
+		var cmd *exec.Cmd
+		if _, err := exec.LookPath("open"); err == nil {
+			cmd = exec.Command("open", url) // macOS
+		} else if _, err := exec.LookPath("xdg-open"); err == nil {
+			cmd = exec.Command("xdg-open", url) // Linux
+		} else if _, err := exec.LookPath("rundll32"); err == nil {
+			cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url) // Windows
+		} else {
+			log.Println("⚠️ No supported method to open browser found")
+			return
+		}
+		if err := cmd.Start(); err != nil {
+			log.Println("⚠️ Unable to open browser:", err)
+		}
+	}()
 
 	go func() {
 		scanner := bufio.NewScanner(os.Stdin)
