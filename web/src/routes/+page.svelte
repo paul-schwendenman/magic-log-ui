@@ -1,17 +1,22 @@
-<script>
+<script lang="ts">
+	import { onMount } from "svelte";
+
     let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 100';
-    let results = [];
-    let wsLogs = [];
+    let results: any[] = [];
+    let wsLogs: any[] = [];
+    let socket: WebSocket;
   
     const fetchQuery = async () => {
       const res = await fetch(`/query?q=${encodeURIComponent(query)}`);
       results = await res.json();
     };
   
-    const socket = new WebSocket(`ws://${location.host}/ws`);
-    socket.onmessage = (msg) => {
-      wsLogs = [JSON.parse(msg.data), ...wsLogs].slice(0, 100);
-    };
+    onMount(() => {
+        socket = new WebSocket(`ws://${location.host}/ws`);
+        socket.onmessage = (msg) => {
+        wsLogs = [JSON.parse(msg.data), ...wsLogs].slice(0, 100);
+        };
+    });
   </script>
   
   <div class="space-y-4">
