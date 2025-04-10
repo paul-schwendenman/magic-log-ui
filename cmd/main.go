@@ -77,6 +77,7 @@ func main() {
 			logInsert.ExecContext(ctx, timestamp, traceID, level, msg, raw)
 			broadcast(entry)
 		}
+		fmt.Println("📭 STDIN closed — no longer receiving logs")
 	}()
 
 	// Prevent exit when stdin closes
@@ -127,7 +128,6 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Simple content type handling
 	if strings.HasSuffix(path, ".js") {
 		w.Header().Set("Content-Type", "application/javascript")
 	} else if strings.HasSuffix(path, ".css") {
@@ -140,14 +140,17 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleWS(w http.ResponseWriter, r *http.Request) {
+	log.Println("📡 Incoming WebSocket connection...")
 	upgrader := websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		log.Println("❌ WS upgrade failed:", err)
 		return
 	}
 	clientsMu.Lock()
 	clients[conn] = true
 	clientsMu.Unlock()
+	log.Println("✅ WebSocket connected")
 }
 
 func broadcast(entry LogEntry) {
