@@ -3,15 +3,18 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"database/sql"
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
-	duckdb "github.com/marcboeker/go-duckdb"
 	"log"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/gorilla/websocket"
+	_ "github.com/marcboeker/go-duckdb"
 )
 
 //go:embed static/*
@@ -20,30 +23,36 @@ var staticFiles embed.FS
 type LogEntry map[string]any
 
 var (
-	db        *duckdb.Conn
-	logInsert *duckdb.Stmt
+	db        *sql.DB
+	logInsert *sql.Stmt
 	clients   = make(map[*websocket.Conn]bool)
 	clientsMu sync.Mutex
+	ctx       = context.Background()
 )
 
 func main() {
-	// Init DB
 	var err error
-	db, err = duckdb.Open("") // in-memory
+	db, err = sql.Open("duckdb", "") // in-memory
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.Exec(`CREATE TABLE logs (
+
+	_, err = db.ExecContext(ctx, `CREATE TABLE logs (
 		timestamp TIMESTAMP,
 		trace_id TEXT,
 		level TEXT,
 		message TEXT,
 		raw JSON
 	);`)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	logInsert, _ = db.Prepare("INSERT INTO logs VALUES (?, ?, ?, ?, ?)")
+	logInsert, err = db.PrepareContext(ctx, "INSERT INTO logs VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Start HTTP server
 	http.HandleFunc("/query", handleQuery)
 	http.HandleFunc("/ws", handleWS)
 	http.HandleFunc("/", serveStatic)
@@ -51,7 +60,6 @@ func main() {
 	go http.ListenAndServe(":3000", nil)
 	fmt.Println("🌐 Serving UI at http://localhost:3000")
 
-	// Start reading stdin
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -63,7 +71,8 @@ func main() {
 		traceID := entry["trace_id"]
 		level := entry["level"]
 		msg := entry["message"]
-		logInsert.Exec(timestamp, traceID, level, msg, string(mustJson(entry)))
+		raw := string(mustJson(entry))
+		logInsert.ExecContext(ctx, timestamp, traceID, level, msg, raw)
 		broadcast(entry)
 	}
 }
@@ -74,12 +83,14 @@ func handleQuery(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing q param", 400)
 		return
 	}
-	rows, err := db.Query(q)
+	rows, err := db.QueryContext(ctx, q)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	cols := rows.Columns()
+	defer rows.Close()
+
+	cols, _ := rows.Columns()
 	var results []map[string]any
 	for rows.Next() {
 		vals := make([]any, len(cols))
