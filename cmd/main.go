@@ -211,8 +211,6 @@ func handleWS(w http.ResponseWriter, r *http.Request) {
 
 func broadcast(entry LogEntry) {
 	clientsMu.Lock()
-	log.Printf("📤 Broadcasting: %v\n", entry)
-
 	defer clientsMu.Unlock()
 	for conn := range clients {
 		if err := conn.WriteJSON(entry); err != nil {
