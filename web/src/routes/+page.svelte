@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { setLocale } from '$lib/paraglide/runtime';
 
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
@@ -22,10 +21,6 @@
 </script>
 
 <div class="space-y-4">
-  <div>
-    <button onclick={() => setLocale('en')}>en</button>
-    <button onclick={() => setLocale('es')}>es</button>
-  </div>
 	<input bind:value={query} class="w-full rounded border border-gray-600 bg-gray-800 p-2" />
 	<button onclick={fetchQuery} class="rounded bg-blue-600 px-4 py-2 hover:bg-blue-500"
 		>{m.run_query()}</button
