@@ -172,6 +172,29 @@ func handleWS(w http.ResponseWriter, r *http.Request) {
 	clientsMu.Unlock()
 	log.Println("✅ WebSocket connected")
 
+	// Send backlog
+	go func(c *websocket.Conn) {
+		rows, err := db.QueryContext(ctx, `SELECT * FROM logs ORDER BY timestamp DESC LIMIT 1`)
+		if err == nil {
+			defer rows.Close()
+			cols, _ := rows.Columns()
+			for rows.Next() {
+				vals := make([]any, len(cols))
+				ptrs := make([]any, len(cols))
+				for i := range ptrs {
+					ptrs[i] = &vals[i]
+				}
+				rows.Scan(ptrs...)
+				entry := map[string]any{}
+				for i, col := range cols {
+					entry[col] = vals[i]
+				}
+				c.WriteJSON(entry)
+			}
+		}
+	}(conn)
+
+	// Detect disconnect
 	go func(c *websocket.Conn) {
 		for {
 			if _, _, err := c.NextReader(); err != nil {
@@ -188,6 +211,8 @@ func handleWS(w http.ResponseWriter, r *http.Request) {
 
 func broadcast(entry LogEntry) {
 	clientsMu.Lock()
+	log.Printf("📤 Broadcasting: %v\n", entry)
+
 	defer clientsMu.Unlock()
 	for conn := range clients {
 		if err := conn.WriteJSON(entry); err != nil {
