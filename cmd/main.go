@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -60,21 +61,26 @@ func main() {
 	go http.ListenAndServe(":3000", nil)
 	fmt.Println("🌐 Serving UI at http://localhost:3000")
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		var entry LogEntry
-		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			entry = LogEntry{"message": line, "level": "raw"}
+	go func() {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			line := scanner.Text()
+			var entry LogEntry
+			if err := json.Unmarshal([]byte(line), &entry); err != nil {
+				entry = LogEntry{"message": line, "level": "raw"}
+			}
+			timestamp := entry["timestamp"]
+			traceID := entry["trace_id"]
+			level := entry["level"]
+			msg := entry["message"]
+			raw := string(mustJson(entry))
+			logInsert.ExecContext(ctx, timestamp, traceID, level, msg, raw)
+			broadcast(entry)
 		}
-		timestamp := entry["timestamp"]
-		traceID := entry["trace_id"]
-		level := entry["level"]
-		msg := entry["message"]
-		raw := string(mustJson(entry))
-		logInsert.ExecContext(ctx, timestamp, traceID, level, msg, raw)
-		broadcast(entry)
-	}
+	}()
+
+	// Prevent exit when stdin closes
+	select {}
 }
 
 func handleQuery(w http.ResponseWriter, r *http.Request) {
@@ -110,12 +116,27 @@ func handleQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveStatic(w http.ResponseWriter, r *http.Request) {
-	f, err := staticFiles.ReadFile("static/index.html")
+	path := "static" + r.URL.Path
+	if r.URL.Path == "/" {
+		path = "static/index.html"
+	}
+
+	data, err := staticFiles.ReadFile(path)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write(f)
+
+	// Simple content type handling
+	if strings.HasSuffix(path, ".js") {
+		w.Header().Set("Content-Type", "application/javascript")
+	} else if strings.HasSuffix(path, ".css") {
+		w.Header().Set("Content-Type", "text/css")
+	} else if strings.HasSuffix(path, ".html") {
+		w.Header().Set("Content-Type", "text/html")
+	}
+
+	w.Write(data)
 }
 
 func handleWS(w http.ResponseWriter, r *http.Request) {
