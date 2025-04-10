@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import LogLine from '$lib/LogLine.svelte';
 
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
@@ -28,11 +29,11 @@
 
 	<h2 class="text-xl font-bold">{m.live_logs()}</h2>
 	{#each wsLogs as log}
-		<pre class="mb-1 rounded bg-gray-800 p-2 text-sm">{JSON.stringify(log, null, 2)}</pre>
+		<LogLine {log} />
 	{/each}
 
 	<h2 class="mt-6 text-xl font-bold">{m.query_results()}</h2>
-	{#each results as row}
-		<pre class="mb-1 rounded bg-gray-700 p-2 text-sm">{JSON.stringify(row, null, 2)}</pre>
+	{#each results as log}
+		<LogLine {log} />
 	{/each}
 </div>
