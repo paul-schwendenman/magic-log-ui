@@ -1,6 +1,6 @@
 {
-    "$schema": "https://inlang.com/schema/inlang-message-format",
-    "live_logs": "Live Logs",
-    "query_results": "Query Results",
-    "run_query": "Run Query"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"live_logs": "Live Logs",
+	"query_results": "Query Results",
+	"run_query": "Run Query"
 }
