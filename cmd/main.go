@@ -53,9 +53,9 @@ func main() {
 	}
 
 	if dbFile == "" {
-		fmt.Println("🧠 Using in-memory DuckDB")
+		log.Println("🧠 Using in-memory DuckDB")
 	} else {
-		fmt.Println("💾 Using persistent DuckDB:", dbFile)
+		log.Println("💾 Using persistent DuckDB:", dbFile)
 	}
 
 	var err error
@@ -85,7 +85,7 @@ func main() {
 	http.HandleFunc("/", serveStatic)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFiles))))
 	go http.ListenAndServe(":"+strconv.Itoa(port), nil)
-	fmt.Printf("🌐 Serving UI at http://localhost:%d\n", port)
+	log.Printf("🌐 Serving UI at http://localhost:%d\n", port)
 
 	// Conditionally open browser (macOS/Linux/Windows)
 	if openBrowser {
@@ -124,7 +124,7 @@ func main() {
 			logInsert.ExecContext(ctx, timestamp, traceID, level, msg, raw)
 			broadcast(entry)
 		}
-		fmt.Println("📭 STDIN closed — no longer receiving logs")
+		log.Println("📭 STDIN closed — no longer receiving logs")
 	}()
 
 	// Prevent exit when stdin closes
