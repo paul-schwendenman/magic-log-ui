@@ -7,11 +7,22 @@
 	let results: any[] = [];
 	let wsLogs: any[] = [];
 	let socket: WebSocket;
+	let error: string | null = null;
 
-	const fetchQuery = async () => {
-		const res = await fetch(`/query?q=${encodeURIComponent(query)}`);
-		results = await res.json();
-	};
+	async function fetchQuery() {
+		error = null;
+
+		try {
+			const res = await fetch(`/query?q=${encodeURIComponent(query)}`);
+			if (!res.ok) {
+				const text = await res.text();
+				throw new Error(text || 'Unknown error');
+			}
+			results = await res.json();
+		} catch (err) {
+			error = err.message;
+		}
+	}
 
 	onMount(() => {
 		socket = new WebSocket(`ws://${location.host}/ws`);
@@ -32,6 +43,12 @@
 		<button on:click={fetchQuery} class="rounded bg-blue-600 px-4 py-2 hover:bg-blue-500">
 			{m.run_query()}
 		</button>
+		{#if error}
+			<div class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400">
+				<b>Error:</b>
+				{error}
+			</div>
+		{/if}
 
 		<div class="space-y-2 lg:max-h-[75vh] lg:overflow-y-auto">
 			{#each results as log (log)}
