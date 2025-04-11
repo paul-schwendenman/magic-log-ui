@@ -3,11 +3,11 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import LogLine from '$lib/LogLine.svelte';
 	import { fade } from 'svelte/transition';
+	import { useWebSocket } from '$lib/useWebSocket';
 
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
 	let wsLogs: any[] = [];
-	let socket: WebSocket;
 	let error: string | null = null;
 	let success = false;
 
@@ -31,10 +31,13 @@
 	}
 
 	onMount(() => {
-		socket = new WebSocket(`ws://${location.host}/ws`);
-		socket.onmessage = (msg) => {
-			wsLogs = [JSON.parse(msg.data), ...wsLogs].slice(0, 500);
-		};
+		const ws = useWebSocket(`ws://${location.host}/ws`, {
+			onMessage: (log) => {
+				wsLogs = [log, ...wsLogs].slice(0, 100);
+			}
+		});
+
+		return () => ws.close();
 	});
 </script>
 
