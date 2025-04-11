@@ -8,6 +8,7 @@
 	let wsLogs: any[] = [];
 	let socket: WebSocket;
 	let error: string | null = null;
+	let success = false;
 
 	async function fetchQuery() {
 		error = null;
@@ -19,6 +20,8 @@
 				throw new Error(text || 'Unknown error');
 			}
 			results = await res.json();
+			success = true;
+			setTimeout(() => (success = false), 2000);
 		} catch (err) {
 			error = err.message;
 		}
@@ -47,6 +50,11 @@
 			<div class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400">
 				<b>Error:</b>
 				{error}
+			</div>
+		{/if}
+		{#if success}
+			<div class="rounded border border-green-500 bg-green-900/30 p-2 text-sm text-green-400">
+				Query successful
 			</div>
 		{/if}
 
