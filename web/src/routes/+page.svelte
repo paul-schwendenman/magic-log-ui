@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import LogLine from '$lib/LogLine.svelte';
 	import { fade } from 'svelte/transition';
-	import { useWebSocket } from '$lib/useWebSocket';
+	import { useWebSocket, isConnected } from '$lib/useWebSocket';
 
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
@@ -82,6 +82,11 @@
 
 	<div>
 		<h2 class="mb-4 text-xl font-bold">{m.live_logs()}</h2>
+		{#if !$isConnected}
+			<div class="mb-2 inline-block rounded bg-red-800/50 px-3 py-1 text-sm text-red-200">
+				Disconnected – attempting to reconnect…
+			</div>
+		{/if}
 		<div class="space-y-2 lg:max-h-[90vh] lg:overflow-y-auto">
 			{#each wsLogs as log (log)}
 				<LogLine {log} />
