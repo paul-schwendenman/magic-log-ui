@@ -47,7 +47,7 @@ jobs:
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}
           path: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}
