@@ -6,7 +6,7 @@ BUILD_DIR := cmd
 WEB_DIR := web
 STATIC_DIR := $(BUILD_DIR)/static
 
-.PHONY: all clean build frontend backend run
+.PHONY: all clean build frontend backend run test coverage
 
 all: build
 
@@ -25,6 +25,14 @@ build: frontend backend
 
 run: build
 	./$(NAME)
+
+test:
+	go test ./... -v
+
+coverage:
+	go test ./... -coverprofile=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "📊 Coverage report written to coverage.html"
 
 version:
 	@echo $(VERSION)
