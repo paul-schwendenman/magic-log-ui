@@ -20,15 +20,17 @@ var version = "dev"
 var staticFiles embed.FS
 
 func main() {
-	var dbFile string
-	var openBrowser bool
-	var port int
-	var showVersion bool
+	var (
+		dbFile      string
+		openBrowser bool
+		port        int
+		showVersion bool
+	)
 
-	flag.StringVar(&dbFile, "db-file", "", "Path to DuckDB file. Leave empty for in-memory.")
-	flag.BoolVar(&openBrowser, "launch", false, "Open the UI in the browser.")
+	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
+	flag.BoolVar(&openBrowser, "launch", false, "Automatically open the UI in the default web browser.")
 	flag.IntVar(&port, "port", 3000, "Port to serve the web UI on.")
-	flag.BoolVar(&showVersion, "version", false, "Print version and exit.")
+	flag.BoolVar(&showVersion, "version", false, "Print the version and exit.")
 	flag.Parse()
 
 	if showVersion {
@@ -46,8 +48,7 @@ func main() {
 
 	// Open browser if flag set
 	if openBrowser {
-		url := fmt.Sprintf("http://localhost:%d", port)
-		open(url)
+		launchBrowser(port)
 	}
 
 	// Start log ingestion from stdin
@@ -57,19 +58,28 @@ func main() {
 	select {}
 }
 
-func open(url string) {
+func launchBrowser(port int) {
+	url := fmt.Sprintf("http://localhost:%d", port)
+
 	var cmd *exec.Cmd
-	if _, err := exec.LookPath("open"); err == nil {
-		cmd = exec.Command("open", url)
-	} else if _, err := exec.LookPath("xdg-open"); err == nil {
-		cmd = exec.Command("xdg-open", url)
-	} else if _, err := exec.LookPath("rundll32"); err == nil {
-		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
-	} else {
+	switch {
+	case isCommandAvailable("open"):
+		cmd = exec.Command("open", url) // macOS
+	case isCommandAvailable("xdg-open"):
+		cmd = exec.Command("xdg-open", url) // Linux
+	case isCommandAvailable("rundll32"):
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url) // Windows
+	default:
 		log.Println("⚠️ No supported method to open browser found")
 		return
 	}
+
 	if err := cmd.Start(); err != nil {
 		log.Println("⚠️ Unable to open browser:", err)
 	}
+}
+
+func isCommandAvailable(name string) bool {
+	_, err := exec.LookPath(name)
+	return err == nil
 }
