@@ -21,19 +21,31 @@
 	});
 </script>
 
-<div class="space-y-4">
-	<input bind:value={query} class="w-full rounded border border-gray-600 bg-gray-800 p-2" />
-	<button onclick={fetchQuery} class="rounded bg-blue-600 px-4 py-2 hover:bg-blue-500"
-		>{m.run_query()}</button
-	>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+	<div class="space-y-4">
+		<h2 class="mt-4 text-xl font-bold">{m.query_logs()}</h2>
+		<input
+			bind:value={query}
+			class="w-full rounded border border-gray-600 bg-gray-800 p-2"
+			placeholder="SELECT * FROM logs ORDER BY timestamp DESC LIMIT 100"
+		/>
+		<button on:click={fetchQuery} class="rounded bg-blue-600 px-4 py-2 hover:bg-blue-500">
+			{m.run_query()}
+		</button>
 
-	<h2 class="text-xl font-bold">{m.live_logs()}</h2>
-	{#each wsLogs as log (log)}
-		<LogLine {log} />
-	{/each}
+		<div class="space-y-2">
+			{#each results as log (log)}
+				<LogLine {log} />
+			{/each}
+		</div>
+	</div>
 
-	<h2 class="mt-6 text-xl font-bold">{m.query_results()}</h2>
-	{#each results as log (log)}
-		<LogLine {log} />
-	{/each}
+	<div>
+		<h2 class="mb-4 text-xl font-bold">{m.live_logs()}</h2>
+		<div class="space-y-2">
+			{#each wsLogs as log (log)}
+				<LogLine {log} />
+			{/each}
+		</div>
+	</div>
 </div>
