@@ -40,7 +40,7 @@ func main() {
 	var port int
 
 	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
-	flag.BoolVar(&openBrowser, "launch", true, "Automatically open the UI in the default web browser.")
+	flag.BoolVar(&openBrowser, "launch", false, "Automatically open the UI in the default web browser.")
 	flag.IntVar(&port, "port", 3000, "Port to serve the web UI on.")
 	flag.Parse()
 
