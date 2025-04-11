@@ -9,8 +9,11 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/gorilla/websocket"
 	_ "github.com/marcboeker/go-duckdb"
 )
 
@@ -105,5 +108,48 @@ func TestHandleQueryMissingParam(t *testing.T) {
 	}
 	if !strings.Contains(w.Body.String(), "missing q param") {
 		t.Errorf("Unexpected error message: %v", w.Body.String())
+	}
+}
+
+func TestWebSocketBroadcast(t *testing.T) {
+	db = setupTestDB(t)
+	ctx = context.Background()
+	clients = make(map[*websocket.Conn]bool)
+	var connected atomic.Bool
+
+	srv := httptest.NewServer(http.HandlerFunc(handleWS))
+	defer srv.Close()
+
+	u := "ws" + strings.TrimPrefix(srv.URL, "http")
+	c, _, err := websocket.DefaultDialer.Dial(u, nil)
+	if err != nil {
+		t.Fatalf("WebSocket dial failed: %v", err)
+	}
+	defer c.Close()
+	connected.Store(true)
+
+	logEntry := LogEntry{
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"trace_id":  "t2",
+		"level":     "info",
+		"message":   "websocket test",
+		"raw":       `{"ws":"ok"}`,
+	}
+	logInsert, err = db.PrepareContext(ctx, "INSERT INTO logs VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		t.Fatalf("logInsert prepare failed: %v", err)
+	}
+	logInsert.ExecContext(ctx, logEntry["timestamp"], logEntry["trace_id"], logEntry["level"], logEntry["message"], logEntry["raw"])
+
+	go broadcast(logEntry)
+
+	time.Sleep(100 * time.Millisecond) // give it time to send
+
+	_, msg, err := c.ReadMessage()
+	if err != nil {
+		t.Fatalf("ReadMessage failed: %v", err)
+	}
+	if !strings.Contains(string(msg), "websocket test") {
+		t.Errorf("Expected message not received: %s", msg)
 	}
 }
