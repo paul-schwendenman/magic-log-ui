@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -36,8 +37,11 @@ var (
 func main() {
 	var dbFile string
 	var openBrowser bool
+	var port int
+
 	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
 	flag.BoolVar(&openBrowser, "launch", true, "Automatically open the UI in the default web browser.")
+	flag.IntVar(&port, "port", 3000, "Port to serve the web UI on.")
 	flag.Parse()
 
 	if dbFile == "" {
@@ -72,12 +76,12 @@ func main() {
 	http.HandleFunc("/ws", handleWS)
 	http.HandleFunc("/", serveStatic)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFiles))))
-	go http.ListenAndServe(":3000", nil)
-	fmt.Println("🌐 Serving UI at http://localhost:3000")
+	go http.ListenAndServe(":"+strconv.Itoa(port), nil)
+	fmt.Printf("🌐 Serving UI at http://localhost:%d\n", port)
 
 	if openBrowser {
 		go func() {
-			url := "http://localhost:3000"
+			url := fmt.Sprintf("http://localhost:%d", port)
 			var cmd *exec.Cmd
 			if _, err := exec.LookPath("open"); err == nil {
 				cmd = exec.Command("open", url) // macOS
