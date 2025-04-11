@@ -1,4 +1,6 @@
 export function formatRelativeTime(timestamp: number): string {
+	if (!Number.isFinite(timestamp)) return '';
+
 	const now = Date.now();
 	const diff = Math.floor((timestamp - now) / 1000); // in seconds
 
