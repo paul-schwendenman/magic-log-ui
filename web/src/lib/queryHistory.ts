@@ -1,9 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-const initial = browser
-	? JSON.parse(localStorage.getItem('queryHistory') || '[]')
-	: [];
+const initial = browser ? JSON.parse(localStorage.getItem('queryHistory') || '[]') : [];
 
 export const queryHistory = writable<string[]>(initial);
 
