@@ -1,6 +1,7 @@
 <script>
 	import { m } from '$lib/paraglide/messages.js';
 	import { queryHistory, clearHistory } from '$lib/queryHistory';
+	import { formatRelativeTime } from '$lib/formatRelative';
 	import { fly, fade } from 'svelte/transition';
 	export let open = false;
 	export let onSelect = (q) => {};
@@ -24,15 +25,20 @@
 			{#each $queryHistory as entry}
 				<li>
 					<button
-					class="w-full text-left flex items-center gap-2 truncate hover:text-blue-400"
-					on:click={() => onSelect(entry.query)}
-				>
-					<span class={entry.ok ? 'text-green-400' : 'text-red-400'}>
-						{entry.ok ? '✅' : '❌'}
-					</span>
-					<span class="truncate">{entry.query}</span>
-				</button>
-			</li>
+						class="flex w-full flex-col items-start gap-0.5 text-left hover:text-blue-400"
+						on:click={() => onSelect(entry.query)}
+					>
+						<div class="flex w-full items-center gap-2 truncate">
+							<span class={entry.ok ? 'text-green-400' : 'text-red-400'}>
+								{entry.ok ? '✅' : '❌'}
+							</span>
+							<span class="truncate">{entry.query}</span>
+						</div>
+						<span class="ml-6 text-xs text-gray-500">
+							{formatRelativeTime(entry.timestamp)}
+						</span>
+					</button>
+				</li>
 			{/each}
 		</ul>
 	</aside>
