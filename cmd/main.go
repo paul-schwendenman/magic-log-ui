@@ -19,6 +19,13 @@ var version = "dev"
 //go:embed static/*
 var staticFiles embed.FS
 
+type Config struct {
+	DBFile  string
+	Port    int
+	Launch  bool
+	Version string
+}
+
 func main() {
 	var (
 		dbFile      string
@@ -38,23 +45,28 @@ func main() {
 		return
 	}
 
+	Run(Config{
+		DBFile:  dbFile,
+		Port:    port,
+		Launch:  openBrowser,
+		Version: version,
+	})
+}
+
+func Run(config Config) {
 	ctx := context.Background()
 
-	db := logdb.MustInit(dbFile, ctx)
+	db := logdb.MustInit(config.DBFile, ctx)
 	logInsert := logdb.MustPrepareInsert(db, ctx)
 
-	// Start the web server
-	go server.Start(port, staticFiles, db, ctx)
+	go server.Start(config.Port, staticFiles, db, ctx)
 
-	// Open browser if flag set
-	if openBrowser {
-		launchBrowser(port)
+	if config.Launch {
+		launchBrowser(config.Port)
 	}
 
-	// Start log ingestion from stdin
 	go ingest.Start(os.Stdin, logInsert, ctx)
 
-	// Block forever
 	select {}
 }
 
