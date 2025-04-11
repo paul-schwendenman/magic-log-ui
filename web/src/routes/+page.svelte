@@ -63,6 +63,7 @@
 				class="fixed top-4 right-4 z-50 rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
 			>
 				{m.bad_kind_flamingo_nurture()}
+				{#if $queryHistory.length > 0} ({$queryHistory.length}){/if}
 			</button>
 
 			{#if error}
