@@ -21,6 +21,8 @@ import (
 	_ "github.com/marcboeker/go-duckdb"
 )
 
+var version = "dev"
+
 //go:embed static/*
 var staticFiles embed.FS
 
@@ -38,11 +40,17 @@ func main() {
 	var dbFile string
 	var openBrowser bool
 	var port int
-
+	var showVersion bool
 	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
 	flag.BoolVar(&openBrowser, "launch", false, "Automatically open the UI in the default web browser.")
 	flag.IntVar(&port, "port", 3000, "Port to serve the web UI on.")
+	flag.BoolVar(&showVersion, "version", false, "Print the version and exit.")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Println("magic-log version:", version)
+		return
+	}
 
 	if dbFile == "" {
 		fmt.Println("🧠 Using in-memory DuckDB")
@@ -79,6 +87,7 @@ func main() {
 	go http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	fmt.Printf("🌐 Serving UI at http://localhost:%d\n", port)
 
+	// Conditionally open browser (macOS/Linux/Windows)
 	if openBrowser {
 		go func() {
 			url := fmt.Sprintf("http://localhost:%d", port)
