@@ -1,2 +1,5 @@
 cmd/static/
 magic-log
+
+coverage.html
+coverage.out
