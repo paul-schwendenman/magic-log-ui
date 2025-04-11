@@ -4,7 +4,10 @@
 	import LogLine from '$lib/LogLine.svelte';
 	import { fade } from 'svelte/transition';
 	import { useWebSocket, isConnected } from '$lib/useWebSocket';
+	import { queryHistory, addQuery, clearHistory } from '$lib/queryHistory';
+	import QueryDrawer from '$lib/QueryDrawer.svelte';
 
+	let drawerOpen = false;
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
 	let wsLogs: any[] = [];
@@ -21,6 +24,7 @@
 				throw new Error(text || 'Unknown error');
 			}
 			results = await res.json();
+			addQuery(query);
 			setTimeout(() => {
 				success = true;
 				setTimeout(() => (success = false), 2500);
@@ -53,6 +57,13 @@
 			<button on:click={fetchQuery} class="h-fit rounded bg-blue-600 px-4 py-2 hover:bg-blue-500">
 				{m.run_query()}
 			</button>
+			<button
+				on:click={() => (drawerOpen = true)}
+				class="fixed top-4 right-4 z-50 rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
+			>
+				History
+			</button>
+
 			{#if error}
 				<div
 					class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400"
@@ -72,6 +83,13 @@
 				</div>
 			{/if}
 		</div>
+		<QueryDrawer
+			bind:open={drawerOpen}
+			onSelect={(q) => {
+				query = q;
+				drawerOpen = false;
+			}}
+		/>
 
 		<div class="space-y-2 lg:max-h-[75vh] lg:overflow-y-auto">
 			{#each results as log (log)}
