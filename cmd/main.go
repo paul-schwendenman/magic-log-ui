@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"embed"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -33,13 +34,23 @@ var (
 )
 
 func main() {
+	var dbFile string
+	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
+	flag.Parse()
+
+	if dbFile == "" {
+		fmt.Println("🧠 Using in-memory DuckDB")
+	} else {
+		fmt.Println("💾 Using persistent DuckDB:", dbFile)
+	}
+
 	var err error
-	db, err = sql.Open("duckdb", "") // in-memory
+	db, err = sql.Open("duckdb", dbFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = db.ExecContext(ctx, `CREATE TABLE logs (
+	_, err = db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS logs (
 		timestamp TIMESTAMP,
 		trace_id TEXT,
 		level TEXT,
