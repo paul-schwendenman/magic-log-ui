@@ -24,13 +24,14 @@
 				throw new Error(text || 'Unknown error');
 			}
 			results = await res.json();
-			addQuery(query);
+			addQuery({ query, ok: true, timestamp: Date.now() });
 			setTimeout(() => {
 				success = true;
 				setTimeout(() => (success = false), 2500);
 			}, 100);
 		} catch (err) {
 			error = err.message;
+			addQuery({ query, ok: false, timestamp: Date.now() });
 		}
 	}
 

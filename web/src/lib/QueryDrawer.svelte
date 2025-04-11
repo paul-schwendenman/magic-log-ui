@@ -21,15 +21,18 @@
 		</div>
 
 		<ul class="flex-1 space-y-1 overflow-y-auto pr-1 text-sm text-gray-300">
-			{#each $queryHistory as q}
+			{#each $queryHistory as entry}
 				<li>
 					<button
-						class="w-full truncate text-left hover:text-blue-400"
-						on:click={() => onSelect(q)}
-					>
-						{q}
-					</button>
-				</li>
+					class="w-full text-left flex items-center gap-2 truncate hover:text-blue-400"
+					on:click={() => onSelect(entry.query)}
+				>
+					<span class={entry.ok ? 'text-green-400' : 'text-red-400'}>
+						{entry.ok ? '✅' : '❌'}
+					</span>
+					<span class="truncate">{entry.query}</span>
+				</button>
+			</li>
 			{/each}
 		</ul>
 	</aside>
