@@ -1,4 +1,5 @@
 <script>
+	import { m } from '$lib/paraglide/messages.js';
 	import { queryHistory, clearHistory } from '$lib/queryHistory';
 	import { fly, fade } from 'svelte/transition';
 	export let open = false;
@@ -16,7 +17,7 @@
 
 		<div class="mb-3 flex justify-between text-sm text-gray-400">
 			<span>{$queryHistory.length} queries</span>
-			<button on:click={clearHistory} class="text-xs hover:underline">clear</button>
+			<button on:click={clearHistory} class="text-xs hover:underline">{m.clear()}</button>
 		</div>
 
 		<ul class="flex-1 space-y-1 overflow-y-auto pr-1 text-sm text-gray-300">

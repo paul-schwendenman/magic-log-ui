@@ -3,5 +3,11 @@
 	"live_logs": "Registros en vivo",
 	"query_results": "Resultados de la consulta",
 	"run_query": "Ejecutar",
-	"query_logs": "Buscar registros"
+	"query_logs": "Buscar registros",
+	"copied": "Copiado",
+	"clear": "limpiar",
+	"lower_noisy_eel_treasure": "Error",
+	"mellow_many_quail_imagine": "Consulta exitosa",
+	"known_awake_rooster_mend": "Desconectado – intentando reconectar…",
+	"bad_kind_flamingo_nurture": "Historial"
 }

@@ -61,7 +61,7 @@
 				on:click={() => (drawerOpen = true)}
 				class="fixed top-4 right-4 z-50 rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
 			>
-				History
+				{m.bad_kind_flamingo_nurture()}
 			</button>
 
 			{#if error}
@@ -70,7 +70,7 @@
 					in:fade={{ duration: 300 }}
 					out:fade={{ duration: 100 }}
 				>
-					<b>Error:</b>
+					<b>{m.lower_noisy_eel_treasure()}:</b>
 					{error}
 				</div>
 			{:else if success}
@@ -79,7 +79,7 @@
 					in:fade={{ duration: 300 }}
 					out:fade={{ duration: 200 }}
 				>
-					Query successful
+					{m.mellow_many_quail_imagine()}
 				</div>
 			{/if}
 		</div>
@@ -102,7 +102,7 @@
 		<h2 class="mb-4 text-xl font-bold">{m.live_logs()}</h2>
 		{#if !$isConnected}
 			<div class="mb-2 inline-block rounded bg-red-800/50 px-3 py-1 text-sm text-red-200">
-				Disconnected – attempting to reconnect…
+				{m.known_awake_rooster_mend()}
 			</div>
 		{/if}
 		<div class="space-y-2 lg:max-h-[90vh] lg:overflow-y-auto">

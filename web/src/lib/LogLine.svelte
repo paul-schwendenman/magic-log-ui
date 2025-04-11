@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
 	export let log: any;
 
 	let expanded = false;
@@ -34,7 +35,7 @@
 >
 	<div class="order-last flex self-start">
 		{#if copied}
-			<span class="relative text-xs text-green-400">Copied</span>
+			<span class="relative text-xs text-green-400">{m.copied()}</span>
 		{/if}
 		<button onclick={copy} aria-label="copy">
 			<svg
