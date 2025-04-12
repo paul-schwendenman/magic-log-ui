@@ -4,44 +4,55 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
-      - master
+    # branches:
+    #   - main
+    #   - master
   pull_request:
     branches:
       - main
       - master
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   build:
-    name: Build Binaries
-    runs-on: ubuntu-latest
-
-    # strategy:
-    #   matrix:
-    #     goos: [linux, darwin, windows]
-    #     goarch: [amd64, arm64]
     strategy:
       matrix:
         include:
-          - goos: linux
+          - name: linux-amd64
+            goos: linux
             goarch: amd64
-          # - goos: linux
-          #   goarch: arm64
-          # - goos: windows
+            platform: ubuntu-latest
+            go-version: 1.24.2
+            node-version: 22.x
+            ext: ""
+          - name: darwin-arm64
+            goos: darwin
+            goarch: arm64
+            platform: macos-latest
+            go-version: 1.24.2
+            node-version: 22.x
+            ext: ""
+          # - name: windows-amd64
+          #   goos: windows
           #   goarch: amd64
+          #   platform: windows-latest
+          #   go-version: 1.24.2
+          #   node-version: 22.x
+          #   ext: ".exe"
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node
+      - name: Set up Node ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
 
       - name: Install PNPM
         run: npm install -g pnpm
@@ -55,21 +66,21 @@ jobs:
           mkdir -p cmd/static
           cp -r web/build/* cmd/static/
 
-      - name: Set up Go
+      - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21
+          go-version: ${{ matrix.go-version }}
 
       - name: Build backend
         run: |
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
-          go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd
+          go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./cmd
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          path: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
 
   release:
     name: GitHub Release
