@@ -4,9 +4,9 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
-      - master
+    # branches:
+    #   - main
+    #   - master
   pull_request:
     branches:
       - main
