@@ -35,8 +35,23 @@ jobs:
     #       #   goarch: amd64
     strategy:
       matrix:
+        include:
+          - name: linux-amd64
+            goos: linux
+            goarch: amd64
+            platform: ubuntu-latest
+            ext: ""
+          - name: darwin-amd64
+            goos: darwin
+            goarch: amd64
+            platform: macos-latest
+            ext: ""
+          - name: windows-amd64
+            goos: windows
+            goarch: amd64
+            platform: windows-latest
+            ext: ".exe"
         go-version: [1.24.2]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
         node-version: [22.x]
     runs-on: ${{ matrix.platform }}
 
