@@ -26,9 +26,9 @@ jobs:
             goarch: amd64
             platform: ubuntu-latest
             ext: ""
-          - name: darwin-amd64
+          - name: darwin-arm64
             goos: darwin
-            goarch: amd64
+            goarch: arm64
             platform: macos-latest
             ext: ""
           # - name: windows-amd64
