@@ -31,11 +31,11 @@ jobs:
             goarch: amd64
             platform: macos-latest
             ext: ""
-          - name: windows-amd64
-            goos: windows
-            goarch: amd64
-            platform: windows-latest
-            ext: ".exe"
+          # - name: windows-amd64
+          #   goos: windows
+          #   goarch: amd64
+          #   platform: windows-latest
+          #   ext: ".exe"
         go-version: [1.24.2]
         node-version: [22.x]
     runs-on: ${{ matrix.platform }}
