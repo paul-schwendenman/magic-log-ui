@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir dist/
           tar -czf dist/magic-log-${{ matrix.name }}.tar.gz magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
-          shasum -a 256 dist/magic-log-${{ matrix.name }}.tar.gz > dist/magic-log-${{ matrix.name }}.sha256
+          (cd dist/ && shasum -a 256 magic-log-${{ matrix.name }}.tar.gz > magic-log-${{ matrix.name }}.sha256)
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
