@@ -106,13 +106,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
-      - name: Generate checksum
+      - name: Verify checksums
         run: |
-          shasum -a 256 magic-log-* > checksum.txt
+          shasum -c magic-log-*.sha256
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            checksum.txt
-            magic-log-*/magic-log-*
+            magic-log-*/magic-log-*.tar.gz
+            magic-log-*/magic-log-*.sha256
