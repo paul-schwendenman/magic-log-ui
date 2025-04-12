@@ -92,7 +92,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
+      - name: Generate checksum
+        run: |
+          shasum -a 256 magic-log-* > checksum.txt
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: magic-log-*/magic-log-*
+          files: |
+            checksum.txt
+            magic-log-*/magic-log-*
