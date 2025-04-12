@@ -76,25 +76,17 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./cmd
 
-      - name: Archive binary
+      - name: Archive binary and generate checksum
         run: |
-          tar -czf magic-log-${{ matrix.name }}.tar.gz magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          mkdir dist/
+          tar -czf dist/magic-log-${{ matrix.name }}.tar.gz magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          shasum -a 256 dist/magic-log-${{ matrix.name }}.tar.gz > dist/magic-log-${{ matrix.name }}.sha256
 
-      - name: Generate checksum
-        run: |
-          shasum -a 256 magic-log-${{ matrix.name }}.tar.gz > magic-log-${{ matrix.name }}.sha256
-
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: magic-log-${{ matrix.name }}
-          path: magic-log-${{ matrix.name }}.tar.gz
-
-      - name: Upload checksum
-        uses: actions/upload-artifact@v4
-        with:
-          name: magic-log-${{ matrix.name }}.sha256
-          path: magic-log-${{ matrix.name }}.sha256
+          path: dist/
 
   release:
     name: GitHub Release
@@ -108,7 +100,10 @@ jobs:
 
       - name: Verify checksums
         run: |
-          shasum -c magic-log-*.sha256
+          for dir in magic-log-*; do
+            echo "🔍 Verifying checksums in $dir"
+            (cd "$dir" && shasum -c *.sha256)
+          done
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
