@@ -76,11 +76,25 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./cmd
 
+      - name: Archive binary
+        run: |
+          tar -czf magic-log-${{ matrix.name }}.tar.gz magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+
+      - name: Generate checksum
+        run: |
+          shasum -a 256 magic-log-${{ matrix.name }}.tar.gz > magic-log-${{ matrix.name }}.sha256
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
-          path: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          name: magic-log-${{ matrix.name }}
+          path: magic-log-${{ matrix.name }}.tar.gz
+
+      - name: Upload checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: magic-log-${{ matrix.name }}.sha256
+          path: magic-log-${{ matrix.name }}.sha256
 
   release:
     name: GitHub Release
@@ -92,13 +106,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
-      - name: Generate checksum
+      - name: Verify checksums
         run: |
-          shasum -a 256 magic-log-* > checksum.txt
+          shasum -c magic-log-*.sha256
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            checksum.txt
-            magic-log-*/magic-log-*
+            magic-log-*/magic-log-*.tar.gz
+            magic-log-*/magic-log-*.sha256
