@@ -18,21 +18,6 @@ permissions:
 
 jobs:
   build:
-    name: Build Binaries
-
-    # strategy:
-    #   matrix:
-    #     goos: [linux, darwin, windows]
-    #     goarch: [amd64, arm64]
-    # strategy:
-    #   matrix:
-    #     include:
-    #       - goos: linux
-    #         goarch: amd64
-    #       # - goos: linux
-    #       #   goarch: arm64
-    #       # - goos: windows
-    #       #   goarch: amd64
     strategy:
       matrix:
         include:
@@ -54,6 +39,7 @@ jobs:
         go-version: [1.24.2]
         node-version: [22.x]
     runs-on: ${{ matrix.platform }}
+    name: Build ${{ matrix.name }}
 
     steps:
       - name: Checkout code
@@ -84,13 +70,13 @@ jobs:
       - name: Build backend
         run: |
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
-          go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd
+          go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./cmd
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          path: magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
 
   release:
     name: GitHub Release
