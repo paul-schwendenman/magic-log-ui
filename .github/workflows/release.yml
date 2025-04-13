@@ -148,6 +148,9 @@ jobs:
           end
           EOF
 
+          echo "📝 Generated Homebrew formula:"
+          cat Formula/${FORMULA_NAME}.rb
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
