@@ -137,7 +137,7 @@ jobs:
           cat > Formula/${FORMULA_NAME}.rb <<EOF
           class MagicLog < Formula
             desc "Live stream and query structured logs from your CLI"
-            homepage "https://github.com/paul-schwendenman/magic-log-ui"
+            homepage "https://x-access-token:${GH_TOKEN}@github.com/paul-schwendenman/magic-log-ui"
             url "${URL}"
             sha256 "${CHECKSUM}"
             version "${VERSION}"
