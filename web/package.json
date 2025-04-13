@@ -41,7 +41,8 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
-		"@inlang/paraglide-js": "^2.0.0"
+		"@inlang/paraglide-js": "^2.0.0",
+		"@tanstack/svelte-table": "^8.21.2"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
