@@ -112,15 +112,24 @@ jobs:
             magic-log-*/magic-log-*.tar.gz
             magic-log-*/magic-log-*.sha256
 
+  publish:
+    name: Publish Homebrew Tap
+    needs: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
       - name: Update Homebrew tap
-        if: startsWith(github.ref, 'refs/tags/v')
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TAP_PAT }}
         run: |
           set -e
 
           VERSION=${GITHUB_REF#refs/tags/v}
-          FORMULA_REPO="https://x-access-token:${GH_TOKEN}@github.com/paul-schwendenman/homebrew-magic-log-ui.git"
+          FORMULA_REPO="https://x-access-token:${HOMEBREW_TOKEN}@github.com/paul-schwendenman/homebrew-magic-log-ui.git"
           CLONE_DIR=$(mktemp -d)
           FORMULA_NAME="magic-log"
           BIN="magic-log-darwin-arm64"
@@ -129,8 +138,6 @@ jobs:
           URL="https://github.com/paul-schwendenman/magic-log-ui/releases/download/v${VERSION}/${TARBALL}"
           CHECKSUM=$(grep "${TARBALL}" magic-log-darwin-arm64/${BIN}.sha256 | cut -d ' ' -f 1)
 
-
-          # Clone the tap repo
           git clone --depth=1 "${FORMULA_REPO}" "$CLONE_DIR"
           cd "$CLONE_DIR"
 
@@ -157,4 +164,3 @@ jobs:
           git add Formula/${FORMULA_NAME}.rb
           git commit -m "Bump ${FORMULA_NAME} to v${VERSION}"
           git push origin master
-
