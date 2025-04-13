@@ -1,61 +1,42 @@
 <script lang="ts">
 	import { createColumnHelper, createSvelteTable, getCoreRowModel } from '$lib/table';
-	// import * as UserService from '$lib/services/user-profile';
+	import type { PageProps } from '../$types';
 	import type { PageData } from './$types';
 
-	type UserProfile = {
-		id: string;
-		name: string;
-		age: number;
-		email: string;
-		phone: string;
-		birthdate: string;
-		friends: UserProfile[];
+	type LogEntry = {
+		timestamp?: string;
+		trace_id?: string;
+		level?: string;
+		message?: string;
+		raw?: any;
 	};
 
 	let { data }: PageProps<PageData> = $props();
-	const {
-		userProfiles = [
-			{
-				name: 'A',
-				age: 'B',
-				email: 'C',
-				phone: 'D'
-			}
-		]
-	} = data;
+	const { logs } = data;
 
-	// Create a column helper for the user profile data.
-	// It's not necessary, but it helps with type stuff.
-	const colHelp = createColumnHelper<UserProfile>();
+	const colHelp = createColumnHelper<LogEntry>();
 
-	// Define the columns using the column helper.
-	// This is a basic example. Check other examples for more complexity.
 	const columnDefs = [
-		colHelp.accessor('name', { header: 'Name' }),
-		colHelp.accessor('age', { header: 'Age' }),
-		colHelp.accessor('email', { header: 'Email' }),
-		colHelp.accessor('phone', { header: 'Phone' })
+		colHelp.accessor('timestamp', { header: 'Time' }),
+		colHelp.accessor('trace_id', { header: 'Trace ID' }),
+		colHelp.accessor('level', { header: 'Level' }),
+		colHelp.accessor('message', { header: 'Message' })
 	];
 
-	// Create the table.
 	const table = createSvelteTable({
-		data: userProfiles,
+		data: logs,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel()
 	});
 </script>
 
-<h2>Table Demo</h2>
-
-<hr />
-
-<table>
+<h2 class="text-xl font-bold mb-2">Log Table</h2>
+<table class="min-w-full text-sm border-collapse border">
 	<thead>
 		<tr>
 			{#each table.getHeaderGroups() as headerGroup}
 				{#each headerGroup.headers as header}
-					<th>{header.column.columnDef.header}</th>
+					<th class="border px-2 py-1 font-semibold">{header.column.columnDef.header}</th>
 				{/each}
 			{/each}
 		</tr>
@@ -64,7 +45,7 @@
 		{#each table.getRowModel().rows as row}
 			<tr>
 				{#each row.getVisibleCells() as cell}
-					<td>{cell.getValue()}</td>
+					<td class="border px-2 py-1">{cell.getValue()}</td>
 				{/each}
 			</tr>
 		{/each}
