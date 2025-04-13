@@ -123,7 +123,6 @@ jobs:
         uses: actions/download-artifact@v4
 
       - name: Update Homebrew tap
-        if: startsWith(github.ref, 'refs/tags/v')
         env:
           HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TAP_PAT }}
         run: |
