@@ -1,7 +1,13 @@
 <script lang="ts">
-	import { createColumnHelper, createSvelteTable, getCoreRowModel } from '$lib/table';
-	import type { PageProps } from '../$types';
-	import type { PageData } from './$types';
+	import ExpandableCell from '$lib/components/ExpandableCell.svelte';
+	import {
+		createColumnHelper,
+		createSvelteTable,
+		FlexRender,
+		getCoreRowModel,
+		renderComponent
+	} from '$lib/table';
+	import type { PageProps } from './$types';
 
 	type LogEntry = {
 		timestamp?: string;
@@ -11,7 +17,7 @@
 		raw?: any;
 	};
 
-	let { data }: PageProps<PageData> = $props();
+	let { data }: PageProps = $props();
 	const { logs } = data;
 
 	const colHelp = createColumnHelper<LogEntry>();
@@ -23,11 +29,7 @@
 		colHelp.accessor('message', { header: 'Message' }),
 		colHelp.accessor('raw', {
 			header: 'Raw',
-			cell: ({ getValue }) => {
-				const value = getValue();
-				if (!value) return '';
-				return JSON.stringify(value);
-			}
+			cell: ({ cell }) => renderComponent(ExpandableCell, { value: cell.getValue() })
 		})
 	];
 
@@ -53,7 +55,9 @@
 		{#each table.getRowModel().rows as row}
 			<tr>
 				{#each row.getVisibleCells() as cell}
-					<td class="border px-2 py-1">{cell.getValue()}</td>
+					<td class="border px-2 py-1">
+						<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+					</td>
 				{/each}
 			</tr>
 		{/each}
