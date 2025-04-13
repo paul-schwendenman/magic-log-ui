@@ -20,7 +20,15 @@
 		colHelp.accessor('timestamp', { header: 'Time' }),
 		colHelp.accessor('trace_id', { header: 'Trace ID' }),
 		colHelp.accessor('level', { header: 'Level' }),
-		colHelp.accessor('message', { header: 'Message' })
+		colHelp.accessor('message', { header: 'Message' }),
+		colHelp.accessor('raw', {
+			header: 'Raw',
+			cell: ({ getValue }) => {
+				const value = getValue();
+				if (!value) return '';
+				return JSON.stringify(value);
+			}
+		})
 	];
 
 	const table = createSvelteTable({
@@ -30,8 +38,8 @@
 	});
 </script>
 
-<h2 class="text-xl font-bold mb-2">Log Table</h2>
-<table class="min-w-full text-sm border-collapse border">
+<h2 class="mb-2 text-xl font-bold">Log Table</h2>
+<table class="min-w-full border-collapse border text-sm">
 	<thead>
 		<tr>
 			{#each table.getHeaderGroups() as headerGroup}
