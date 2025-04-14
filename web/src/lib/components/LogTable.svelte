@@ -8,12 +8,15 @@
 		renderComponent
 	} from '$lib/table';
 	import type { LogEntry } from '$lib/types';
-    type Props = {
-        logs: LogEntry[]
+
+	type Props = {
+        logs: LogEntry[],
+		visibleColumns?: Record<string, boolean>
     }
 
-    let { logs }: Props = $props();
+    let { logs, visibleColumns = {} }: Props = $props();
     let dataState = $state(logs);
+	let columnVisibilityState = $state(visibleColumns)
 
 	const colHelp = createColumnHelper<LogEntry>();
 
@@ -33,9 +36,25 @@
             return logs;
         },
 		columns: columnDefs,
+		state: {
+			columnVisibility: visibleColumns
+		},
 		getCoreRowModel: getCoreRowModel()
 	});
 </script>
+
+<!-- <div class="mb-2 flex flex-wrap gap-2 text-sm">
+	{#each table.getAllLeafColumns() as col (col.id)}
+		<label class="flex items-center gap-1">
+			<input
+				type="checkbox"
+				checked={col.getIsVisible()}
+				onchange={() => col.toggleVisibility()}
+			/>
+			{col.id}
+		</label>
+	{/each}
+</div> -->
 
 <table class="min-w-full border-collapse border text-sm">
 	<thead>
