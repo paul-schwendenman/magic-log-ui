@@ -54,6 +54,6 @@ function reconnect() {
 	}, retryDelay);
 }
 
-if(browser) {
-    connect();
+if (browser) {
+	connect();
 }

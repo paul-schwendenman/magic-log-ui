@@ -2,7 +2,7 @@
 	import LogTable from '$lib/components/LogTable.svelte';
 	import { liveLogs } from '$lib/stores/liveLogs';
 
-	let visibleColumns = {
+	let initialVisibility = {
 		timestamp: true,
 		trace_id: true,
 		level: true,
@@ -12,4 +12,4 @@
 </script>
 
 <h2 class="mb-2 text-xl font-bold">Live Logs</h2>
-<LogTable logs={$liveLogs} {visibleColumns} />
+<LogTable logs={$liveLogs} {initialVisibility} />

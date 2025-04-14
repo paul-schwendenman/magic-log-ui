@@ -10,13 +10,13 @@
 	import type { LogEntry } from '$lib/types';
 
 	type Props = {
-        logs: LogEntry[],
-		visibleColumns?: Record<string, boolean>
-    }
+		logs: LogEntry[];
+		initialVisibility?: Record<string, boolean>;
+	};
 
-    let { logs, visibleColumns = {} }: Props = $props();
-    let dataState = $state(logs);
-	let columnVisibilityState = $state(visibleColumns)
+	let { logs, initialVisibility = {} }: Props = $props();
+	let dataState = $state(logs);
+	let columnVisibility = $state({ ...initialVisibility });
 
 	const colHelp = createColumnHelper<LogEntry>();
 
@@ -32,29 +32,31 @@
 	];
 
 	const table = createSvelteTable({
-        get data() {
-            return logs;
-        },
+		get data() {
+			return logs;
+		},
 		columns: columnDefs,
-		state: {
-			columnVisibility: visibleColumns
+		get state() {
+			return {
+				columnVisibility
+			};
+		},
+		onColumnVisibilityChange: (updater) => {
+			const next = typeof updater === 'function' ? updater(columnVisibility) : updater;
+			columnVisibility = next;
 		},
 		getCoreRowModel: getCoreRowModel()
 	});
 </script>
 
-<!-- <div class="mb-2 flex flex-wrap gap-2 text-sm">
+<div class="mb-2 flex flex-wrap gap-2 text-sm">
 	{#each table.getAllLeafColumns() as col (col.id)}
 		<label class="flex items-center gap-1">
-			<input
-				type="checkbox"
-				checked={col.getIsVisible()}
-				onchange={() => col.toggleVisibility()}
-			/>
+			<input type="checkbox" checked={col.getIsVisible()} onchange={() => col.toggleVisibility()} />
 			{col.id}
 		</label>
 	{/each}
-</div> -->
+</div>
 
 <table class="min-w-full border-collapse border text-sm">
 	<thead>
