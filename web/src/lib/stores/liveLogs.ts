@@ -1,8 +1,9 @@
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 import type { LogEntry } from '$lib/types';
 import { browser } from '$app/environment';
 
 export const liveLogs = writable<LogEntry[]>([]);
+export const liveFilter = writable('');
 
 let socket: WebSocket | null = null;
 let retryDelay = 1000; // ms
@@ -53,6 +54,21 @@ function reconnect() {
 		connect();
 	}, retryDelay);
 }
+
+export const filteredLiveLogs = derived(
+	[liveLogs, liveFilter],
+	([$logs, $filter]) => {
+		if (!$filter.trim()) return $logs;
+
+		const f = $filter.toLowerCase();
+		return $logs.filter((log) =>
+			Object.values(log)
+				.join(' ')
+				.toLowerCase()
+				.includes(f)
+		);
+	}
+);
 
 if (browser) {
 	connect();
