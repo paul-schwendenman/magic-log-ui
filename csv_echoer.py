@@ -4,9 +4,15 @@ import time
 import random
 import argparse
 import sys
+import signal
+import os
 
+def handle_broken_pipe(signum, frame):
+    os._exit(0)
 
 def main():
+    signal.signal(signal.SIGPIPE, handle_broken_pipe)
+
     parser = argparse.ArgumentParser(description="Stream a CSV column with semi-random timing.")
     parser.add_argument('file', help='Path to the CSV file')
     parser.add_argument('--column', required=True, help='Name of the column to output')
@@ -29,13 +35,16 @@ def main():
             for row in reader:
                 value = row.get(args.column)
                 if value is not None:
-                    print(value)
-                else:
-                    print(f"Warning: Missing value for column '{args.column}' in row: {row}", file=sys.stderr)
+                    print(value, flush=True)
                 time.sleep(random.uniform(args.min, args.max))
+
     except FileNotFoundError:
         print(f"Error: File '{args.file}' not found.", file=sys.stderr)
         sys.exit(1)
+    except BrokenPipeError:
+        sys.exit(0)
+    except KeyboardInterrupt:
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()
