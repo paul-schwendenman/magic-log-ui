@@ -55,20 +55,12 @@ function reconnect() {
 	}, retryDelay);
 }
 
-export const filteredLiveLogs = derived(
-	[liveLogs, liveFilter],
-	([$logs, $filter]) => {
-		if (!$filter.trim()) return $logs;
+export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {
+	if (!$filter.trim()) return $logs;
 
-		const f = $filter.toLowerCase();
-		return $logs.filter((log) =>
-			Object.values(log)
-				.join(' ')
-				.toLowerCase()
-				.includes(f)
-		);
-	}
-);
+	const f = $filter.toLowerCase();
+	return $logs.filter((log) => Object.values(log).join(' ').toLowerCase().includes(f));
+});
 
 if (browser) {
 	connect();

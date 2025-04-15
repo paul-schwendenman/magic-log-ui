@@ -45,7 +45,6 @@
 	});
 </script>
 
-
 <table class="min-w-full border-collapse border text-sm">
 	<thead>
 		<tr>
