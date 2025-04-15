@@ -1,15 +1,17 @@
-import { derived, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import type { LogEntry } from '$lib/types';
 import { browser } from '$app/environment';
 
 export const liveLogs = writable<LogEntry[]>([]);
 export const liveFilter = writable('');
+export const paused = writable(false);
+export let buffer: LogEntry[] = [];
 
 let socket: WebSocket | null = null;
 let retryDelay = 1000; // ms
 const maxLogs = 500;
-let buffer: LogEntry[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
+const flushInterval = 50;
 
 function connect() {
 	const ws = new WebSocket(`ws://${location.host}/ws`);
@@ -27,13 +29,15 @@ function connect() {
 		// Debounce flush
 		if (!flushTimeout) {
 			flushTimeout = setTimeout(() => {
-				liveLogs.update((logs) => {
-					const newLogs = [...buffer, ...logs];
-					buffer = [];
-					flushTimeout = null;
-					return newLogs.slice(0, maxLogs);
-				});
-			}, 50); // adjust for feel
+				if (!get(paused)) {
+					liveLogs.update((logs) => {
+						const newLogs = [...buffer, ...logs];
+						buffer = [];
+						return newLogs.slice(0, maxLogs);
+					});
+				}
+				flushTimeout = null;
+			}, flushInterval);
 		}
 	});
 
@@ -64,4 +68,11 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 
 if (browser) {
 	connect();
+
+	paused.subscribe((val) => {
+		if (val === false && buffer.length) {
+			liveLogs.update((logs) => [...logs, ...buffer]);
+			buffer = [];
+		}
+	});
 }
