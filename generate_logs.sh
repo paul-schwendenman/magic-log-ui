@@ -21,11 +21,11 @@ while true; do
   TRACE=$(openssl rand -hex 6)
   TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-  jq -n --arg ts "$TIME" \
-        --arg level "$LEVEL" \
-        --arg msg "$MESSAGE" \
-        --arg trace_id "$TRACE" \
-        '{timestamp: $ts, level: $level, message: $msg, trace_id: $trace_id}'
+  jq -n -c  --arg ts "$TIME" \
+            --arg level "$LEVEL" \
+            --arg msg "$MESSAGE" \
+            --arg trace_id "$TRACE" \
+            '{timestamp: $ts, level: $level, message: $msg, trace_id: $trace_id}'
 
   sleep 0.2
 done
