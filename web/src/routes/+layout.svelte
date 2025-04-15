@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import NavBar from '$lib/components/NavBar.svelte';
 	import '../app.css';
 
 	let { children } = $props();
@@ -19,5 +20,6 @@
 </svelte:head>
 
 <main class="min-h-screen bg-gray-900 p-4 font-mono text-white">
+	<NavBar />
 	{@render children()}
 </main>
