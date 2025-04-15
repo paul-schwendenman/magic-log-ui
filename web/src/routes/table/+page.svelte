@@ -6,5 +6,5 @@
 	const { logs } = data;
 </script>
 
-<h2 class="mb-2 text-xl font-bold">Log Table</h2>
+<h2 class="my-2 text-xl font-bold">Log Table</h2>
 <LogTable {logs} />

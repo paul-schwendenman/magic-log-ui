@@ -14,7 +14,7 @@
 		in:fly={{ x: 300 }}
 		out:fly={{ x: 300 }}
 	>
-		<h2 class="mb-2 text-lg font-bold text-white">Query History</h2>
+		<h2 class="my-2 text-lg font-bold text-white">Query History</h2>
 
 		<div class="mb-3 flex justify-between text-sm text-gray-400">
 			<span>{$queryHistory.length} queries</span>

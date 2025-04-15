@@ -48,7 +48,7 @@
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 	<div class="space-y-4">
-		<h2 class="mt-4 text-xl font-bold">{m.query_logs()}</h2>
+		<h2 class="my-4 text-xl font-bold">{m.query_logs()}</h2>
 		<input
 			bind:value={query}
 			class="w-full rounded border border-gray-600 bg-gray-800 p-2"
@@ -103,7 +103,7 @@
 	</div>
 
 	<div>
-		<h2 class="mb-4 text-xl font-bold">{m.live_logs()}</h2>
+		<h2 class="my-4 text-xl font-bold">{m.live_logs()}</h2>
 		{#if !$isConnected}
 			<div class="mb-2 inline-block rounded bg-red-800/50 px-3 py-1 text-sm text-red-200">
 				{m.known_awake_rooster_mend()}

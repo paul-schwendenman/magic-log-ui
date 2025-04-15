@@ -11,7 +11,7 @@
 	};
 </script>
 
-<h2 class="mb-2 text-xl font-bold">Live Logs</h2>
+<h2 class="my-2 text-xl font-bold">Live Logs</h2>
 <input
 	bind:value={$liveFilter}
 	placeholder="Filter logs..."
