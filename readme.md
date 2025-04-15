@@ -43,3 +43,15 @@ while true; do
   sleep 1
 done | go run ./cmd/main.go
 ```
+
+### Random logs
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+```
+
+### Pipe logs from CSV
+
+```
+./csv_echoer.py ~/Downloads/extract.csv --column Message | go run ./cmd/main.go
+```
