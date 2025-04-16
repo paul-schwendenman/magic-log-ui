@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import NavBar from '$lib/components/NavBar.svelte';
 	import '../app.css';
 
 	let { children } = $props();
@@ -18,6 +19,7 @@
 	<meta property="twitter:title" content={$page.data.title} />
 </svelte:head>
 
+<NavBar />
 <main class="min-h-screen bg-gray-900 p-4 font-mono text-white">
 	{@render children()}
 </main>

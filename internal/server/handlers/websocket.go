@@ -37,7 +37,7 @@ func WebSocketHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 
 		// Send last log (for now)
 		go func(c *websocket.Conn) {
-			rows, err := db.QueryContext(ctx, `SELECT * FROM logs ORDER BY timestamp DESC LIMIT 1`)
+			rows, err := db.QueryContext(ctx, `SELECT level, message, timestamp, trace_id FROM logs ORDER BY timestamp DESC LIMIT 1`)
 			if err == nil {
 				defer rows.Close()
 				cols, _ := rows.Columns()

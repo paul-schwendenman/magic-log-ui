@@ -1,16 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import LogLine from '$lib/LogLine.svelte';
 	import { fade } from 'svelte/transition';
-	import { useWebSocket, isConnected } from '$lib/useWebSocket';
-	import { queryHistory, addQuery, clearHistory } from '$lib/queryHistory';
+	import { isConnected } from '$lib/useWebSocket';
+	import { queryHistory, addQuery } from '$lib/queryHistory';
 	import QueryDrawer from '$lib/QueryDrawer.svelte';
+	import { liveLogs } from '$lib/stores/liveLogs';
 
 	let drawerOpen = false;
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
-	let wsLogs: any[] = [];
 	let error: string | null = null;
 	let success = false;
 
@@ -34,21 +33,11 @@
 			addQuery({ query, ok: false, timestamp: Date.now() });
 		}
 	}
-
-	onMount(() => {
-		const ws = useWebSocket(`ws://${location.host}/ws`, {
-			onMessage: (log) => {
-				wsLogs = [log, ...wsLogs].slice(0, 100);
-			}
-		});
-
-		return () => ws.close();
-	});
 </script>
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 	<div class="space-y-4">
-		<h2 class="mt-4 text-xl font-bold">{m.query_logs()}</h2>
+		<h2 class="my-4 text-xl font-bold">{m.query_logs()}</h2>
 		<input
 			bind:value={query}
 			class="w-full rounded border border-gray-600 bg-gray-800 p-2"
@@ -63,7 +52,9 @@
 				class="fixed top-4 right-4 z-50 rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
 			>
 				{m.bad_kind_flamingo_nurture()}
-				{#if $queryHistory.length > 0} ({$queryHistory.length}){/if}
+				{#if $queryHistory.length > 0}
+					({$queryHistory.length})
+				{/if}
 			</button>
 
 			{#if error}
@@ -101,14 +92,14 @@
 	</div>
 
 	<div>
-		<h2 class="mb-4 text-xl font-bold">{m.live_logs()}</h2>
+		<h2 class="my-4 text-xl font-bold">{m.live_logs()}</h2>
 		{#if !$isConnected}
 			<div class="mb-2 inline-block rounded bg-red-800/50 px-3 py-1 text-sm text-red-200">
 				{m.known_awake_rooster_mend()}
 			</div>
 		{/if}
 		<div class="space-y-2 lg:max-h-[90vh] lg:overflow-y-auto">
-			{#each wsLogs as log (log)}
+			{#each $liveLogs as log (log)}
 				<LogLine {log} />
 			{/each}
 		</div>
