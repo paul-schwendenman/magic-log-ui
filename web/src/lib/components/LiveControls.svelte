@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { paused, buffer, clearLogs, clearBuffer, isBufferFull } from '$lib/stores/liveLogs';
-
-	const bufferSize = $derived($buffer.length);
+	import { paused, liveLogs } from '$lib/stores/liveLogs';
 
 	function togglePause() {
 		paused.update((p) => {
@@ -21,15 +19,15 @@
 		</button>
 
 		<button
-			onclick={clearLogs}
+			onclick={liveLogs.clearLogs}
 			class="rounded bg-gray-700 px-4 py-1 text-sm text-white hover:bg-gray-600"
 		>
 			Clear
 		</button>
 
-		{#if $paused && bufferSize}
+		{#if $paused }
 			<button
-				onclick={clearBuffer}
+				onclick={liveLogs.clearBuffer}
 				class="rounded bg-yellow-700 px-4 py-1 text-sm text-white hover:bg-yellow-600"
 			>
 				Flush
@@ -37,15 +35,15 @@
 		{/if}
 	</div>
 
-	{#if $paused && bufferSize}
+	{#if $paused && liveLogs.bufferSize > 0}
 		<div
 			class="rounded bg-yellow-900 px-2 py-1 text-xs text-yellow-400"
-			class:font-bold={$isBufferFull}
+			class:font-bold={liveLogs.isBufferFull}
 		>
-			{#if $isBufferFull}
+			{#if liveLogs.isBufferFull}
 				Buffer full
 			{:else}
-				+{bufferSize} buffered
+				+{liveLogs.bufferSize} buffered
 			{/if}
 		</div>
 	{/if}

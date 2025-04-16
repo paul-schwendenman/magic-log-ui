@@ -2,16 +2,9 @@
 	import LiveControls from '$lib/components/LiveControls.svelte';
 	import LogTable from '$lib/components/LogTable.svelte';
 	import {
-		paused,
 		liveFilter,
 		filteredLiveLogs,
-		buffer,
-		clearLogs,
-		clearBuffer,
-		liveLogs
 	} from '$lib/stores/liveLogs';
-	const bufferSize = $derived($buffer.length);
-	const logsEmpty = $derived($liveLogs.length > 0);
 
 	let initialVisibility = {
 		timestamp: true,

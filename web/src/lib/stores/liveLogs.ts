@@ -1,83 +1,47 @@
-import { derived, get, writable } from 'svelte/store';
-import type { LogEntry } from '$lib/types';
 import { browser } from '$app/environment';
+import { derived, writable } from 'svelte/store';
+import { createBufferedLogsStore } from '$lib/stores/bufferedArrayStore';
+import type { LogEntry } from '$lib/types';
 
-export const liveLogs = writable<LogEntry[]>([]);
 export const liveFilter = writable('');
 export const paused = writable(false);
-export let buffer = writable<LogEntry[]>([]);
+
+export const liveLogs = createBufferedLogsStore<LogEntry>({
+	max: 500,
+	flushInterval: 100
+});
+
+// wire up pause state
+paused.subscribe((p) => liveLogs.setPaused(p));
 
 let socket: WebSocket | null = null;
-let retryDelay = 1000; // ms
-const maxLogs = 500;
-let flushTimeout: ReturnType<typeof setTimeout> | null = null;
-const flushInterval = 50;
 
 function connect() {
-	const ws = new WebSocket(`ws://${location.host}/ws`);
-	socket = ws;
+	socket = new WebSocket(`ws://${location.host}/ws`);
 
-	ws.addEventListener('open', () => {
-		console.log('✅ WebSocket connected');
-		retryDelay = 1000; // Reset backoff
+	socket.addEventListener('open', () => {
+		console.log('✅ WS connected');
 	});
 
-	ws.addEventListener('message', (event) => {
-		const entry: LogEntry = JSON.parse(event.data);
-		buffer.update((state) => [entry, ...state].slice(0, maxLogs));
-
-		// Debounce flush
-		if (!flushTimeout) {
-			flushTimeout = setTimeout(() => {
-				if (!get(paused)) {
-					liveLogs.update((logs) => {
-						const newLogs = [...get(buffer), ...logs];
-						buffer.set([]);
-						return newLogs.slice(0, maxLogs);
-					});
-				}
-				flushTimeout = null;
-			}, flushInterval);
-		}
+	socket.addEventListener('message', (e) => {
+		const entry: LogEntry = JSON.parse(e.data);
+		liveLogs.add(entry);
 	});
 
-	ws.addEventListener('close', () => {
-		console.warn('🔌 WebSocket disconnected — retrying...');
-		reconnect();
-	});
-
-	ws.addEventListener('error', (err) => {
-		console.error('❌ WebSocket error:', err);
-		ws.close();
+	socket.addEventListener('close', () => {
+		console.warn('🔌 Disconnected, retrying...');
+		setTimeout(connect, 1000);
 	});
 }
 
-function reconnect() {
-	setTimeout(() => {
-		retryDelay = Math.min(retryDelay * 2, 10000);
-		connect();
-	}, retryDelay);
-}
+export const filteredLiveLogs = derived(
+	[liveLogs, liveFilter],
+	([$logs, $filter]) => {
+		if (!$filter.trim()) return $logs;
+		return $logs.filter((log) =>
+			Object.values(log).join(' ').toLowerCase().includes($filter.toLowerCase())
+		);
+	}
+);
 
-export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {
-	if (!$filter.trim()) return $logs;
-
-	const f = $filter.toLowerCase();
-	return $logs.filter((log) => Object.values(log).join(' ').toLowerCase().includes(f));
-});
-
-export const isBufferFull = derived([buffer], ([$buffer]) => {
-	return $buffer.length >= maxLogs;
-});
-
-export function clearLogs() {
-	liveLogs.set([]);
-}
-
-export function clearBuffer() {
-	buffer.set([]);
-}
-
-if (browser) {
-	connect();
-}
+if (browser) connect();
