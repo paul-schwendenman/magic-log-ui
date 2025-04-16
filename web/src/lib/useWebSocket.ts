@@ -10,7 +10,7 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 		socket = new WebSocket(url);
 
 		socket.onopen = () => {
-			// console.log('WebSocket connected');
+			console.log('WebSocket connected');
 			isConnected.set(true);
 		};
 
@@ -24,13 +24,13 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 		};
 
 		socket.onclose = () => {
-			// console.log('WebSocket disconnected. Reconnecting...');
+			console.log('WebSocket disconnected. Reconnecting...');
 			isConnected.set(false);
 			reconnectTimeout = setTimeout(connect, 1000);
 		};
 
 		socket.onerror = (err) => {
-			// console.error('WebSocket error', err);
+			console.error('WebSocket error', err);
 			socket.close();
 		};
 	}
