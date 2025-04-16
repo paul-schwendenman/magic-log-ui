@@ -1,18 +1,15 @@
 import { writable, get, derived, readable } from 'svelte/store';
 
-export function createBufferedLogsStore<T>({
-	max = 500,
-	flushInterval = 50
-} = {}) {
+export function createBufferedLogsStore<T>({ max = 500, flushInterval = 50 } = {}) {
 	const logs = writable<T[]>([]);
 	const buffer = writable<T[]>([]);
-    const bufferSize = derived([buffer], ([b]) => b.length);
+	const bufferSize = derived([buffer], ([b]) => b.length);
 
 	let paused = false;
 	let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	function add(entry: T) {
-        buffer.update(b => [entry, ...b].slice(0, max));
+		buffer.update((b) => [entry, ...b].slice(0, max));
 
 		if (!flushTimeout) {
 			flushTimeout = setTimeout(() => {
@@ -46,7 +43,7 @@ export function createBufferedLogsStore<T>({
 		clearLogs,
 		clearBuffer,
 		setPaused,
-        bufferSize,
-        isBufferFull: derived(bufferSize, (bufferSize) => bufferSize >= max)
+		bufferSize,
+		isBufferFull: derived(bufferSize, (bufferSize) => bufferSize >= max)
 	};
 }

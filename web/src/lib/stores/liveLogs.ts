@@ -10,15 +10,12 @@ export const liveLogs = createBufferedLogsStore<LogEntry>({
 	max: 500,
 	flushInterval: 100
 });
-export const filteredLiveLogs = derived(
-	[liveLogs, liveFilter],
-	([$logs, $filter]) => {
-		if (!$filter.trim()) return $logs;
-		return $logs.filter((log) =>
-			Object.values(log).join(' ').toLowerCase().includes($filter.toLowerCase())
-		);
-	}
-);
+export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {
+	if (!$filter.trim()) return $logs;
+	return $logs.filter((log) =>
+		Object.values(log).join(' ').toLowerCase().includes($filter.toLowerCase())
+	);
+});
 
 paused.subscribe((p) => liveLogs.setPaused(p));
 
@@ -29,4 +26,3 @@ if (browser) {
 		}
 	});
 }
-

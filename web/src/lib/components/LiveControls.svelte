@@ -27,7 +27,7 @@
 			Clear
 		</button>
 
-		{#if $paused }
+		{#if $paused}
 			<button
 				onclick={liveLogs.clearBuffer}
 				class="rounded bg-yellow-700 px-4 py-1 text-sm text-white hover:bg-yellow-600"

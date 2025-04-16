@@ -1,10 +1,7 @@
 <script lang="ts">
 	import LiveControls from '$lib/components/LiveControls.svelte';
 	import LogTable from '$lib/components/LogTable.svelte';
-	import {
-		liveFilter,
-		filteredLiveLogs,
-	} from '$lib/stores/liveLogs';
+	import { liveFilter, filteredLiveLogs } from '$lib/stores/liveLogs';
 
 	let initialVisibility = {
 		timestamp: true,
