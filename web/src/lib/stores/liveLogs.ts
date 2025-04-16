@@ -21,8 +21,16 @@ paused.subscribe((p) => liveLogs.setPaused(p));
 
 if (browser) {
 	useWebSocket(`ws://${location.host}/ws`, {
-		onMessage: (data: LogEntry) => {
-			liveLogs.add(data);
+		onMessage: (data) => {
+			const {timestamp, trace_id, level, message, ...rest} = data;
+			const log: LogEntry = {
+				timestamp,
+				trace_id,
+				level,
+				message,
+				raw: rest
+			}
+			liveLogs.add(log);
 		}
 	});
 }
