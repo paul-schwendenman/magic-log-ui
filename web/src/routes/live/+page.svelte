@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LogTable from '$lib/components/LogTable.svelte';
-	import { paused, liveFilter, filteredLiveLogs, buffer } from '$lib/stores/liveLogs';
+	import { paused, liveFilter, filteredLiveLogs, buffer, clearLogs } from '$lib/stores/liveLogs';
 	const bufferSize = $derived($buffer.length);
 
 	function togglePause() {
@@ -25,13 +25,24 @@
 	placeholder="Filter logs..."
 	class="mb-4 w-full rounded border border-gray-600 bg-gray-800 p-2 text-sm"
 />
-<button
-	onclick={togglePause}
-	class="mb-4 rounded bg-gray-700 px-4 py-1 text-sm text-white hover:bg-gray-600"
->
-	{$paused ? 'Resume Live Logs' : 'Pause'}
-</button>
-{#if $paused && bufferSize}
-	<span class="text-xs text-yellow-400">+{bufferSize} buffered</span>
-{/if}
+
+<div class="mb-4 flex items-center gap-2">
+	<button
+		onclick={togglePause}
+		class="rounded bg-gray-700 px-4 py-1 text-sm text-white hover:bg-gray-600"
+	>
+		{$paused ? 'Resume' : 'Pause'}
+	</button>
+
+	<button
+		onclick={clearLogs}
+		class="rounded bg-red-700 px-4 py-1 text-sm text-white hover:bg-red-600"
+	>
+		Clear
+	</button>
+	{#if $paused && bufferSize}
+		<span class="text-xs text-yellow-400">+{bufferSize} buffered</span>
+	{/if}
+</div>
+
 <LogTable logs={$filteredLiveLogs} {initialVisibility} />

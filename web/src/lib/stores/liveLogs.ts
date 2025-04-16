@@ -24,7 +24,7 @@ function connect() {
 
 	ws.addEventListener('message', (event) => {
 		const entry: LogEntry = JSON.parse(event.data);
-		buffer.update(state => [entry, ...state]);
+		buffer.update((state) => [entry, ...state]);
 
 		// Debounce flush
 		if (!flushTimeout) {
@@ -65,6 +65,10 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 	const f = $filter.toLowerCase();
 	return $logs.filter((log) => Object.values(log).join(' ').toLowerCase().includes(f));
 });
+
+export function clearLogs() {
+	liveLogs.set([]);
+}
 
 if (browser) {
 	connect();
