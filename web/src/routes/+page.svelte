@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import LogLine from '$lib/LogLine.svelte';
 	import { fade } from 'svelte/transition';
-	import { useWebSocket, isConnected } from '$lib/useWebSocket';
-	import { queryHistory, addQuery, clearHistory } from '$lib/queryHistory';
+	import { isConnected } from '$lib/useWebSocket';
+	import { queryHistory, addQuery } from '$lib/queryHistory';
 	import QueryDrawer from '$lib/QueryDrawer.svelte';
+	import { liveLogs } from '$lib/stores/liveLogs';
 
 	let drawerOpen = false;
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
@@ -34,16 +34,6 @@
 			addQuery({ query, ok: false, timestamp: Date.now() });
 		}
 	}
-
-	onMount(() => {
-		const ws = useWebSocket(`ws://${location.host}/ws`, {
-			onMessage: (log) => {
-				wsLogs = [log, ...wsLogs].slice(0, 100);
-			}
-		});
-
-		return () => ws.close();
-	});
 </script>
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -110,7 +100,7 @@
 			</div>
 		{/if}
 		<div class="space-y-2 lg:max-h-[90vh] lg:overflow-y-auto">
-			{#each wsLogs as log (log)}
+			{#each $liveLogs as log (log)}
 				<LogLine {log} />
 			{/each}
 		</div>
