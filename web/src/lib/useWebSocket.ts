@@ -1,6 +1,8 @@
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 
-export const isConnected = writable(true);
+export const wsStatus = writable<'connecting' | 'open' | 'closed' | 'error'>('connecting');
+export const isConnected = derived(wsStatus, ($status) => $status === 'open');
+
 export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any) => void }) {
 	let socket: WebSocket;
 	let reconnectTimeout: ReturnType<typeof setTimeout>;
@@ -12,7 +14,7 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 		socket.onopen = () => {
 			console.log('WebSocket connected');
 			retryDelay = 1000;
-			isConnected.set(true);
+			wsStatus.set('open');
 		};
 
 		socket.onmessage = (event) => {
@@ -26,7 +28,7 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 
 		socket.onclose = () => {
 			console.log('WebSocket disconnected. Reconnecting...');
-			isConnected.set(false);
+			wsStatus.set('closed');
 			reconnect();
 		};
 
@@ -34,6 +36,7 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 			if (socket.readyState !== WebSocket.CLOSED && socket.readyState !== WebSocket.CLOSING) {
 				console.warn('WebSocket encountered an error (will reconnect):', err);
 			}
+			wsStatus.set('error');
 			socket.close();
 		};
 	}
