@@ -70,6 +70,10 @@ export function clearLogs() {
 	liveLogs.set([]);
 }
 
+export function clearBuffer() {
+	buffer.set([]);
+}
+
 if (browser) {
 	connect();
 }
