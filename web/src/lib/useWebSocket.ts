@@ -1,16 +1,17 @@
 import { writable } from 'svelte/store';
 
 export const isConnected = writable(true);
-
 export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any) => void }) {
 	let socket: WebSocket;
 	let reconnectTimeout: ReturnType<typeof setTimeout>;
+	let retryDelay = 1000;
 
 	function connect() {
 		socket = new WebSocket(url);
 
 		socket.onopen = () => {
 			console.log('WebSocket connected');
+			retryDelay = 1000;
 			isConnected.set(true);
 		};
 
@@ -26,13 +27,19 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 		socket.onclose = () => {
 			console.log('WebSocket disconnected. Reconnecting...');
 			isConnected.set(false);
-			reconnectTimeout = setTimeout(connect, 1000);
+			reconnect();
 		};
 
 		socket.onerror = (err) => {
 			console.error('WebSocket error', err);
 			socket.close();
 		};
+	}
+	function reconnect() {
+		reconnectTimeout = setTimeout(() => {
+			retryDelay = Math.min(retryDelay * 2, 10000);
+			connect();
+		}, retryDelay);
 	}
 
 	connect();
