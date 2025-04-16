@@ -68,11 +68,4 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 
 if (browser) {
 	connect();
-
-	paused.subscribe((val) => {
-		if (val === false && buffer.length) {
-			liveLogs.update((logs) => [...logs, ...buffer]);
-			buffer = [];
-		}
-	});
 }
