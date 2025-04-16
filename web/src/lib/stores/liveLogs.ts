@@ -24,7 +24,7 @@ function connect() {
 
 	ws.addEventListener('message', (event) => {
 		const entry: LogEntry = JSON.parse(event.data);
-		buffer.update((state) => [entry, ...state]);
+		buffer.update((state) => [entry, ...state].slice(0, maxLogs));
 
 		// Debounce flush
 		if (!flushTimeout) {
