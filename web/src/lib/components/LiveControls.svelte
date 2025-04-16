@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { paused, liveLogs } from '$lib/stores/liveLogs';
+	const bufferSize = liveLogs.bufferSize;
+	const isBufferFull = liveLogs.isBufferFull;
 
 	function togglePause() {
 		paused.update((p) => {
@@ -35,15 +37,15 @@
 		{/if}
 	</div>
 
-	{#if $paused && liveLogs.bufferSize > 0}
+	{#if $paused && $bufferSize > 0}
 		<div
 			class="rounded bg-yellow-900 px-2 py-1 text-xs text-yellow-400"
-			class:font-bold={liveLogs.isBufferFull}
+			class:font-bold={$isBufferFull}
 		>
-			{#if liveLogs.isBufferFull}
+			{#if $isBufferFull}
 				Buffer full
 			{:else}
-				+{liveLogs.bufferSize} buffered
+				+{$bufferSize} buffered
 			{/if}
 		</div>
 	{/if}
