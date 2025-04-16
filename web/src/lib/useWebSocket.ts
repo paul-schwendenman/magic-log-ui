@@ -31,7 +31,9 @@ export function useWebSocket(url: string, { onMessage }: { onMessage: (data: any
 		};
 
 		socket.onerror = (err) => {
-			console.error('WebSocket error', err);
+			if (socket.readyState !== WebSocket.CLOSED && socket.readyState !== WebSocket.CLOSING) {
+				console.warn('WebSocket encountered an error (will reconnect):', err);
+			}
 			socket.close();
 		};
 	}
