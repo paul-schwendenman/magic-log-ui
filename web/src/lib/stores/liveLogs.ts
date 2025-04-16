@@ -5,7 +5,7 @@ import { browser } from '$app/environment';
 export const liveLogs = writable<LogEntry[]>([]);
 export const liveFilter = writable('');
 export const paused = writable(false);
-export let buffer: LogEntry[] = [];
+export let buffer = writable<LogEntry[]>([]);
 
 let socket: WebSocket | null = null;
 let retryDelay = 1000; // ms
@@ -24,15 +24,15 @@ function connect() {
 
 	ws.addEventListener('message', (event) => {
 		const entry: LogEntry = JSON.parse(event.data);
-		buffer.unshift(entry);
+		buffer.update(state => [entry, ...state]);
 
 		// Debounce flush
 		if (!flushTimeout) {
 			flushTimeout = setTimeout(() => {
 				if (!get(paused)) {
 					liveLogs.update((logs) => {
-						const newLogs = [...buffer, ...logs];
-						buffer = [];
+						const newLogs = [...get(buffer), ...logs];
+						buffer.set([]);
 						return newLogs.slice(0, maxLogs);
 					});
 				}
