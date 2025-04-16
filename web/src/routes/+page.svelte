@@ -10,7 +10,6 @@
 	let drawerOpen = false;
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
-	let wsLogs: any[] = [];
 	let error: string | null = null;
 	let success = false;
 
