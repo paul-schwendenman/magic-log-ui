@@ -12,6 +12,12 @@ Magic Log UI is a local-first log viewer for streaming structured JSON logs into
 - Fully testable with `go test`
 - One-file executable: no setup required
 
+## Installation
+
+```
+brew tap paul-schwendenman/magic-log-ui
+brew install magic-log
+```
 
 ## Build project
 
