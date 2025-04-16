@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { paused, buffer, clearLogs, clearBuffer } from '$lib/stores/liveLogs';
+	import { paused, buffer, clearLogs, clearBuffer, isBufferFull } from '$lib/stores/liveLogs';
 
 	const bufferSize = $derived($buffer.length);
 
@@ -38,9 +38,15 @@
 	</div>
 
 	{#if $paused && bufferSize}
-		<div class="rounded bg-yellow-900 px-2 py-1 text-xs text-yellow-400">
-			+{bufferSize} buffered
+		<div
+			class="rounded bg-yellow-900 px-2 py-1 text-xs text-yellow-400"
+			class:font-bold={$isBufferFull}
+		>
+			{#if $isBufferFull}
+				Buffer full
+			{:else}
+				+{bufferSize} buffered
+			{/if}
 		</div>
 	{/if}
 </div>
-

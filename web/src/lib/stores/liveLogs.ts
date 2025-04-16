@@ -66,6 +66,10 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 	return $logs.filter((log) => Object.values(log).join(' ').toLowerCase().includes(f));
 });
 
+export const isBufferFull = derived([buffer], ([$buffer]) => {
+	return $buffer.length >= maxLogs;
+});
+
 export function clearLogs() {
 	liveLogs.set([]);
 }
