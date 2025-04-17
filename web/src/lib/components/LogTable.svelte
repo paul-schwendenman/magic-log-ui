@@ -21,11 +21,12 @@
 	const colHelp = createColumnHelper<LogEntry>();
 
 	const columnDefs = [
-		colHelp.accessor('timestamp', { header: 'Time' }),
-		colHelp.accessor('trace_id', { header: 'Trace ID' }),
-		colHelp.accessor('level', { header: 'Level' }),
-		colHelp.accessor('message', { header: 'Message' }),
+		colHelp.accessor('timestamp', { id: 'timestamp', header: 'Time' }),
+		colHelp.accessor('trace_id', { id: 'traceId', header: 'Trace ID' }),
+		colHelp.accessor('level', { id: 'level', header: 'Level' }),
+		colHelp.accessor('message', { id: 'message', header: 'Message' }),
 		colHelp.accessor('raw', {
+			id: 'raw',
 			header: 'Raw',
 			cell: ({ cell }) => renderComponent(ExpandableCell, { value: cell.getValue() })
 		})
