@@ -37,6 +37,10 @@
 			return logs;
 		},
 		columns: columnDefs,
+		onColumnVisibilityChange: (updater) => {
+			const next = typeof updater === 'function' ? updater(columnVisibility) : updater;
+			columnVisibility = next;
+		},
 		get state() {
 			return {
 				columnVisibility
