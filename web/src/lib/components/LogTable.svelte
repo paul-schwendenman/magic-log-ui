@@ -46,6 +46,15 @@
 	});
 </script>
 
+<div class="mb-2 flex flex-wrap gap-2 text-sm">
+	{#each table.getAllLeafColumns() as col (col.id)}
+		<label class="flex items-center gap-1">
+			<input type="checkbox" checked={col.getIsVisible()} onchange={() => col.toggleVisibility()} />
+			{col.id}
+		</label>
+	{/each}
+</div>
+
 <table class="min-w-full border-collapse border text-sm">
 	<thead>
 		<tr>
