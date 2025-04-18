@@ -50,12 +50,25 @@
 
 	<textarea
 		bind:value={query}
-        on:keydown={(e) => {
-            if (e.key === 'Enter' && e.shiftKey) {
-                e.preventDefault(); // optional: prevents newline
-                fetchQuery();
-            }
-        }}
+		on:keydown={(e) => {
+			if (e.key === 'Enter' && e.shiftKey) {
+				e.preventDefault();
+				fetchQuery();
+			} else if (e.key === 'Tab') {
+				e.preventDefault();
+
+				const target = e.target as HTMLTextAreaElement;
+				const start = target.selectionStart;
+				const end = target.selectionEnd;
+				const SPACES = '   ';
+
+				query = query.slice(0, start) + SPACES + query.slice(end);
+
+				requestAnimationFrame(() => {
+					target.selectionStart = target.selectionEnd = start + SPACES.length;
+				});
+			}
+		}}
 		class="w-full border border-gray-600 bg-gray-800 p-2 font-mono text-sm"
 		rows={4}
 	></textarea>
