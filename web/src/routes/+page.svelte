@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
-	import LogLine from '$lib/LogLine.svelte';
+	import LogLine from '$lib/components/LogLine.svelte';
 	import { fade } from 'svelte/transition';
 	import { isConnected } from '$lib/useWebSocket';
 	import { queryHistory, addQuery } from '$lib/queryHistory';
-	import QueryDrawer from '$lib/QueryDrawer.svelte';
+	import QueryDrawer from '$lib/components/QueryDrawer.svelte';
 	import { liveLogs } from '$lib/stores/liveLogs';
 
 	let drawerOpen = false;
