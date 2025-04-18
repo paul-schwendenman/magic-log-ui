@@ -53,8 +53,13 @@
 <div class="mb-2 flex flex-wrap gap-2 text-sm">
 	{#each table.getAllLeafColumns() as col (col.id)}
 		<label class="flex items-center gap-1">
-			<input type="checkbox" checked={col.getIsVisible()} onchange={() => col.toggleVisibility()} />
-			{col.id}
+			<input
+				type="checkbox"
+				checked={col.getIsVisible()}
+				disabled={!col.getCanHide()}
+				onchange={() => col.toggleVisibility()}
+			/>
+			{col.columnDef.header}
 		</label>
 	{/each}
 </div>
@@ -62,8 +67,8 @@
 <table class="min-w-full border-collapse border text-sm">
 	<thead>
 		<tr>
-			{#each table.getHeaderGroups() as headerGroup}
-				{#each headerGroup.headers as header}
+			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+				{#each headerGroup.headers as header (header.column.id)}
 					{#if columnVisibility[header.column.id]}
 						<th class="border px-2 py-1 font-semibold">{header.column.columnDef.header}</th>
 					{/if}
@@ -74,7 +79,7 @@
 	<tbody>
 		{#each table.getRowModel().rows as row}
 			<tr>
-				{#each row.getVisibleCells() as cell}
+				{#each row.getVisibleCells() as cell (cell.id)}
 					<td class="border px-2 py-1">
 						<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 					</td>
