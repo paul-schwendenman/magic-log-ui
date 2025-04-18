@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
+	import JsonInline from './JsonInline.svelte';
+	import JsonViewer from './JsonViewer.svelte';
 	export let log: any;
 
 	let expanded = false;
@@ -12,8 +14,6 @@
 	function expand() {
 		if (!expanded) {
 			expanded = true;
-		} else {
-			copy();
 		}
 	}
 
@@ -89,9 +89,9 @@
 	</div>
 	<div class="flex-grow truncate" onclick={expand} aria-label="expand">
 		{#if expanded}
-			<pre>{JSON.stringify(log, null, 2)}</pre>
+			<JsonViewer data={log} />
 		{:else}
-			<pre>{JSON.stringify(log)}</pre>
+			<JsonInline data={log} />
 		{/if}
 	</div>
 </div>
