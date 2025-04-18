@@ -22,7 +22,7 @@
 
 	const columnDefs = [
 		colHelp.accessor('timestamp', { id: 'timestamp', header: 'Time' }),
-		colHelp.accessor('trace_id', { id: 'traceId', header: 'Trace ID' }),
+		colHelp.accessor('trace_id', { id: 'trace_id', header: 'Trace ID' }),
 		colHelp.accessor('level', { id: 'level', header: 'Level' }),
 		colHelp.accessor('message', { id: 'message', header: 'Message' }),
 		colHelp.accessor('raw', {
@@ -64,7 +64,9 @@
 		<tr>
 			{#each table.getHeaderGroups() as headerGroup}
 				{#each headerGroup.headers as header}
-					<th class="border px-2 py-1 font-semibold">{header.column.columnDef.header}</th>
+					{#if columnVisibility[header.column.id]}
+						<th class="border px-2 py-1 font-semibold">{header.column.columnDef.header}</th>
+					{/if}
 				{/each}
 			{/each}
 		</tr>
