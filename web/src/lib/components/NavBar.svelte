@@ -3,9 +3,9 @@
 
 	const links = [
 		{ href: '/', label: 'Home' },
-		{ href: '/live', label: 'Live' },
+		{ href: '/live', label: 'Live (beta)' },
 		{ href: '/search', label: 'Search' },
-		{ href: '/table', label: 'Table' }
+		{ href: '/table', label: 'Table (alpha)' }
 		// add more pages here
 	];
 </script>
