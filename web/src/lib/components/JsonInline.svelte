@@ -19,8 +19,7 @@
 		} else if (typeof value === 'object' && value !== null) {
 			return `{${Object.entries(value)
 				.map(
-					([key, val]) =>
-						`<span class="text-teal-500">"${escapeHtml(key)}"</span>: ${render(val)}`
+					([key, val]) => `<span class="text-teal-500">"${escapeHtml(key)}"</span>: ${render(val)}`
 				)
 				.join(', ')}}`;
 		} else {
@@ -29,7 +28,8 @@
 	}
 
 	function escapeHtml(str: string) {
-		return str.replace(/&/g, '&amp;')
+		return str
+			.replace(/&/g, '&amp;')
 			.replace(/</g, '&lt;')
 			.replace(/>/g, '&gt;')
 			.replace(/"/g, '&quot;')
@@ -40,6 +40,6 @@
 </script>
 
 <!-- ✅ Syntax-highlighted inline JSON -->
-<div class="font-mono text-sm overflow-hidden whitespace-nowrap text-ellipsis" use:html>
+<div class="overflow-hidden font-mono text-sm text-ellipsis whitespace-nowrap" use:html>
 	{@html rendered || fallback}
 </div>

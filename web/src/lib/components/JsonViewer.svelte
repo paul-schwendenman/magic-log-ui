@@ -38,7 +38,8 @@
 		{:else}
 			<div>
 				<button on:click={toggle} class="text-gray-400 select-none">
-					{isCollapsed ? '▶' : '▼'} {'{'}
+					{isCollapsed ? '▶' : '▼'}
+					{'{'}
 				</button>
 				{#if !isCollapsed}
 					{#each keys as key}
