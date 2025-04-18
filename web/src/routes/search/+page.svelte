@@ -50,6 +50,12 @@
 
 	<textarea
 		bind:value={query}
+        on:keydown={(e) => {
+            if (e.key === 'Enter' && e.shiftKey) {
+                e.preventDefault(); // optional: prevents newline
+                fetchQuery();
+            }
+        }}
 		class="w-full border border-gray-600 bg-gray-800 p-2 font-mono text-sm"
 		rows={4}
 	></textarea>
