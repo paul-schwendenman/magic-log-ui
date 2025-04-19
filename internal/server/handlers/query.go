@@ -4,18 +4,28 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query().Get("q")
-		if q == "" {
+		userQuery := r.URL.Query().Get("q")
+		if userQuery == "" {
 			http.Error(w, "missing q param", http.StatusBadRequest)
 			return
 		}
 
-		rows, err := db.QueryContext(ctx, q)
+		userQuery = strings.TrimSuffix(strings.TrimSpace(userQuery), ";")
+
+		safeQuery := fmt.Sprintf(`
+			WITH q AS (%s)
+			SELECT * FROM q
+			LIMIT 1000
+		`, userQuery)
+
+		rows, err := db.QueryContext(ctx, safeQuery)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
