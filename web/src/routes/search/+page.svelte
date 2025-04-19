@@ -6,51 +6,43 @@
 	import { queryHistory, addQuery } from '$lib/queryHistory';
 	import QueryDrawer from '$lib/components/QueryDrawer.svelte';
 	import LogLine from '$lib/components/LogLine.svelte';
+	import {
+		query,
+		page,
+		limit,
+		results,
+		meta,
+		error,
+		durationMs,
+		fetchQuery
+	} from '$lib/stores/queryStore';
 
 	let drawerOpen = false;
-	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
-	let results: any[] = [];
-	let error: string | null = null;
+	// let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
+	// let results: any[] = [];
+	// let error: string | null = null;
 	let success = false;
-	let durationMs: number | null = null;
-	let page = 0;
-	let limit = 20;
-	let meta = { hasNextPage: false, hasPreviousPage: false };
+	// let durationMs: number | null = null;
+	// let page = 0;
+	// let limit = 20;
+	// let meta = { hasNextPage: false, hasPreviousPage: false };
 
-	async function fetchQuery() {
-		error = null;
-		success = false;
-		durationMs = null;
-
-		const start = performance.now();
-
-		try {
-			const res = await fetch(`/query?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
-			if (!res.ok) {
-				const text = await res.text();
-				throw new Error(text || 'Unknown error');
-			}
-
-			const json = await res.json();
-			results = json?.data || [];
-			meta = json?.meta || { hasNextPage: false, hasPreviousPage: false };
-
-			addQuery({ query, ok: true, timestamp: Date.now() });
-			durationMs = performance.now() - start;
-			success = true;
-
-			setTimeout(() => (success = false), 2500);
-		} catch (err) {
-			error = err.message;
-			addQuery({ query, ok: false, timestamp: Date.now() });
-		}
+	$: if ($results.length > 0 && !$error) {
+		success = true;
+		setTimeout(() => (success = false), 2500);
 	}
+
+	// Auto-fetch when query/limit/page changes
+	$: fetchQuery();
+
+	// Reset page when query or limit changes
+	$: $query, $limit, page.set(0);
 </script>
 
 <div class="mx-auto max-w-screen-xl space-y-4 p-4">
 	<h2 class="text-xl font-bold">{m.query_logs()}</h2>
 
-	<QueryInput bind:query onQuery={() => fetchQuery()} />
+	<QueryInput bind:query={$query} onQuery={() => fetchQuery()} />
 
 	<div class="flex items-center gap-2">
 		<button
@@ -71,14 +63,14 @@
 		</button>
 	</div>
 
-	{#if error}
+	{#if $error}
 		<div
 			class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400"
 			in:fade={{ duration: 300 }}
 			out:fade={{ duration: 100 }}
 		>
 			<b>{m.lower_noisy_eel_treasure()}:</b>
-			{error}
+			{$error}
 		</div>
 	{:else if success}
 		<div
@@ -88,7 +80,7 @@
 		>
 			{m.mellow_many_quail_imagine()}
 			{#if durationMs !== null}
-				<span class="ml-2 text-xs text-gray-300">({Math.round(durationMs)}ms)</span>
+				<span class="ml-2 text-xs text-gray-300">({Math.round($durationMs || 0)}ms)</span>
 			{/if}
 		</div>
 	{/if}
@@ -96,13 +88,13 @@
 	<QueryDrawer
 		bind:open={drawerOpen}
 		onSelect={(q) => {
-			query = q;
+			$query = q;
 			drawerOpen = false;
 		}}
 	/>
 
 	<div class="space-y-2 lg:max-h-[75vh] lg:overflow-y-auto">
-		{#each results as log (log)}
+		{#each $results as log (log)}
 			<LogLine {log} />
 		{/each}
 	</div>
@@ -111,7 +103,7 @@
 	>
 		<div class="flex items-center gap-2">
 			<label for="limit" class="text-gray-400">Rows per page:</label>
-			<select id="limit" class="rounded border border-gray-600 bg-gray-800 p-1" bind:value={limit}>
+			<select id="limit" class="rounded border border-gray-600 bg-gray-800 p-1" bind:value={$limit}>
 				<option value="10">10</option>
 				<option value="20">20</option>
 				<option value="50">50</option>
@@ -121,18 +113,18 @@
 
 		<div class="flex items-center gap-2">
 			<button
-				on:click={() => (page = Math.max(0, page - 1))}
-				disabled={!meta.hasPreviousPage}
+				on:click={() => ($page = Math.max(0, $page - 1))}
+				disabled={!$meta.hasPreviousPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
 				Previous
 			</button>
 
-			<span class="text-xs">Page {page + 1}</span>
+			<span class="text-xs">Page {$page + 1}</span>
 
 			<button
-				on:click={() => (page += 1)}
-				disabled={!meta.hasNextPage}
+				on:click={() => ($page += 1)}
+				disabled={!$meta.hasNextPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
 				Next
