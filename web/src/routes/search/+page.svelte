@@ -10,7 +10,7 @@
 	import { onMount } from 'svelte';
 
 	const initialLimit = 10;
-	const initialQuery = 'SELECT * FROM logs ORDER BY timestamp DESC';
+	const initialQuery = 'SELECT * FROM logs ORDER BY created_at DESC';
 
 	let drawerOpen = $state(false);
 	let query = $state(initialQuery);

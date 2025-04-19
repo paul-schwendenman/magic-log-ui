@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import LogLineSimple from './LogLineSimple.svelte';
 
-	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
+	let query = 'SELECT * FROM logs ORDER BY created_at DESC LIMIT 10';
 	let results: any[] = [];
 	let error: string | null = null;
 	let success = false;

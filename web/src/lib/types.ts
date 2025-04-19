@@ -1,5 +1,6 @@
 export type LogEntry = {
-	timestamp?: string;
+	id?: string;
+	created_at?: string;
 	trace_id?: string;
 	level?: string;
 	message?: string;
