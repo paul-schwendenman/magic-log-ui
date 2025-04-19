@@ -1,4 +1,6 @@
 <script lang="ts">
+	import QueryInput from '../../lib/components/QueryInput.svelte';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import { fade } from 'svelte/transition';
 	import { queryHistory, addQuery } from '$lib/queryHistory';
@@ -35,43 +37,18 @@
 			addQuery({ query, ok: false, timestamp: Date.now() });
 		}
 	}
-
-	let initialVisibility = {
-		timestamp: true,
-		trace_id: true,
-		level: true,
-		message: true,
-		raw: false
-	};
 </script>
 
 <div class="mx-auto max-w-screen-xl space-y-4 p-4">
 	<h2 class="text-xl font-bold">{m.query_logs()}</h2>
 
-	<textarea
-		bind:value={query}
-		on:keydown={(e) => {
-			if (e.key === 'Enter' && e.shiftKey) {
-				e.preventDefault();
-				fetchQuery();
-			} else if (e.key === 'Tab') {
-				e.preventDefault();
-
-				const target = e.target as HTMLTextAreaElement;
-				const start = target.selectionStart;
-				const end = target.selectionEnd;
-				const SPACES = '   ';
-
-				query = query.slice(0, start) + SPACES + query.slice(end);
-
-				requestAnimationFrame(() => {
-					target.selectionStart = target.selectionEnd = start + SPACES.length;
-				});
-			}
+	<QueryInput
+		bind:query
+		onQuery={(q) => {
+			query = q;
+			fetchQuery();
 		}}
-		class="w-full border border-gray-600 bg-gray-800 p-2 font-mono text-sm"
-		rows={4}
-	></textarea>
+	/>
 
 	<div class="flex items-center gap-2">
 		<button
