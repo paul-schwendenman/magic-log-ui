@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,13 +34,23 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 
 		userQuery = strings.TrimSuffix(strings.TrimSpace(userQuery), ";")
 
-		wrappedQuery := fmt.Sprintf(`
+		countQuery := fmt.Sprintf(`WITH q AS (%s) SELECT COUNT(*) FROM q`, userQuery)
+		var totalRows int
+		err = db.QueryRowContext(ctx, countQuery).Scan(&totalRows)
+		if err != nil {
+			http.Error(w, "count query failed: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		totalPages := int(math.Ceil(float64(totalRows) / float64(limit)))
+
+		safeQuery := fmt.Sprintf(`
 			WITH q AS (%s)
 			SELECT * FROM q
 			LIMIT %d OFFSET %d
 		`, userQuery, limit+1, offset)
 
-		rows, err := db.QueryContext(ctx, wrappedQuery)
+		rows, err := db.QueryContext(ctx, safeQuery)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -73,6 +84,8 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 			"meta": map[string]any{
 				"hasNextPage":     hasNext,
 				"hasPreviousPage": page > 0,
+				"totalPages":      totalPages,
+				"page":            page,
 			},
 		}
 
