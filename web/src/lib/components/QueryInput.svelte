@@ -1,10 +1,12 @@
 <script lang="ts">
-	export let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
-	export let onQuery = () => {};
+	export let query = '';
+	export let onQuery: () => void = () => {};
 </script>
 
 <textarea
 	bind:value={query}
+	class="w-full font-mono border border-gray-600 bg-gray-800 p-2 text-sm"
+	rows={4}
 	on:keydown={(e) => {
 		const target = e.target as HTMLTextAreaElement;
 
@@ -19,37 +21,43 @@
 
 			const start = target.selectionStart;
 			const end = target.selectionEnd;
+			const allText = query;
+
+			const lineStart = allText.lastIndexOf('\n', start - 1) + 1;
+			const lineEnd = allText.indexOf('\n', end);
+			const blockEnd = lineEnd === -1 ? allText.length : lineEnd;
+
+			const selectedBlock = allText.slice(lineStart, blockEnd);
+			const blockLines = selectedBlock.split('\n');
 
 			if (e.shiftKey) {
-				const before = query.slice(0, start);
-				const after = query.slice(end);
-				let removed = 0;
-
-				if (before.endsWith('   ')) {
-					removed = 3;
-				} else if (before.endsWith('  ')) {
-					removed = 2;
-				} else if (before.endsWith(' ')) {
-					removed = 1;
-				}
-
-				query = before.slice(0, before.length - removed) + after;
+				// OUTDENT
+				const updated = blockLines.map((line) =>
+					line.startsWith('   ') ? line.slice(3) :
+					line.startsWith('  ') ? line.slice(2) :
+					line.startsWith(' ') ? line.slice(1) :
+					line
+				);
+				const newText = updated.join('\n');
+				query = allText.slice(0, lineStart) + newText + allText.slice(blockEnd);
 
 				requestAnimationFrame(() => {
-					const pos = start - removed;
-					target.selectionStart = target.selectionEnd = pos;
+					const delta = selectedBlock.length - newText.length;
+					target.selectionStart = start - delta;
+					target.selectionEnd = end - delta;
 				});
 			} else {
 				const SPACES = '   ';
-				query = query.slice(0, start) + SPACES + query.slice(end);
+				const updated = blockLines.map((line) => SPACES + line);
+				const newText = updated.join('\n');
+				query = allText.slice(0, lineStart) + newText + allText.slice(blockEnd);
 
 				requestAnimationFrame(() => {
-					const pos = start + SPACES.length;
-					target.selectionStart = target.selectionEnd = pos;
+					const delta = newText.length - selectedBlock.length;
+					target.selectionStart = start + SPACES.length;
+					target.selectionEnd = end + delta;
 				});
 			}
 		}
 	}}
-	class="w-full border border-gray-600 bg-gray-800 p-2 font-mono text-sm"
-	rows={4}
 ></textarea>
