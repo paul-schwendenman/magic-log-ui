@@ -42,13 +42,7 @@
 <div class="mx-auto max-w-screen-xl space-y-4 p-4">
 	<h2 class="text-xl font-bold">{m.query_logs()}</h2>
 
-	<QueryInput
-		bind:query
-		onQuery={(q) => {
-			query = q;
-			fetchQuery();
-		}}
-	/>
+	<QueryInput bind:query onQuery={() => fetchQuery()} />
 
 	<div class="flex items-center gap-2">
 		<button
