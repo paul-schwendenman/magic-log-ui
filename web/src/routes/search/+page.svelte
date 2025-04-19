@@ -6,54 +6,43 @@
 	import { queryHistory, addQuery } from '$lib/queryHistory';
 	import QueryDrawer from '$lib/components/QueryDrawer.svelte';
 	import LogLine from '$lib/components/LogLine.svelte';
-	import {
-		query,
-		page,
-		limit,
-		results,
-		meta,
-		error,
-		durationMs,
-		fetchQuery
-	} from '$lib/stores/queryStore';
+	import { createQueryStore } from '$lib/stores/queryStore';
+	import { onMount } from 'svelte';
 
-	let drawerOpen = false;
-	// let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
-	// let results: any[] = [];
-	// let error: string | null = null;
+	let drawerOpen = $state(false);
+	let query = $state('SELECT * FROM logs ORDER BY timestamp DESC');
 	let success = false;
-	// let durationMs: number | null = null;
-	// let page = 0;
-	// let limit = 20;
-	// let meta = { hasNextPage: false, hasPreviousPage: false };
+	let limit = 10;
 
-	$: if ($results.length > 0 && !$error) {
-		success = true;
-		setTimeout(() => (success = false), 2500);
+	const store = createQueryStore({ query, limit });
+	const page = $derived($store.page);
+
+	onMount(() => store.subscribe((state) => {
+		if(state.error) {
+			addQuery({query, ok: false, timestamp: Date.now()})
+		}
+		else {
+			addQuery({query, ok: true, timestamp: Date.now()})
+		}
+	}))
+
+	function fetchQuery() {
+		return store.setQuery(query);
 	}
-
-	// Auto-fetch when query/limit/page changes
-	$: fetchQuery();
-
-	// Reset page when query or limit changes
-	$: $query, $limit, page.set(0);
 </script>
 
 <div class="mx-auto max-w-screen-xl space-y-4 p-4">
 	<h2 class="text-xl font-bold">{m.query_logs()}</h2>
 
-	<QueryInput bind:query={$query} onQuery={() => fetchQuery()} />
+	<QueryInput bind:query onQuery={fetchQuery} />
 
 	<div class="flex items-center gap-2">
-		<button
-			on:click={fetchQuery}
-			class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-500"
-		>
+		<button onclick={fetchQuery} class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-500">
 			{m.run_query()}
 		</button>
 
 		<button
-			on:click={() => (drawerOpen = true)}
+			onclick={() => (drawerOpen = true)}
 			class="ml-auto rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
 		>
 			{m.bad_kind_flamingo_nurture()}
@@ -63,14 +52,14 @@
 		</button>
 	</div>
 
-	{#if $error}
+	{#if $store.error}
 		<div
 			class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400"
 			in:fade={{ duration: 300 }}
 			out:fade={{ duration: 100 }}
 		>
 			<b>{m.lower_noisy_eel_treasure()}:</b>
-			{$error}
+			{$store.error}
 		</div>
 	{:else if success}
 		<div
@@ -79,8 +68,8 @@
 			out:fade={{ duration: 200 }}
 		>
 			{m.mellow_many_quail_imagine()}
-			{#if durationMs !== null}
-				<span class="ml-2 text-xs text-gray-300">({Math.round($durationMs || 0)}ms)</span>
+			{#if $store.durationMs !== null}
+				<span class="ml-2 text-xs text-gray-300">({Math.round($store.durationMs || 0)}ms)</span>
 			{/if}
 		</div>
 	{/if}
@@ -88,13 +77,13 @@
 	<QueryDrawer
 		bind:open={drawerOpen}
 		onSelect={(q) => {
-			$query = q;
+			query = q;
 			drawerOpen = false;
 		}}
 	/>
 
 	<div class="space-y-2 lg:max-h-[75vh] lg:overflow-y-auto">
-		{#each $results as log (log)}
+		{#each $store.results as log (log)}
 			<LogLine {log} />
 		{/each}
 	</div>
@@ -103,28 +92,33 @@
 	>
 		<div class="flex items-center gap-2">
 			<label for="limit" class="text-gray-400">Rows per page:</label>
-			<select id="limit" class="rounded border border-gray-600 bg-gray-800 p-1" bind:value={$limit}>
-				<option value="10">10</option>
-				<option value="20">20</option>
-				<option value="50">50</option>
-				<option value="100">100</option>
+			<select
+				id="limit"
+				class="rounded border border-gray-600 bg-gray-800 p-1"
+				bind:value={limit}
+				onchange={() => store.setLimit(limit)}
+			>
+				<option value={10}>10</option>
+				<option value={20}>20</option>
+				<option value={50}>50</option>
+				<option value={100}>100</option>
 			</select>
 		</div>
 
 		<div class="flex items-center gap-2">
 			<button
-				on:click={() => ($page = Math.max(0, $page - 1))}
-				disabled={!$meta.hasPreviousPage}
+				onclick={store.prevPage}
+				disabled={!$store.meta.hasPreviousPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
 				Previous
 			</button>
 
-			<span class="text-xs">Page {$page + 1}</span>
+			<span class="text-xs">Page {page + 1}</span>
 
 			<button
-				on:click={() => ($page += 1)}
-				disabled={!$meta.hasNextPage}
+				onclick={store.nextPage}
+				disabled={!$store.meta.hasNextPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
 				Next
