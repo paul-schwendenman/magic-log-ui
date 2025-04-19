@@ -20,7 +20,7 @@
 				const text = await res.text();
 				throw new Error(text || 'Unknown error');
 			}
-			results = await res.json();
+			results = await res.json().then((resp) => resp?.data || []);
 			addQuery({ query, ok: true, timestamp: Date.now() });
 			setTimeout(() => {
 				success = true;

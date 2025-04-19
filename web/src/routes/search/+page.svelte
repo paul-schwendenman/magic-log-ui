@@ -27,7 +27,7 @@
 				const text = await res.text();
 				throw new Error(text || 'Unknown error');
 			}
-			results = await res.json();
+			results = await res.json().then((r) => r?.data || []);
 			addQuery({ query, ok: true, timestamp: Date.now() });
 			durationMs = performance.now() - start;
 			success = true;
