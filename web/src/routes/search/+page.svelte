@@ -43,9 +43,35 @@
 	<QueryInput bind:query onQuery={fetchQuery} />
 
 	<div class="flex items-center gap-2">
-		<button onclick={fetchQuery} class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-500">
-			{m.run_query()}
-		</button>
+		<div class="flex gap-2">
+			<button
+				onclick={fetchQuery}
+				class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-500"
+			>
+				{m.run_query()}
+			</button>
+			{#if $store.error}
+				<div
+					class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400"
+					in:fade={{ duration: 300 }}
+					out:fade={{ duration: 100 }}
+				>
+					<b>{m.lower_noisy_eel_treasure()}:</b>
+					{$store.error}
+				</div>
+			{:else if showSuccess}
+				<div
+					class="rounded border border-green-500 bg-green-900/30 p-2 text-sm text-green-400"
+					in:fade={{ duration: 300 }}
+					out:fade={{ duration: 200 }}
+				>
+					{m.mellow_many_quail_imagine()}
+					{#if $store.durationMs !== null}
+						<span class="ml-2 text-xs text-gray-300">({Math.round($store.durationMs || 0)}ms)</span>
+					{/if}
+				</div>
+			{/if}
+		</div>
 
 		<button
 			onclick={() => (drawerOpen = true)}
@@ -57,28 +83,6 @@
 			{/if}
 		</button>
 	</div>
-
-	{#if $store.error}
-		<div
-			class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400"
-			in:fade={{ duration: 300 }}
-			out:fade={{ duration: 100 }}
-		>
-			<b>{m.lower_noisy_eel_treasure()}:</b>
-			{$store.error}
-		</div>
-	{:else if showSuccess}
-		<div
-			class="rounded border border-green-500 bg-green-900/30 p-2 text-sm text-green-400"
-			in:fade={{ duration: 300 }}
-			out:fade={{ duration: 200 }}
-		>
-			{m.mellow_many_quail_imagine()}
-			{#if $store.durationMs !== null}
-				<span class="ml-2 text-xs text-gray-300">({Math.round($store.durationMs || 0)}ms)</span>
-			{/if}
-		</div>
-	{/if}
 
 	<QueryDrawer
 		bind:open={drawerOpen}
@@ -112,7 +116,7 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-			<button
+		<button
 				onclick={store.prevPage}
 				disabled={!$store.meta.hasPreviousPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
