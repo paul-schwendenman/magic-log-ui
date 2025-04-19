@@ -40,6 +40,6 @@
 </script>
 
 <!-- ✅ Syntax-highlighted inline JSON -->
-<div class="overflow-hidden font-mono text-sm text-ellipsis whitespace-nowrap" use:html>
+<div class="overflow-hidden font-mono text-sm text-ellipsis whitespace-nowrap">
 	{@html rendered || fallback}
 </div>
