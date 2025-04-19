@@ -13,7 +13,13 @@ export const liveLogs = createBufferedLogsStore<LogEntry>({
 export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {
 	if (!$filter.trim()) return $logs;
 	return $logs.filter((log) =>
-		Object.values(log).join(' ').toLowerCase().includes($filter.toLowerCase())
+		Object.values(log)
+			.map((item) => {
+				return typeof item === 'object' ? JSON.stringify(item) : String(null);
+			})
+			.join(' ')
+			.toLowerCase()
+			.includes($filter.toLowerCase())
 	);
 });
 
