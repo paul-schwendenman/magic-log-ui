@@ -9,22 +9,28 @@
 	import { createQueryStore } from '$lib/stores/queryStore';
 	import { onMount } from 'svelte';
 
-	let drawerOpen = $state(false);
-	let query = $state('SELECT * FROM logs ORDER BY timestamp DESC');
-	let success = false;
-	let limit = 10;
+	const initialLimit = 10;
+	const initialQuery = 'SELECT * FROM logs ORDER BY timestamp DESC';
 
-	const store = createQueryStore({ query, limit });
+	let drawerOpen = $state(false);
+	let query = $state(initialQuery);
+	let showSuccess = $state(false);
+	let limit = $state(initialLimit);
+
+	const store = createQueryStore({ query: initialQuery, limit: initialLimit });
 	const page = $derived($store.page);
 
-	onMount(() => store.subscribe((state) => {
-		if(state.error) {
-			addQuery({query, ok: false, timestamp: Date.now()})
-		}
-		else {
-			addQuery({query, ok: true, timestamp: Date.now()})
-		}
-	}))
+	onMount(() =>
+		store.subscribe((state) => {
+			if (state.error) {
+				addQuery({ query, ok: false, timestamp: Date.now() });
+			} else {
+				showSuccess = true;
+				setTimeout(() => (showSuccess = false), 2500);
+				addQuery({ query, ok: true, timestamp: Date.now() });
+			}
+		})
+	);
 
 	function fetchQuery() {
 		return store.setQuery(query);
@@ -61,7 +67,7 @@
 			<b>{m.lower_noisy_eel_treasure()}:</b>
 			{$store.error}
 		</div>
-	{:else if success}
+	{:else if showSuccess}
 		<div
 			class="rounded border border-green-500 bg-green-900/30 p-2 text-sm text-green-400"
 			in:fade={{ duration: 300 }}
