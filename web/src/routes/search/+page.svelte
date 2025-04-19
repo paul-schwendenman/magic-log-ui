@@ -116,7 +116,7 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-		<button
+			<button
 				onclick={store.prevPage}
 				disabled={!$store.meta.hasPreviousPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"

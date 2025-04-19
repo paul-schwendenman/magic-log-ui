@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
-	import LogLine from '$lib/components/LogLine.svelte';
 	import { fade } from 'svelte/transition';
-	import { queryHistory, addQuery } from '$lib/queryHistory';
-	import QueryDrawer from '$lib/components/QueryDrawer.svelte';
+	import LogLineSimple from './LogLineSimple.svelte';
 
-	let drawerOpen = false;
 	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
 	let results: any[] = [];
 	let error: string | null = null;
@@ -21,14 +18,12 @@
 				throw new Error(text || 'Unknown error');
 			}
 			results = await res.json().then((resp) => resp?.data || []);
-			addQuery({ query, ok: true, timestamp: Date.now() });
 			setTimeout(() => {
 				success = true;
 				setTimeout(() => (success = false), 2500);
 			}, 100);
 		} catch (err) {
 			error = err.message;
-			addQuery({ query, ok: false, timestamp: Date.now() });
 		}
 	}
 </script>
@@ -44,16 +39,6 @@
 		<button on:click={fetchQuery} class="h-fit rounded bg-blue-600 px-4 py-2 hover:bg-blue-500">
 			{m.run_query()}
 		</button>
-		<button
-			on:click={() => (drawerOpen = true)}
-			class="fixed top-4 right-4 z-50 rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
-		>
-			{m.bad_kind_flamingo_nurture()}
-			{#if $queryHistory.length > 0}
-				({$queryHistory.length})
-			{/if}
-		</button>
-
 		{#if error}
 			<div
 				class="rounded border border-red-500 bg-red-900/30 p-2 text-sm text-red-400"
@@ -73,17 +58,9 @@
 			</div>
 		{/if}
 	</div>
-	<QueryDrawer
-		bind:open={drawerOpen}
-		onSelect={(q) => {
-			query = q;
-			drawerOpen = false;
-		}}
-	/>
-
 	<div class="space-y-2 lg:max-h-[75vh] lg:overflow-y-auto">
 		{#each results as log (log)}
-			<LogLine {log} />
+			<LogLineSimple {log} />
 		{/each}
 	</div>
 </div>
