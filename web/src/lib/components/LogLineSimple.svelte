@@ -87,11 +87,11 @@
 			{/if}
 		</button>
 	</div>
-	<div class="flex-grow truncate" onclick={expand} aria-label="expand">
+	<div class="flex-grow truncate">
 		{#if expanded}
-			<JsonViewer data={log} />
+			<pre>{JSON.stringify(log, null, 2)}</pre>
 		{:else}
-			<JsonInline data={log} />
+			<pre>{JSON.stringify(log)}</pre>
 		{/if}
 	</div>
 </div>
