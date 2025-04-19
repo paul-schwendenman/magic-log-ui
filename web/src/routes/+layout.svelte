@@ -19,7 +19,7 @@
 	<meta property="twitter:title" content={$page.data.title} />
 </svelte:head>
 
-<NavBar />
 <main class="min-h-screen bg-gray-900 p-4 font-mono text-white">
+	<NavBar />
 	{@render children()}
 </main>
