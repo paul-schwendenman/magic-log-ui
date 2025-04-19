@@ -13,6 +13,9 @@
 	let error: string | null = null;
 	let success = false;
 	let durationMs: number | null = null;
+	let page = 0;
+	let limit = 20;
+	let meta = { hasNextPage: false, hasPreviousPage: false };
 
 	async function fetchQuery() {
 		error = null;
@@ -22,15 +25,20 @@
 		const start = performance.now();
 
 		try {
-			const res = await fetch(`/query?q=${encodeURIComponent(query)}`);
+			const res = await fetch(`/query?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
 			if (!res.ok) {
 				const text = await res.text();
 				throw new Error(text || 'Unknown error');
 			}
-			results = await res.json().then((r) => r?.data || []);
+
+			const json = await res.json();
+			results = json?.data || [];
+			meta = json?.meta || { hasNextPage: false, hasPreviousPage: false };
+
 			addQuery({ query, ok: true, timestamp: Date.now() });
 			durationMs = performance.now() - start;
 			success = true;
+
 			setTimeout(() => (success = false), 2500);
 		} catch (err) {
 			error = err.message;
@@ -97,5 +105,38 @@
 		{#each results as log (log)}
 			<LogLine {log} />
 		{/each}
+	</div>
+	<div
+		class="mt-4 flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm text-gray-300"
+	>
+		<div class="flex items-center gap-2">
+			<label for="limit" class="text-gray-400">Rows per page:</label>
+			<select id="limit" class="rounded border border-gray-600 bg-gray-800 p-1" bind:value={limit}>
+				<option value="10">10</option>
+				<option value="20">20</option>
+				<option value="50">50</option>
+				<option value="100">100</option>
+			</select>
+		</div>
+
+		<div class="flex items-center gap-2">
+			<button
+				on:click={() => (page = Math.max(0, page - 1))}
+				disabled={!meta.hasPreviousPage}
+				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
+			>
+				Previous
+			</button>
+
+			<span class="text-xs">Page {page + 1}</span>
+
+			<button
+				on:click={() => (page += 1)}
+				disabled={!meta.hasNextPage}
+				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
+			>
+				Next
+			</button>
+		</div>
 	</div>
 </div>

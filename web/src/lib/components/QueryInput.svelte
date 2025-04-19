@@ -5,7 +5,7 @@
 
 <textarea
 	bind:value={query}
-	class="w-full font-mono border border-gray-600 bg-gray-800 p-2 text-sm"
+	class="w-full border border-gray-600 bg-gray-800 p-2 font-mono text-sm"
 	rows={4}
 	on:keydown={(e) => {
 		const target = e.target as HTMLTextAreaElement;
@@ -33,10 +33,13 @@
 			if (e.shiftKey) {
 				// OUTDENT
 				const updated = blockLines.map((line) =>
-					line.startsWith('   ') ? line.slice(3) :
-					line.startsWith('  ') ? line.slice(2) :
-					line.startsWith(' ') ? line.slice(1) :
-					line
+					line.startsWith('   ')
+						? line.slice(3)
+						: line.startsWith('  ')
+							? line.slice(2)
+							: line.startsWith(' ')
+								? line.slice(1)
+								: line
 				);
 				const newText = updated.join('\n');
 				query = allText.slice(0, lineStart) + newText + allText.slice(blockEnd);
