@@ -18,7 +18,8 @@
 	let limit = $state(initialLimit);
 
 	const store = createQueryStore({ query: initialQuery, limit: initialLimit });
-	const page = $derived($store.page);
+	const page = $derived($store.meta.page);
+	const totalPages = $derived($store.meta.totalPages);
 
 	onMount(() =>
 		store.subscribe((state) => {
@@ -122,7 +123,7 @@
 				Previous
 			</button>
 
-			<span class="text-xs">Page {page + 1}</span>
+			<span class="text-xs">Page {page + 1} of {totalPages}</span>
 
 			<button
 				onclick={store.nextPage}

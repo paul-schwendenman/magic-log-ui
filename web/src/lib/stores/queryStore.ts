@@ -4,9 +4,8 @@ import { writable, derived, type Writable, type Readable } from 'svelte/store';
 interface QueryResult<T> {
 	error: string | null;
 	results: T[];
-	meta: { hasNextPage: boolean; hasPreviousPage: boolean };
+	meta: { hasNextPage: boolean; hasPreviousPage: boolean, page: number, totalPages: number };
 	durationMs: number | null;
-	page: number;
 }
 
 const defaultLimit = 20;
@@ -20,7 +19,7 @@ export async function fetchQuery<T>(
 	let error = null;
 	let durationMs = null;
 	let results: T[] = [];
-	let meta = { hasNextPage: false, hasPreviousPage: false };
+	let meta = { hasNextPage: false, hasPreviousPage: false, page: 0, totalPages: 1 };
 	loading.set(true);
 
 	const start = performance.now();
