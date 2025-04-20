@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { format } from 'date-fns';
 	import { presets } from '$lib/time-range-presets';
+	import type { TimeRange } from '$lib/types';
 
 	export let value: TimeRange;
 	export let onChange: (range: TimeRange) => void;
@@ -71,7 +72,7 @@
 				to: now,
 				live: true
 			});
-		}, 5000);
+		}, value.refreshMs ?? 5000);
 	}
 
 	function stopLive() {

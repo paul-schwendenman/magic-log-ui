@@ -12,5 +12,6 @@ export type TimeRange = {
 	to: Date;
 	label: string; // e.g. "Past 15 Minutes"
 	durationMs?: number; // for live shifting
+	refreshMs?: number;
 	live?: boolean;
 };

@@ -14,6 +14,7 @@ export const presets: TimeRange[] = [
 		from: sub(new Date(), { hours: 1 }),
 		to: new Date(),
 		durationMs: 60 * 60_000,
+		refreshMs: 30_000,
 		live: true
 	},
 	{
@@ -21,6 +22,7 @@ export const presets: TimeRange[] = [
 		from: sub(new Date(), { days: 1 }),
 		to: new Date(),
 		durationMs: 24 * 60 * 60_000,
+		refreshMs: 60_000,
 		live: true
 	}
 	// ...
