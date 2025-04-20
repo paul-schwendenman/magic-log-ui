@@ -85,6 +85,7 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 			WITH q AS (%s)
 			SELECT * FROM q
 			%s
+			ORDER BY created_at DESC
 			LIMIT %d OFFSET %d
 		`, userQuery, timeFilter, limit+1, offset)
 
