@@ -4,7 +4,12 @@ import { writable, derived, type Writable, type Readable } from 'svelte/store';
 interface QueryResult<T> {
 	error: string | null;
 	results: T[];
-	meta: { hasNextPage: boolean; hasPreviousPage: boolean, page: number, totalPages: number };
+	meta: {
+		hasNextPage: boolean;
+		hasPreviousPage: boolean;
+		page: number;
+		totalPages: number;
+	};
 	durationMs: number | null;
 }
 

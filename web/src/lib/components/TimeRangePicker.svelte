@@ -75,7 +75,7 @@
 		<select
 			bind:value={value.label}
 			on:change={(e) => {
-				const preset = presets.find(p => p.label === e.target.value);
+				const preset = presets.find((p) => p.label === e.target.value);
 				if (preset) selectRange(preset);
 			}}
 			class="rounded border bg-gray-800 px-2 py-1 text-sm"
