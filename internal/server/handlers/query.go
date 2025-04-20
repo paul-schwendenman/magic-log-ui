@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const maxLimit = 1000
@@ -17,13 +18,21 @@ const defaultLimit = 100
 func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userQuery := r.URL.Query().Get("q")
+		pageStr := r.URL.Query().Get("page")
+		limitStr := r.URL.Query().Get("limit")
+		fromStr := r.URL.Query().Get("from")
+		toStr := r.URL.Query().Get("to")
+
 		if userQuery == "" {
 			http.Error(w, "missing q param", http.StatusBadRequest)
 			return
 		}
 
-		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+		page, _ := strconv.Atoi(pageStr)
+		limit, err := strconv.Atoi(limitStr)
+		from, _ := time.Parse(time.RFC3339, fromStr)
+		to, _ := time.Parse(time.RFC3339, toStr)
+
 		if err != nil || limit <= 0 {
 			limit = defaultLimit
 		}
@@ -47,8 +56,9 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 		safeQuery := fmt.Sprintf(`
 			WITH q AS (%s)
 			SELECT * FROM q
+			WHERE created_at BETWEEN TIMESTAMP '%s' AND TIMESTAMP '%s'
 			LIMIT %d OFFSET %d
-		`, userQuery, limit+1, offset)
+		`, userQuery, from.Format(time.RFC3339), to.Format(time.RFC3339), limit+1, offset)
 
 		rows, err := db.QueryContext(ctx, safeQuery)
 		if err != nil {
