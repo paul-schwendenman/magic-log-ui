@@ -30,8 +30,36 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 
 		page, _ := strconv.Atoi(pageStr)
 		limit, err := strconv.Atoi(limitStr)
-		from, _ := time.Parse(time.RFC3339, fromStr)
-		to, _ := time.Parse(time.RFC3339, toStr)
+
+		var timeFilter string
+
+		if fromStr != "" && toStr != "" {
+			from, err1 := time.Parse(time.RFC3339, fromStr)
+			to, err2 := time.Parse(time.RFC3339, toStr)
+			if err1 == nil && err2 == nil {
+				timeFilter = fmt.Sprintf(
+					"WHERE created_at BETWEEN TIMESTAMP '%s' AND TIMESTAMP '%s'",
+					from.Format(time.RFC3339),
+					to.Format(time.RFC3339),
+				)
+			}
+		} else if fromStr != "" {
+			from, err := time.Parse(time.RFC3339, fromStr)
+			if err == nil {
+				timeFilter = fmt.Sprintf(
+					"WHERE created_at > TIMESTAMP '%s'",
+					from.Format(time.RFC3339),
+				)
+			}
+		} else if toStr != "" {
+			to, err := time.Parse(time.RFC3339, toStr)
+			if err == nil {
+				timeFilter = fmt.Sprintf(
+					"WHERE created_at < TIMESTAMP '%s'",
+					to.Format(time.RFC3339),
+				)
+			}
+		}
 
 		if err != nil || limit <= 0 {
 			limit = defaultLimit
@@ -56,9 +84,9 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 		safeQuery := fmt.Sprintf(`
 			WITH q AS (%s)
 			SELECT * FROM q
-			WHERE created_at BETWEEN TIMESTAMP '%s' AND TIMESTAMP '%s'
+			%s
 			LIMIT %d OFFSET %d
-		`, userQuery, from.Format(time.RFC3339), to.Format(time.RFC3339), limit+1, offset)
+		`, userQuery, timeFilter, limit+1, offset)
 
 		rows, err := db.QueryContext(ctx, safeQuery)
 		if err != nil {
