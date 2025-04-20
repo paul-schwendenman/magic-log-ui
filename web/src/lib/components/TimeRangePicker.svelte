@@ -25,7 +25,8 @@
 		onChange({
 			...preset,
 			from: new Date(now.getTime() - (preset.durationMs ?? 0)),
-			to: now
+			to: now,
+			live: preset.live ?? false
 		});
 		if (preset.live && preset.durationMs) {
 			startLive();
@@ -48,6 +49,15 @@
 		onChange({ ...value, from, to, live: false });
 	}
 
+	function toggleLive() {
+		if (value.live && value.durationMs) {
+			stopLive();
+			onChange({ ...value, live: false });
+		} else if (value.durationMs) {
+			startLive();
+		}
+	}
+
 	function startLive() {
 		stopLive();
 		interval = setInterval(() => {
@@ -58,7 +68,7 @@
 				to: now,
 				live: true
 			});
-		}, 5000); // every 5 seconds
+		}, 5000);
 	}
 
 	function stopLive() {
@@ -69,27 +79,42 @@
 	}
 </script>
 
-<div class="flex items-center gap-2">
-	<button on:click={stepBack} class="rounded bg-gray-700 px-2 py-1">⏪</button>
-	<div class="relative">
-		<select
-			bind:value={value.label}
-			on:change={(e) => {
-				const preset = presets.find((p) => p.label === e.target.value);
-				if (preset) selectRange(preset);
-			}}
-			class="rounded border bg-gray-800 px-2 py-1 text-sm"
-		>
-			{#each presets as preset}
-				<option value={preset.label}>{preset.label}</option>
-			{/each}
-		</select>
+<div class="flex flex-col gap-2">
+	<div class="flex items-center gap-2">
+		<button on:click={stepBack} class="rounded bg-gray-700 px-2 py-1">«</button>
+		<button on:click={toggleLive} class="rounded bg-gray-700 px-2 py-1">
+			{value.live ? '⏸' : '⏯'}
+		</button>
+		<button on:click={stepForward} class="rounded bg-gray-700 px-2 py-1">»</button>
+		<button on:click={() => onChange({ ...value })} class="rounded bg-gray-700 px-2 py-1">↻</button>
 	</div>
-	<span class="text-sm text-gray-400">
-		{format(value.from, 'MMM d, h:mm a')} – {format(value.to, 'h:mm a')}
-	</span>
-	{#if value.live}
-		<span class="rounded bg-green-700 px-2 py-1 text-xs font-semibold text-white">LIVE</span>
-	{/if}
-	<button on:click={stepForward} class="rounded bg-gray-700 px-2 py-1">⏩</button>
+
+	<div class="flex items-center gap-2">
+		<div class="relative">
+			<select
+				bind:value={value.label}
+				on:change={(e) => {
+					const preset = presets.find(p => p.label === e.target.value);
+					if (preset) selectRange(preset);
+				}}
+				class="rounded border bg-gray-800 px-2 py-1 text-sm"
+			>
+				{#each presets as preset}
+					<option value={preset.label}>{preset.label}</option>
+				{/each}
+			</select>
+		</div>
+
+		<span class="text-sm text-gray-400">
+			{#if value.live}
+				Last {value.label}
+			{:else}
+				{format(value.from, 'h:mm a')} – {format(value.to, 'h:mm a')}
+			{/if}
+		</span>
+
+		{#if value.live}
+			<span class="rounded bg-green-700 px-2 py-1 text-xs font-semibold text-white">LIVE</span>
+		{/if}
+	</div>
 </div>
