@@ -188,7 +188,7 @@ jobs:
           FORMULA_NAME="magic-log"
           VERSIONED_NAME="magic-log@${VERSION}"
           CLASS_NAME="MagicLog"
-          VERSIONED_CLASS_NAME="MagicLogAT#{VERSION//./}"
+          VERSIONED_CLASS_NAME="MagicLogAT${VERSION//./}"
           BIN="magic-log-darwin-arm64"
           TARBALL="${BIN}.tar.gz"
 
