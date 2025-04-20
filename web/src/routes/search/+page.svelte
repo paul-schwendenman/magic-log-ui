@@ -8,6 +8,8 @@
 	import LogLine from '$lib/components/LogLine.svelte';
 	import { createQueryStore } from '$lib/stores/queryStore';
 	import { onMount } from 'svelte';
+	import TimeRangePicker from '$lib/components/TimeRangePicker.svelte';
+	import type { TimeRange } from '$lib/types';
 
 	const initialLimit = 10;
 	const initialQuery = 'SELECT * FROM logs ORDER BY created_at DESC';
@@ -20,6 +22,14 @@
 	const store = createQueryStore({ query: initialQuery, limit: initialLimit });
 	const page = $derived($store.meta.page);
 	const totalPages = $derived($store.meta.totalPages);
+
+	let timeRange: TimeRange = $state({
+		from: new Date(Date.now() - 15 * 60 * 1000),
+		to: new Date(),
+		label: 'Past 15 Minutes',
+		durationMs: 15 * 60 * 1000,
+		live: true
+	});
 
 	onMount(() =>
 		store.subscribe((state) => {
@@ -40,6 +50,13 @@
 
 <div class="mx-auto max-w-screen-xl space-y-4 p-4">
 	<QueryInput bind:query onQuery={fetchQuery} />
+	<TimeRangePicker
+		bind:value={timeRange}
+		onChange={(range) => {
+			timeRange = range;
+			store.setTimeRange(range);
+		}}
+	/>
 
 	<div class="flex items-center gap-2">
 		<div class="flex gap-2">
