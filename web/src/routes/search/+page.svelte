@@ -26,7 +26,7 @@
 	let timeRange: TimeRange = $state({
 		from: new Date(Date.now() - 15 * 60 * 1000),
 		to: new Date(),
-		label: 'Past 15 Minutes',
+		label: '15 Minutes',
 		durationMs: 15 * 60 * 1000,
 		live: true
 	});
