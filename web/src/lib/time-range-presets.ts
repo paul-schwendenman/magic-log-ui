@@ -6,16 +6,24 @@ export const presets: TimeRange[] = [
 		label: 'Past 15 Minutes',
 		from: sub(new Date(), { minutes: 15 }),
 		to: new Date(),
-		durationMs: 15 * 60_000
+		durationMs: 15 * 60_000,
+		live: true
 	},
 	{
-		label: 'Past 1 Hour',
+		label: '15 Minutes',
+		from: sub(new Date(), { minutes: 15 }),
+		to: new Date(),
+		durationMs: 15 * 60_000,
+		live: false
+	},
+	{
+		label: '1 Hour',
 		from: sub(new Date(), { hours: 1 }),
 		to: new Date(),
 		durationMs: 60 * 60_000
 	},
 	{
-		label: 'Past 1 Day',
+		label: '1 Day',
 		from: sub(new Date(), { days: 1 }),
 		to: new Date(),
 		durationMs: 24 * 60 * 60_000
