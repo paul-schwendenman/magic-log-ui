@@ -42,7 +42,8 @@
 	},
 	"dependencies": {
 		"@inlang/paraglide-js": "^2.0.0",
-		"@tanstack/table-core": "^8.21.2"
+		"@tanstack/table-core": "^8.21.2",
+		"date-fns": "^4.1.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
