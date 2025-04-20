@@ -71,7 +71,7 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 
 		userQuery = strings.TrimSuffix(strings.TrimSpace(userQuery), ";")
 
-		countQuery := fmt.Sprintf(`WITH q AS (%s) SELECT COUNT(*) FROM q`, userQuery)
+		countQuery := fmt.Sprintf(`WITH q AS (%s) SELECT COUNT(*) FROM q %s`, userQuery, timeFilter)
 		var totalRows int
 		err = db.QueryRowContext(ctx, countQuery).Scan(&totalRows)
 		if err != nil {
