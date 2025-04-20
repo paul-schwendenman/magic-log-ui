@@ -112,6 +112,60 @@ jobs:
             magic-log-*/magic-log-*.tar.gz
             magic-log-*/magic-log-*.sha256
 
+publish-dev:
+  name: Publish Homebrew Dev Tap
+  needs: release
+  runs-on: ubuntu-latest
+  if: startsWith(github.ref, 'refs/tags/v')
+
+  steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Update Dev Homebrew tap
+      env:
+        HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TAP_PAT }}
+      run: |
+        set -e
+
+        VERSION=${GITHUB_REF#refs/tags/v}
+        FORMULA_REPO="https://x-access-token:${HOMEBREW_TOKEN}@github.com/paul-schwendenman/homebrew-magic-log-ui.git"
+        CLONE_DIR=$(mktemp -d)
+        FORMULA_NAME="magic-log@dev"
+        CLASS_NAME="MagicLogATDev"
+        BIN="magic-log-darwin-arm64"
+        TARBALL="${BIN}.tar.gz"
+
+        URL="https://github.com/paul-schwendenman/magic-log-ui/releases/download/v${VERSION}/${TARBALL}"
+        CHECKSUM=$(grep "${TARBALL}" magic-log-darwin-arm64/${BIN}.sha256 | cut -d ' ' -f 1)
+
+        git clone --depth=1 "${FORMULA_REPO}" "$CLONE_DIR"
+        cd "$CLONE_DIR"
+
+        cat > Formula/${FORMULA_NAME}.rb <<EOF
+        class ${CLASS_NAME} < Formula
+          desc "Dev version of Magic Log UI"
+          homepage "https://github.com/paul-schwendenman/magic-log-ui"
+          url "${URL}"
+          sha256 "${CHECKSUM}"
+          version "${VERSION}"
+
+          def install
+            bin.install "${BIN}" => "magic-log"
+          end
+        end
+        EOF
+
+        echo "📝 Generated Dev Homebrew formula:"
+        cat Formula/${FORMULA_NAME}.rb
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        git add Formula/${FORMULA_NAME}.rb
+        git commit -m "Update dev formula to ${VERSION}"
+        git push origin master
+
   publish:
     name: Publish Homebrew Tap
     needs: release
