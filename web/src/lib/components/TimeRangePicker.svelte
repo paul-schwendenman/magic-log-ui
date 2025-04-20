@@ -2,7 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { format } from 'date-fns';
 	import { presets } from '$lib/time-range-presets';
-	import type { TimeRange } from '$lib/types';
 
 	export let value: TimeRange;
 	export let onChange: (range: TimeRange) => void;
@@ -98,24 +97,22 @@
 			<select
 				bind:value={value.label}
 				on:change={(e) => {
-					const preset = presets.find(p => p.label === e.target.value);
+					const preset = presets.find((p) => p.label === e.target.value);
 					if (preset) selectRange(preset);
 				}}
 				class="rounded border bg-gray-800 px-2 py-1 text-sm"
 			>
+				{#if !value.live}
+					<option value={value.label}>
+						{format(value.from, 'MMM d, h:mm a')} – {format(value.to, 'MMM d, h:mm a')}
+					</option>
+				{/if}
+
 				{#each presets as preset}
 					<option value={preset.label}>{preset.label}</option>
 				{/each}
 			</select>
 		</div>
-
-		<span class="text-sm text-gray-400">
-			{#if value.live}
-				Last {value.label}
-			{:else}
-				{format(value.from, 'MMM d, h:mm a')} – {format(value.to, 'MMM d, h:mm a')}
-			{/if}
-		</span>
 
 		{#if value.live}
 			<span class="rounded bg-green-700 px-2 py-1 text-xs font-semibold text-white">LIVE</span>
