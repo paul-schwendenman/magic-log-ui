@@ -50,12 +50,16 @@
 	}
 
 	function toggleLive() {
-		if (value.live && value.durationMs) {
-			stopLive();
-			onChange({ ...value, live: false });
-		} else if (value.durationMs) {
+		stopLive();
+		if (!value.live && value.durationMs) {
 			startLive();
 		}
+		onChange({
+			...value,
+			live: !value.live,
+			from: !value.live && value.durationMs ? new Date(Date.now() - value.durationMs) : value.from,
+			to: !value.live ? new Date() : value.to
+		});
 	}
 
 	function startLive() {
@@ -109,7 +113,7 @@
 			{#if value.live}
 				Last {value.label}
 			{:else}
-				{format(value.from, 'h:mm a')} – {format(value.to, 'h:mm a')}
+				{format(value.from, 'MMM d, h:mm a')} – {format(value.to, 'MMM d, h:mm a')}
 			{/if}
 		</span>
 
