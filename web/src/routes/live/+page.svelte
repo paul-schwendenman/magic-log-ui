@@ -4,7 +4,7 @@
 	import { liveFilter, filteredLiveLogs } from '$lib/stores/liveLogs';
 
 	let initialVisibility = {
-		timestamp: true,
+		created_at: true,
 		trace_id: true,
 		level: true,
 		message: true,

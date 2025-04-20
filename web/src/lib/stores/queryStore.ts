@@ -1,12 +1,16 @@
-import { number } from '$lib/paraglide/registry';
+import type { TimeRange } from '$lib/types';
 import { writable, derived, type Writable, type Readable } from 'svelte/store';
 
 interface QueryResult<T> {
 	error: string | null;
 	results: T[];
-	meta: { hasNextPage: boolean; hasPreviousPage: boolean };
+	meta: {
+		hasNextPage: boolean;
+		hasPreviousPage: boolean;
+		page: number;
+		totalPages: number;
+	};
 	durationMs: number | null;
-	page: number;
 }
 
 const defaultLimit = 20;
@@ -20,7 +24,7 @@ export async function fetchQuery<T>(
 	let error = null;
 	let durationMs = null;
 	let results: T[] = [];
-	let meta = { hasNextPage: false, hasPreviousPage: false };
+	let meta = { hasNextPage: false, hasPreviousPage: false, page: 0, totalPages: 1 };
 	loading.set(true);
 
 	const start = performance.now();
@@ -66,26 +70,38 @@ export const createQueryStore = ({
 	const queryStore = writable(initialQuery);
 	const loading = writable(false);
 
+	const timeRangeStore = writable<TimeRange>({
+		from: new Date(Date.now() - 15 * 60 * 1000),
+		to: new Date(),
+		label: 'Past 15 Minutes',
+		durationMs: 15 * 60 * 1000,
+		live: true
+	});
+
 	queryStore.subscribe(() => pageStore.set(0));
 	limitStore.subscribe(() => pageStore.set(0));
+	timeRangeStore.subscribe(() => pageStore.set(0));
 
-	const results = derived<[Readable<number>, Readable<number>, Readable<string>], QueryResult<any>>(
-		[pageStore, limitStore, queryStore],
-		([$pageStore, $limitStore, $queryStore], set) => {
+	const results = derived<
+		[Readable<number>, Readable<number>, Readable<string>, Readable<TimeRange>],
+		QueryResult<any>
+	>(
+		[pageStore, limitStore, queryStore, timeRangeStore],
+		([$pageStore, $limitStore, $queryStore, $timeRangeStore], set) => {
 			const query = new URLSearchParams({
 				q: $queryStore,
 				limit: $limitStore.toString(),
-				page: $pageStore.toString()
+				page: $pageStore.toString(),
+				from: $timeRangeStore.from.toISOString(),
+				to: $timeRangeStore.to.toISOString()
 			});
 
-			fetchQuery(`/query?${query.toString()}`, loading).then((r) =>
-				set({ ...r, page: $pageStore })
-			);
+			fetchQuery(`/query?${query.toString()}`, loading).then((r) => set({ ...r }));
 		},
 		{
 			error: null,
 			results: [],
-			meta: { hasNextPage: false, hasPreviousPage: false },
+			meta: { hasNextPage: false, hasPreviousPage: false, page: 0, totalPages: 1 },
 			durationMs: null
 		}
 	);
@@ -101,6 +117,7 @@ export const createQueryStore = ({
 		subscribe: results.subscribe,
 		setQuery: queryStore.set,
 		setLimit: limitStore.set,
+		setTimeRange: timeRangeStore.set,
 		page: pageStore,
 		limit: limitStore,
 		nextPage,

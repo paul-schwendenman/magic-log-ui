@@ -19,7 +19,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 		t.Fatalf("failed to open duckdb: %v", err)
 	}
 	_, err = db.Exec(`CREATE TABLE logs (
-		timestamp TIMESTAMP,
+		created_at TIMESTAMP,
 		trace_id TEXT,
 		level TEXT,
 		message TEXT,
@@ -34,10 +34,18 @@ func setupTestDB(t *testing.T) *sql.DB {
 func TestQueryHandlerSuccess(t *testing.T) {
 	db := setupTestDB(t)
 	ctx := context.Background()
-	db.ExecContext(ctx, `INSERT INTO logs VALUES (NOW(), 't1', 'info', 'test', '{"msg":"ok"}')`)
+
+	_, err := db.ExecContext(ctx, `
+		INSERT INTO logs (trace_id, level, message, raw, created_at)
+		VALUES ('t1', 'info', 'test', '{"msg":"ok"}', CURRENT_TIMESTAMP)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	r := httptest.NewRequest("GET", "/query?q="+url.QueryEscape("SELECT * FROM logs"), nil)
 	w := httptest.NewRecorder()
+
 	handlers.QueryHandler(db, ctx)(w, r)
 
 	if w.Code != http.StatusOK {

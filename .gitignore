@@ -3,3 +3,6 @@ magic-log
 
 coverage.html
 coverage.out
+
+*.db
+*.db.wal

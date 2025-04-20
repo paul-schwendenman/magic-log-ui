@@ -6,7 +6,7 @@
 	import QueryDrawer from '$lib/components/QueryDrawer.svelte';
 
 	let drawerOpen = false;
-	let query = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10';
+	let query = 'SELECT * FROM logs ORDER BY created_at DESC LIMIT 10';
 	let results: any[] = [];
 	let error: string | null = null;
 	let success = false;
@@ -37,7 +37,7 @@
 	}
 
 	let initialVisibility = {
-		timestamp: true,
+		created_at: true,
 		trace_id: true,
 		level: true,
 		message: true,
