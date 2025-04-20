@@ -186,6 +186,9 @@ jobs:
           FORMULA_REPO="https://x-access-token:${HOMEBREW_TOKEN}@github.com/paul-schwendenman/homebrew-magic-log-ui.git"
           CLONE_DIR=$(mktemp -d)
           FORMULA_NAME="magic-log"
+          VERSIONED_NAME="magic-log@${VERSION}"
+          CLASS_NAME="MagicLog"
+          VERSIONED_CLASS_NAME="MagicLogAT#{VERSION//./}"
           BIN="magic-log-darwin-arm64"
           TARBALL="${BIN}.tar.gz"
 
@@ -196,8 +199,22 @@ jobs:
           cd "$CLONE_DIR"
 
           cat > Formula/${FORMULA_NAME}.rb <<EOF
-          class MagicLog < Formula
+          class ${CLASS_NAME} < Formula
             desc "Live stream and query structured logs from your CLI"
+            homepage "https://github.com/paul-schwendenman/magic-log-ui"
+            url "${URL}"
+            sha256 "${CHECKSUM}"
+            version "${VERSION}"
+
+            def install
+              bin.install "${BIN}" => "magic-log"
+            end
+          end
+          EOF
+
+          cat > Formula/${VERSIONED_NAME}.rb <<EOF
+          class ${VERSIONED_CLASS_NAME} < Formula
+            desc "Magic Log UI v${VERSION}"
             homepage "https://github.com/paul-schwendenman/magic-log-ui"
             url "${URL}"
             sha256 "${CHECKSUM}"
@@ -216,5 +233,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add Formula/${FORMULA_NAME}.rb
+          git add Formula/${VERSIONED_NAME}.rb
           git commit -m "Bump ${FORMULA_NAME} to v${VERSION}"
           git push origin master
