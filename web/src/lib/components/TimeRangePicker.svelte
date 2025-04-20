@@ -83,16 +83,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2">
-	<div class="flex items-center gap-2">
-		<button on:click={stepBack} class="rounded bg-gray-700 px-2 py-1">«</button>
-		<button on:click={toggleLive} class="rounded bg-gray-700 px-2 py-1">
-			{value.live ? '⏸' : '⏯'}
-		</button>
-		<button on:click={stepForward} class="rounded bg-gray-700 px-2 py-1">»</button>
-		<button on:click={() => onChange({ ...value })} class="rounded bg-gray-700 px-2 py-1">↻</button>
-	</div>
-
+<div class="flex gap-4">
 	<div class="flex items-center gap-2">
 		<div class="relative">
 			<select
@@ -118,5 +109,14 @@
 		{#if value.live}
 			<span class="rounded bg-green-700 px-2 py-1 text-xs font-semibold text-white">LIVE</span>
 		{/if}
+	</div>
+
+	<div class="flex items-center gap-2">
+		<button on:click={stepBack} class="rounded bg-gray-700 px-2 py-1">«</button>
+		<button on:click={toggleLive} class="rounded bg-gray-700 px-2 py-1">
+			{value.live ? '⏸' : '⏯'}
+		</button>
+		<button on:click={stepForward} class="rounded bg-gray-700 px-2 py-1">»</button>
+		<button on:click={() => onChange({ ...value })} class="rounded bg-gray-700 px-2 py-1">↻</button>
 	</div>
 </div>
