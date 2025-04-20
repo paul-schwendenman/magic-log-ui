@@ -61,6 +61,8 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 			}
 		}
 
+		hasOrderBy := strings.Contains(strings.ToLower(userQuery), "order by")
+
 		if err != nil || limit <= 0 {
 			limit = defaultLimit
 		}
@@ -84,10 +86,20 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 		safeQuery := fmt.Sprintf(`
 			WITH q AS (%s)
 			SELECT * FROM q
-			%s
-			ORDER BY created_at DESC
+			%s %s
 			LIMIT %d OFFSET %d
-		`, userQuery, timeFilter, limit+1, offset)
+		`,
+			userQuery,
+			timeFilter,
+			func() string {
+				if hasOrderBy {
+					return ""
+				}
+				return "ORDER BY created_at DESC"
+			}(),
+			limit+1,
+			offset,
+		)
 
 		rows, err := db.QueryContext(ctx, safeQuery)
 		if err != nil {
