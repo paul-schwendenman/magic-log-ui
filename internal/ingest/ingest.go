@@ -16,12 +16,38 @@ import (
 
 func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, ctx context.Context) {
 	scanner := bufio.NewScanner(input)
-	parseLogLine := makeLogParser(logFormat, parseRegexStr)
+
+	parseLogLine, err := makeLogParser(logFormat, parseRegexStr)
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize log parser: %v", err)
+	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		entry := parseLogLine(line)
-		storeLogEntry(entry, stmt, ctx)
+
+		entry, parsed := parseLogLine(line)
+		if !parsed {
+			log.Printf("❌ Failed to parse log line: %q", line)
+		}
+
+		raw := string(shared.MustJson(entry))
+		createdAt := time.Now().UTC()
+
+		_, err := stmt.ExecContext(
+			ctx,
+			entry["trace_id"],
+			entry["level"],
+			entry["message"],
+			raw,
+			createdAt,
+		)
+		if err != nil {
+			log.Printf("❌ Failed to insert log: %v", err)
+			continue
+		}
+
+		entry["created_at"] = createdAt
+		handlers.Broadcast(entry)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -31,41 +57,41 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 	}
 }
 
-func makeLogParser(format string, regexStr string) func(string) shared.LogEntry {
+func makeLogParser(format string, regexStr string) (func(string) (shared.LogEntry, bool), error) {
 	if format == "text" && regexStr != "" {
 		re, err := regexp.Compile(regexStr)
 		if err != nil {
-			log.Fatalf("Invalid --parse-regex: %v", err)
+			return nil, err
 		}
-		return func(line string) shared.LogEntry {
+		return func(line string) (shared.LogEntry, bool) {
 			return parseTextLogWithRegex(line, re)
-		}
+		}, nil
 	}
 
 	// default to JSON
-	return func(line string) shared.LogEntry {
+	return func(line string) (shared.LogEntry, bool) {
 		return parseJSONLog(line)
-	}
+	}, nil
 }
 
-func parseJSONLog(line string) shared.LogEntry {
+func parseJSONLog(line string) (shared.LogEntry, bool) {
 	var entry shared.LogEntry
 	if err := json.Unmarshal([]byte(line), &entry); err == nil {
-		return entry
+		return entry, true
 	}
 	return shared.LogEntry{
 		"message": line,
 		"level":   "raw",
-	}
+	}, false
 }
 
-func parseTextLogWithRegex(line string, re *regexp.Regexp) shared.LogEntry {
+func parseTextLogWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, bool) {
 	matches := re.FindStringSubmatch(line)
 	if matches == nil {
 		return shared.LogEntry{
 			"message": line,
 			"level":   "raw",
-		}
+		}, false
 	}
 
 	entry := shared.LogEntry{}
@@ -82,27 +108,5 @@ func parseTextLogWithRegex(line string, re *regexp.Regexp) shared.LogEntry {
 		entry["message"] = line
 	}
 
-	return entry
-}
-
-func storeLogEntry(entry shared.LogEntry, stmt *sql.Stmt, ctx context.Context) {
-	raw := string(shared.MustJson(entry))
-	createdAt := time.Now().UTC()
-
-	_, err := stmt.ExecContext(
-		ctx,
-		entry["trace_id"],
-		entry["level"],
-		entry["message"],
-		raw,
-		createdAt,
-	)
-
-	if err != nil {
-		log.Printf("❌ Failed to insert log: %v", err)
-		return
-	}
-
-	entry["created_at"] = createdAt
-	handlers.Broadcast(entry)
+	return entry, true
 }
