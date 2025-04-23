@@ -7,24 +7,27 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/server/handlers"
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
 
-func Start(input io.Reader, stmt *sql.Stmt, ctx context.Context) {
+func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, ctx context.Context) {
 	scanner := bufio.NewScanner(input)
+
+	parseLogLine, err := makeLogParser(logFormat, parseRegexStr)
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize log parser: %v", err)
+	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		var entry shared.LogEntry
-		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			entry = shared.LogEntry{
-				"message": line,
-				"level":   "raw",
-			}
+		entry, parsed := parseLogLine(line)
+		if !parsed {
+			log.Printf("❌ Failed to parse log line: %q", line)
 		}
 
 		raw := string(shared.MustJson(entry))
@@ -52,4 +55,58 @@ func Start(input io.Reader, stmt *sql.Stmt, ctx context.Context) {
 	} else {
 		log.Println("📭 STDIN closed — no longer receiving logs")
 	}
+}
+
+func makeLogParser(format string, regexStr string) (func(string) (shared.LogEntry, bool), error) {
+	if format == "text" && regexStr != "" {
+		re, err := regexp.Compile(regexStr)
+		if err != nil {
+			return nil, err
+		}
+		return func(line string) (shared.LogEntry, bool) {
+			return parseTextLogWithRegex(line, re)
+		}, nil
+	}
+
+	// default to JSON
+	return func(line string) (shared.LogEntry, bool) {
+		return parseJSONLog(line)
+	}, nil
+}
+
+func parseJSONLog(line string) (shared.LogEntry, bool) {
+	var entry shared.LogEntry
+	if err := json.Unmarshal([]byte(line), &entry); err == nil {
+		return entry, true
+	}
+	return shared.LogEntry{
+		"message": line,
+		"level":   "raw",
+	}, false
+}
+
+func parseTextLogWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, bool) {
+	matches := re.FindStringSubmatch(line)
+	if matches == nil {
+		return shared.LogEntry{
+			"message": line,
+			"level":   "raw",
+		}, false
+	}
+
+	entry := shared.LogEntry{}
+	for i, name := range re.SubexpNames() {
+		if i > 0 && name != "" {
+			entry[name] = matches[i]
+		}
+	}
+
+	if _, ok := entry["level"]; !ok {
+		entry["level"] = "info"
+	}
+	if _, ok := entry["message"]; !ok {
+		entry["message"] = line
+	}
+
+	return entry, true
 }

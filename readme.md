@@ -52,8 +52,19 @@ done | go run ./cmd/main.go
 
 ### Random logs
 
+JSON format:
+
 ```
 ./generate_logs.sh | go run ./cmd/main.go
+```
+
+String with regex:
+
+```
+./generate_logs.sh --format text | \
+  go run ./cmd/main.go \
+    --log-format=text \
+    --parse-regex="\\[(?P<level>\\w+)] (?P<time>\\S+) \\[(?P<trace_id>\\w+)] (?P<msg>.+)"
 ```
 
 ### Pipe logs from CSV
