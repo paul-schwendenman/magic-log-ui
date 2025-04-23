@@ -108,12 +108,8 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	}
 
 	if preset != "" {
-		switch preset {
-		case "apache":
-			return `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`, nil
-		}
-
-		if regex, ok := cfg.Presets[preset]; ok {
+		all := getAllPresets(cfg)
+		if regex, ok := all[preset]; ok {
 			return regex, nil
 		}
 		return "", fmt.Errorf("unknown preset: %s", preset)
@@ -121,6 +117,7 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 
 	return "", nil
 }
+
 
 
 func launchBrowser(port int) {
