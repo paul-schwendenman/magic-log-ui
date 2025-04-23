@@ -30,13 +30,13 @@ type Config struct {
 
 func main() {
 	var (
-		dbFile       string
-		openBrowser  bool
-		port         int
-		logFormat    string
-		parseRegex   string
-		parsePreset  string
-		showVersion  bool
+		dbFile      string
+		openBrowser bool
+		port        int
+		logFormat   string
+		parseRegex  string
+		parsePreset string
+		showVersion bool
 	)
 
 	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
