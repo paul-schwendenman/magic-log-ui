@@ -62,7 +62,7 @@ export const presets: TimeRange[] = [
 		durationMs: 3 * 24 * 60 * 60_000,
 		refreshMs: 60_000,
 		live: true
-	},
+	}
 	// {
 	// 	label: '7 Days',
 	// 	from: sub(new Date(), { days: 7 }),
