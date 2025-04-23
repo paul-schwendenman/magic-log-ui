@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
 	"github.com/paul-schwendenman/magic-log-ui/internal/logdb"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server"
@@ -53,7 +54,12 @@ func main() {
 		return
 	}
 
-	resolvedRegex, err := resolveRegex(parsePreset, parseRegex)
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("❌ Failed to load config: %v", err)
+	}
+
+	resolvedRegex, err := resolveRegex(parsePreset, parseRegex, cfg)
 	if err != nil {
 		log.Fatalf("❌ %v", err)
 	}
@@ -85,20 +91,26 @@ func Run(config Config) {
 	select {}
 }
 
-func resolveRegex(preset, raw string) (string, error) {
+func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	if raw != "" && preset == "" {
 		return raw, nil
 	}
+
 	if preset != "" {
 		switch preset {
 		case "apache":
 			return `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`, nil
-		default:
-			return "", fmt.Errorf("unknown preset: %s", preset)
 		}
+
+		if regex, ok := cfg.Presets[preset]; ok {
+			return regex, nil
+		}
+		return "", fmt.Errorf("unknown preset: %s", preset)
 	}
+
 	return "", nil
 }
+
 
 func launchBrowser(port int) {
 	url := fmt.Sprintf("http://localhost:%d", port)
