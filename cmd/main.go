@@ -23,6 +23,8 @@ type Config struct {
 	DBFile  string
 	Port    int
 	Launch  bool
+	LogFormat  string
+	ParseRegex string
 	Version string
 }
 
@@ -31,12 +33,16 @@ func main() {
 		dbFile      string
 		openBrowser bool
 		port        int
+		logFormat   string
+		parseRegex  string
 		showVersion bool
 	)
 
 	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
 	flag.BoolVar(&openBrowser, "launch", false, "Automatically open the UI in the default web browser.")
 	flag.IntVar(&port, "port", 3000, "Port to serve the web UI on.")
+	flag.StringVar(&logFormat, "log-format", "json", "Log format to parse: json or text.")
+	flag.StringVar(&parseRegex, "parse-regex", "", "Regex to parse text logs (only used if --log-format=text).")
 	flag.BoolVar(&showVersion, "version", false, "Print the version and exit.")
 	flag.Parse()
 
@@ -49,6 +55,8 @@ func main() {
 		DBFile:  dbFile,
 		Port:    port,
 		Launch:  openBrowser,
+		LogFormat:  logFormat,
+		ParseRegex: parseRegex,
 		Version: version,
 	})
 }
@@ -65,7 +73,7 @@ func Run(config Config) {
 		launchBrowser(config.Port)
 	}
 
-	go ingest.Start(os.Stdin, logInsert, ctx)
+	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, ctx)
 
 	select {}
 }
