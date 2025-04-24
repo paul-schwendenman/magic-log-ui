@@ -10,7 +10,12 @@ import (
 type Config struct {
 	Presets  map[string]string `toml:"presets"`
 	Defaults struct {
-		LogFormat string `toml:"log_format"`
+		DBFile      string `toml:"db_file"`
+		Port        int    `toml:"port"`
+		Launch      bool   `toml:"launch"`
+		LogFormat   string `toml:"log_format"`
+		ParsePreset string `toml:"parse_preset"`
+		ParseRegex  string `toml:"parse_regex"`
 	} `toml:"defaults"`
 }
 

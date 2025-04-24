@@ -61,10 +61,34 @@ func main() {
 		log.Fatalf("❌ Failed to load config: %v", err)
 	}
 
+	flagPassed := map[string]bool{}
+	flag.Visit(func(f *flag.Flag) {
+		flagPassed[f.Name] = true
+	})
+
+	if !flagPassed["db-file"] && cfg.Defaults.DBFile != "" {
+		dbFile = cfg.Defaults.DBFile
+	}
+	if !flagPassed["port"] && cfg.Defaults.Port != 0 {
+		port = cfg.Defaults.Port
+	}
+	if !flagPassed["launch"] && cfg.Defaults.Launch {
+		openBrowser = true
+	}
+	if !flagPassed["log-format"] && cfg.Defaults.LogFormat != "" {
+		logFormat = cfg.Defaults.LogFormat
+	}
+	if !flagPassed["parse-preset"] && cfg.Defaults.ParsePreset != "" {
+		parsePreset = cfg.Defaults.ParsePreset
+	}
+	if !flagPassed["parse-regex"] && cfg.Defaults.ParseRegex != "" {
+		parseRegex = cfg.Defaults.ParseRegex
+	}
+
 	if listPresets {
-		allPresets := getAllPresets(cfg)
-		fmt.Println("Available parse presets:")
-		for name := range allPresets {
+		all := getAllPresets(cfg)
+		fmt.Println("📜 Available parse presets:")
+		for name := range all {
 			fmt.Printf("  - %s\n", name)
 		}
 		return

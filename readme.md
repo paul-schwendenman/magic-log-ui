@@ -33,6 +33,22 @@ make build
 go test ./...
 ```
 
+## Configuration
+
+`magic-log` reads configuration options from `$HOME/.magiclogrc`
+
+For example:
+
+```
+[defaults]
+db_file = "logs.db"
+port = 4000
+launch = true
+log_format = "text"
+parse_preset = "sveltekit"
+parse_regex = ""
+```
+
 ## Manuel Testing
 
 ### Publish a few messages
