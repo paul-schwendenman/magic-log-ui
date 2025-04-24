@@ -64,11 +64,15 @@ func pickStr(cli string, def string, passed bool) string {
 }
 
 func pickInt(cli int, def int, passed bool) int {
-	if passed || cli != 0 {
+	if passed {
 		return cli
 	}
-	return def
+	if def != 0 {
+		return def
+	}
+	return cli
 }
+
 
 func pickBool(cli bool, def bool, passed bool) bool {
 	if passed {
