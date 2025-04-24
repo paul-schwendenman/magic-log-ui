@@ -118,8 +118,6 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	return "", nil
 }
 
-
-
 func launchBrowser(port int) {
 	url := fmt.Sprintf("http://localhost:%d", port)
 
