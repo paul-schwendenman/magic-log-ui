@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"embed"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -30,59 +29,39 @@ type Config struct {
 }
 
 func main() {
-	var (
-		dbFile      string
-		openBrowser bool
-		port        int
-		logFormat   string
-		parseRegex  string
-		parsePreset string
-		listPresets bool
-		showVersion bool
-	)
+	final, cfgFile, err := config.ParseArgsAndConfig()
+	if err != nil {
+		log.Fatalf("❌ %v", err)
+	}
 
-	flag.StringVar(&dbFile, "db-file", "", "Path to a DuckDB database file. Leave empty for in-memory.")
-	flag.BoolVar(&openBrowser, "launch", false, "Automatically open the UI in the default web browser.")
-	flag.IntVar(&port, "port", 3000, "Port to serve the web UI on.")
-	flag.StringVar(&logFormat, "log-format", "json", "Log format to parse: json or text.")
-	flag.StringVar(&parseRegex, "parse-regex", "", "Regex to parse text logs (only used if --log-format=text).")
-	flag.StringVar(&parsePreset, "parse-preset", "", "Preset regex name for text logs (e.g. 'apache'). Overrides --parse-regex.")
-	flag.BoolVar(&listPresets, "list-presets", false, "List available parse presets and exit.")
-	flag.BoolVar(&showVersion, "version", false, "Print the version and exit.")
-	flag.Parse()
-
-	if showVersion {
+	if final.ShowVersion {
 		fmt.Println("magic-log version:", version)
 		return
 	}
 
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("❌ Failed to load config: %v", err)
-	}
-
-	if listPresets {
-		allPresets := getAllPresets(cfg)
-		fmt.Println("Available parse presets:")
-		for name := range allPresets {
+	if final.ListPresets {
+		all := getAllPresets(cfgFile)
+		fmt.Println("📜 Available parse presets:")
+		for name := range all {
 			fmt.Printf("  - %s\n", name)
 		}
 		return
 	}
 
-	resolvedRegex, err := resolveRegex(parsePreset, parseRegex, cfg)
+	resolvedRegex, err := resolveRegex(final.ParsePreset, final.ParseRegex, cfgFile)
 	if err != nil {
 		log.Fatalf("❌ %v", err)
 	}
 
 	Run(Config{
-		DBFile:     dbFile,
-		Port:       port,
-		Launch:     openBrowser,
-		LogFormat:  logFormat,
-		ParseRegex: resolvedRegex,
+		DBFile:     final.DBFile,
+		Port:       final.Port,
+		Launch:     final.Launch,
 		Version:    version,
+		LogFormat:  final.LogFormat,
+		ParseRegex: resolvedRegex,
 	})
+
 }
 
 func Run(config Config) {
