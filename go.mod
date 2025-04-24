@@ -3,6 +3,7 @@ module github.com/paul-schwendenman/magic-log-ui
 go 1.24.2
 
 require (
+	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/apache/arrow-go/v18 v18.1.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect

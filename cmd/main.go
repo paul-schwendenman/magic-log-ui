@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
 	"github.com/paul-schwendenman/magic-log-ui/internal/logdb"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server"
@@ -36,6 +37,7 @@ func main() {
 		logFormat   string
 		parseRegex  string
 		parsePreset string
+		listPresets bool
 		showVersion bool
 	)
 
@@ -45,6 +47,7 @@ func main() {
 	flag.StringVar(&logFormat, "log-format", "json", "Log format to parse: json or text.")
 	flag.StringVar(&parseRegex, "parse-regex", "", "Regex to parse text logs (only used if --log-format=text).")
 	flag.StringVar(&parsePreset, "parse-preset", "", "Preset regex name for text logs (e.g. 'apache'). Overrides --parse-regex.")
+	flag.BoolVar(&listPresets, "list-presets", false, "List available parse presets and exit.")
 	flag.BoolVar(&showVersion, "version", false, "Print the version and exit.")
 	flag.Parse()
 
@@ -53,7 +56,21 @@ func main() {
 		return
 	}
 
-	resolvedRegex, err := resolveRegex(parsePreset, parseRegex)
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("❌ Failed to load config: %v", err)
+	}
+
+	if listPresets {
+		allPresets := getAllPresets(cfg)
+		fmt.Println("Available parse presets:")
+		for name := range allPresets {
+			fmt.Printf("  - %s\n", name)
+		}
+		return
+	}
+
+	resolvedRegex, err := resolveRegex(parsePreset, parseRegex, cfg)
 	if err != nil {
 		log.Fatalf("❌ %v", err)
 	}
@@ -85,18 +102,19 @@ func Run(config Config) {
 	select {}
 }
 
-func resolveRegex(preset, raw string) (string, error) {
+func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	if raw != "" && preset == "" {
 		return raw, nil
 	}
+
 	if preset != "" {
-		switch preset {
-		case "apache":
-			return `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`, nil
-		default:
-			return "", fmt.Errorf("unknown preset: %s", preset)
+		all := getAllPresets(cfg)
+		if regex, ok := all[preset]; ok {
+			return regex, nil
 		}
+		return "", fmt.Errorf("unknown preset: %s", preset)
 	}
+
 	return "", nil
 }
 
@@ -124,4 +142,17 @@ func launchBrowser(port int) {
 func isCommandAvailable(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
+}
+
+func getAllPresets(cfg *config.Config) map[string]string {
+	presets := map[string]string{
+		"apache": `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`,
+	}
+
+	// Merge in user-defined (override if names match)
+	for k, v := range cfg.Presets {
+		presets[k] = v
+	}
+
+	return presets
 }
