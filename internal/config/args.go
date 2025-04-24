@@ -73,7 +73,6 @@ func pickInt(cli int, def int, passed bool) int {
 	return cli
 }
 
-
 func pickBool(cli bool, def bool, passed bool) bool {
 	if passed {
 		return cli
