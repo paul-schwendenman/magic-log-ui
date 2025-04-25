@@ -27,6 +27,7 @@ type Config struct {
 	Echo       bool
 	LogFormat  string
 	ParseRegex string
+	JqFilter   string
 	Version    string
 }
 

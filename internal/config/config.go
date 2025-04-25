@@ -16,6 +16,7 @@ type Config struct {
 		LogFormat   string `toml:"log_format"`
 		ParsePreset string `toml:"parse_preset"`
 		ParseRegex  string `toml:"parse_regex"`
+		JqFilter    string `toml:"jq_filter"`
 	} `toml:"defaults"`
 }
 
