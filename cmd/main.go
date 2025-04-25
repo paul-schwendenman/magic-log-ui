@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
@@ -69,6 +70,16 @@ func Run(config Config) {
 
 	db := logdb.MustInit(config.DBFile, ctx)
 	logInsert := logdb.MustPrepareInsert(db, ctx)
+
+	if config.DBFile == "" {
+		log.Println("🧠 Connected to in-memory DuckDB database")
+	} else {
+		absPath, err := filepath.Abs(config.DBFile)
+		if err != nil {
+			absPath = config.DBFile // fallback
+		}
+		log.Printf("💾 Connected to DuckDB file: %s\n", absPath)
+	}
 
 	go server.Start(config.Port, staticFiles, db, ctx)
 
