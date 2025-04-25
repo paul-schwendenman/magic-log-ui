@@ -6,7 +6,7 @@ Magic Log UI is a local-first log viewer for streaming structured JSON logs into
 
 - Ingests structured JSON or plain text logs from stdin
 - Regex-based parsing for text logs, with support for custom or preset patterns (e.g. apache, nginx, sveltekit)
-  -️ Configurable via CLI or .magiclogrc in your home directory (TOML)
+- Configurable via CLI or .magiclogrc in your home directory (TOML)
 - Query logs in real-time using SQL (DuckDB in-memory or persistent)
 - Real-time browser UI with WebSocket streaming
 - View and re-run past queries
@@ -52,7 +52,7 @@ parse_preset = "sveltekit"
 parse_regex = ""
 ```
 
-## Manuel Testing
+## Manual Testing
 
 ### Publish a few messages
 
