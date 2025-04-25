@@ -27,6 +27,9 @@ func handleConfigCommand(args []string) {
 			fmt.Fprintln(os.Stderr, "❌", err)
 			os.Exit(1)
 		}
+		if val == "" {
+			os.Exit(1)
+		}
 		fmt.Println(val)
 
 	case "set":
@@ -82,12 +85,13 @@ func writeConfigMap(cfg map[string]any, path string) error {
 }
 
 func GetConfigValue(dotKey string) (string, error) {
+	dotKey = normalizeKey(dotKey)
+
 	cfg, _, err := loadConfigMap()
 	if err != nil {
 		return "", err
 	}
 
-	dotKey = normalizeKey(dotKey)
 	parts := strings.Split(dotKey, ".")
 	if len(parts) != 2 {
 		return "", fmt.Errorf("invalid key format: use section.key")
@@ -96,12 +100,13 @@ func GetConfigValue(dotKey string) (string, error) {
 
 	sectionMap, ok := cfg[section].(map[string]any)
 	if !ok {
-		return "", fmt.Errorf("no such section: %s", section)
+		return "", nil
 	}
 	val, ok := sectionMap[key]
 	if !ok {
-		return "", fmt.Errorf("no such key: %s.%s", section, key)
+		return "", nil
 	}
+
 	return fmt.Sprintf("%v", val), nil
 }
 
