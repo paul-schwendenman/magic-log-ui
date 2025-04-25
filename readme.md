@@ -38,6 +38,30 @@ parse_preset = "sveltekit"
 parse_regex = ""
 ```
 
+It is possible to manage the config using the CLI, like so:
+
+```
+magic-log config set log_format text
+magic-log config set port 4001
+magic-log config set presets.myapp 'regex...'
+```
+
+You can also fetch values:
+
+```
+magic-log config get log_format
+magic-log config get port
+magic-log config get presets.myapp
+```
+
+And remove them:
+
+```
+magic-log config unset log_format
+magic-log config unset port
+magic-log config unset presets.myapp
+```
+
 ## Development
 
 ### Build project
