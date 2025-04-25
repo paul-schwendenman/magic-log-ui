@@ -24,6 +24,7 @@ type Config struct {
 	DBFile     string
 	Port       int
 	Launch     bool
+	Echo       bool
 	LogFormat  string
 	ParseRegex string
 	Version    string
@@ -58,6 +59,7 @@ func main() {
 		DBFile:     final.DBFile,
 		Port:       final.Port,
 		Launch:     final.Launch,
+		Echo:       final.Echo,
 		Version:    version,
 		LogFormat:  final.LogFormat,
 		ParseRegex: resolvedRegex,
@@ -87,7 +89,7 @@ func Run(config Config) {
 		launchBrowser(config.Port)
 	}
 
-	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, ctx)
+	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.Echo, ctx)
 
 	select {}
 }

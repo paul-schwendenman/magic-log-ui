@@ -8,6 +8,7 @@ type FinalConfig struct {
 	DBFile      string
 	Port        int
 	Launch      bool
+	Echo        bool
 	LogFormat   string
 	ParsePreset string
 	ParseRegex  string
@@ -22,6 +23,7 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		port        = flag.Int("port", 3000, "Port to serve the web UI on.")
 		launch      = flag.Bool("launch", false, "Open the UI in a browser.")
 		noLaunch    = flag.Bool("no-launch", false, "Disable UI auto-launch (overrides config).")
+		echo        = flag.Bool("echo", false, "Echo parsed stdin input to stdout")
 		logFormat   = flag.String("log-format", "json", "Log format: json or text.")
 		parseRegex  = flag.String("parse-regex", "", "Custom regex to parse logs.")
 		parsePreset = flag.String("parse-preset", "", "Regex preset to use.")
@@ -47,6 +49,7 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		DBFile:      resolveDBFile(*dbFile, *noDBFile, cfgFile.Defaults.DBFile, flagPassed["db-file"]),
 		Port:        pickInt(*port, cfgFile.Defaults.Port, flagPassed["port"]),
 		Launch:      resolveLaunch(*launch, *noLaunch, cfgFile.Defaults.Launch, flagPassed["launch"]),
+		Echo:		 *echo,
 		LogFormat:   pickStr(*logFormat, cfgFile.Defaults.LogFormat, flagPassed["log-format"]),
 		ParsePreset: pickStr(*parsePreset, cfgFile.Defaults.ParsePreset, flagPassed["parse-preset"]),
 		ParseRegex:  pickStr(*parseRegex, cfgFile.Defaults.ParseRegex, flagPassed["parse-regex"]),

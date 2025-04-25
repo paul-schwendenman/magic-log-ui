@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"regexp"
@@ -14,7 +15,7 @@ import (
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
 
-func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, ctx context.Context) {
+func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, echo bool, ctx context.Context) {
 	scanner := bufio.NewScanner(input)
 
 	parseLogLine, err := makeLogParser(logFormat, parseRegexStr)
@@ -32,6 +33,10 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 
 		raw := string(shared.MustJson(entry))
 		createdAt := time.Now().UTC()
+
+		if echo {
+			fmt.Println(raw)
+		}
 
 		_, err := stmt.ExecContext(
 			ctx,
