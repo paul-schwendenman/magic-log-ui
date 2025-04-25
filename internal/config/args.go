@@ -16,16 +16,17 @@ type FinalConfig struct {
 }
 
 func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
-	// Define CLI flags
 	var (
 		dbFile      = flag.String("db-file", "", "Path to a DuckDB database file.")
+		noDBFile    = flag.Bool("no-db-file", false, "Force in-memory DB even if config has db_file.")
 		port        = flag.Int("port", 3000, "Port to serve the web UI on.")
 		launch      = flag.Bool("launch", false, "Open the UI in a browser.")
+		noLaunch    = flag.Bool("no-launch", false, "Disable UI auto-launch (overrides config).")
 		logFormat   = flag.String("log-format", "json", "Log format: json or text.")
 		parseRegex  = flag.String("parse-regex", "", "Custom regex to parse logs.")
 		parsePreset = flag.String("parse-preset", "", "Regex preset to use.")
 		showVersion = flag.Bool("version", false, "Print version and exit.")
-		listPresets = flag.Bool("list-presets", false, "List available presets.")
+		listPresets = flag.Bool("list-presets", false, "List available presets and exit.")
 	)
 
 	flag.Parse()
@@ -43,9 +44,9 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 
 	// Resolve final config
 	final := &FinalConfig{
-		DBFile:      pickStr(*dbFile, cfgFile.Defaults.DBFile, flagPassed["db-file"]),
+		DBFile:      resolveDBFile(*dbFile, *noDBFile, cfgFile.Defaults.DBFile, flagPassed["db-file"]),
 		Port:        pickInt(*port, cfgFile.Defaults.Port, flagPassed["port"]),
-		Launch:      pickBool(*launch, cfgFile.Defaults.Launch, flagPassed["launch"]),
+		Launch:      resolveLaunch(*launch, *noLaunch, cfgFile.Defaults.Launch, flagPassed["launch"]),
 		LogFormat:   pickStr(*logFormat, cfgFile.Defaults.LogFormat, flagPassed["log-format"]),
 		ParsePreset: pickStr(*parsePreset, cfgFile.Defaults.ParsePreset, flagPassed["parse-preset"]),
 		ParseRegex:  pickStr(*parseRegex, cfgFile.Defaults.ParseRegex, flagPassed["parse-regex"]),
@@ -78,4 +79,27 @@ func pickBool(cli bool, def bool, passed bool) bool {
 		return cli
 	}
 	return def
+}
+
+func resolveLaunch(cli bool, noCli bool, def bool, passed bool) bool {
+	if passed {
+		return cli
+	}
+	if noCli {
+		return false
+	}
+	return def
+}
+
+func resolveDBFile(cli string, disable bool, def string, passed bool) string {
+	if passed {
+		return cli
+	}
+	if disable {
+		return ""
+	}
+	if def != "" {
+		return def
+	}
+	return cli
 }
