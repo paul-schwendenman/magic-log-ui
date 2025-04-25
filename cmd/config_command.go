@@ -104,12 +104,13 @@ func GetConfigValue(dotKey string) (string, error) {
 }
 
 func SetConfigValue(dotKey, value string) error {
+	dotKey = normalizeKey(dotKey)
 	switch dotKey {
 	case "defaults.log_format":
 		if value != "json" && value != "text" {
 			return fmt.Errorf("log_format must be 'json' or 'text'")
 		}
-	case "defaults.launch", "defaults.no_launch":
+	case "defaults.launch":
 		if value != "true" && value != "false" {
 			return fmt.Errorf("%s must be 'true' or 'false'", dotKey)
 		}
@@ -167,4 +168,20 @@ func UnsetConfigValue(dotKey string) error {
 	}
 
 	return writeConfigMap(cfg, path)
+}
+
+var knownDefaults = map[string]bool{
+	"log_format":   true,
+	"port":         true,
+	"launch":       true,
+	"db_file":      true,
+	"parse_preset": true,
+	"parse_regex":  true,
+}
+
+func normalizeKey(dotKey string) string {
+	if !strings.Contains(dotKey, ".") && knownDefaults[dotKey] {
+		return "defaults." + dotKey
+	}
+	return dotKey
 }
