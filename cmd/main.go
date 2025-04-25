@@ -31,6 +31,11 @@ type Config struct {
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "config" {
+		handleConfigCommand(os.Args[2:])
+		return
+	}
+
 	final, cfgFile, err := config.ParseArgsAndConfig()
 	if err != nil {
 		log.Fatalf("❌ %v", err)
