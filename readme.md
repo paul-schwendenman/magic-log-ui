@@ -22,20 +22,6 @@ brew tap paul-schwendenman/magic-log-ui
 brew install magic-log
 ```
 
-## Build project
-
-This command will build the frontend and then package the app
-
-```
-make build
-```
-
-## Run tests
-
-```
-go test ./...
-```
-
 ## Configuration
 
 `magic-log` reads configuration options from `$HOME/.magiclogrc`
@@ -52,7 +38,25 @@ parse_preset = "sveltekit"
 parse_regex = ""
 ```
 
+## Development
+
+### Build project
+
+This command will build the frontend and then package the app
+
+```
+make build
+```
+
+### Run tests
+
+```
+go test ./...
+```
+
 ## Manual Testing
+
+The following sections contain some snippets for testing the app manually by producing various logs
 
 ### Publish a few messages
 
