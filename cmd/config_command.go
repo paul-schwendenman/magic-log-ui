@@ -87,6 +87,7 @@ func GetConfigValue(dotKey string) (string, error) {
 		return "", err
 	}
 
+	dotKey = normalizeKey(dotKey)
 	parts := strings.Split(dotKey, ".")
 	if len(parts) != 2 {
 		return "", fmt.Errorf("invalid key format: use section.key")
@@ -169,6 +170,7 @@ func UnsetConfigValue(dotKey string) error {
 		return err
 	}
 
+	dotKey = normalizeKey(dotKey)
 	parts := strings.Split(dotKey, ".")
 	if len(parts) != 2 {
 		return fmt.Errorf("invalid key format: use section.key")
