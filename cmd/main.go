@@ -112,7 +112,7 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 		return "", fmt.Errorf("unknown preset: %s", preset)
 	}
 
-	return "", nil
+	return "^(?P<message>.*)$", nil
 }
 
 func launchBrowser(port int) {
