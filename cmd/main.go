@@ -95,7 +95,7 @@ func Run(config Config) {
 		launchBrowser(config.Port)
 	}
 
-	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.Echo, ctx)
+	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.JqFilter, config.Echo, ctx)
 
 	select {}
 }

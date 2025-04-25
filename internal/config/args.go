@@ -14,7 +14,7 @@ type FinalConfig struct {
 	LogFormat   string
 	ParsePreset string
 	ParseRegex  string
-	JqFilter          string
+	JqFilter    string
 	ShowVersion bool
 	ListPresets bool
 }

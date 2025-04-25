@@ -44,7 +44,7 @@ func TestIngest_JSON(t *testing.T) {
 	jsonLog := `{"trace_id":"json123","level":"info","message":"json test"}`
 	input := strings.NewReader(jsonLog + "\n")
 
-	go ingest.Start(input, stmt, "json", "", false, ctx)
+	go ingest.Start(input, stmt, "json", "", "", false, ctx)
 	time.Sleep(100 * time.Millisecond)
 
 	msg := queryMessageByTraceID(t, db, "json123")
@@ -61,7 +61,7 @@ func TestIngest_TextWithRegex(t *testing.T) {
 	regex := `\[(?P<level>\w+)] (?P<timestamp>[^ ]+ [^ ]+) (?P<message>.+)`
 	input := strings.NewReader(textLog + "\n")
 
-	go ingest.Start(input, stmt, "text", regex, false, ctx)
+	go ingest.Start(input, stmt, "text", regex, "", false, ctx)
 	time.Sleep(100 * time.Millisecond)
 
 	row := db.QueryRow(`SELECT message, level FROM logs`)
@@ -84,7 +84,7 @@ func TestIngest_InvalidJSONFallback(t *testing.T) {
 	badJSON := `{ this is not valid json`
 	input := strings.NewReader(badJSON + "\n")
 
-	go ingest.Start(input, stmt, "json", "", false, ctx)
+	go ingest.Start(input, stmt, "json", "", "", false, ctx)
 	time.Sleep(100 * time.Millisecond)
 
 	row := db.QueryRow(`SELECT level, message FROM logs`)
@@ -108,7 +108,7 @@ func TestIngest_RegexNoMatchFallback(t *testing.T) {
 	regex := `\[(?P<level>\w+)] (?P<ts>\S+ \S+) (?P<msg>.+)`
 	input := bytes.NewReader([]byte(line + "\n"))
 
-	go ingest.Start(input, stmt, "text", regex, false, ctx)
+	go ingest.Start(input, stmt, "text", regex, "", false, ctx)
 	time.Sleep(100 * time.Millisecond)
 
 	row := db.QueryRow(`SELECT level, message FROM logs`)

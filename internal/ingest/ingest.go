@@ -11,16 +11,29 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/itchyny/gojq"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server/handlers"
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
 
-func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, echo bool, ctx context.Context) {
+func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, jqQuery string, echo bool, ctx context.Context) {
 	scanner := bufio.NewScanner(input)
 
 	parseLogLine, err := makeLogParser(logFormat, parseRegexStr)
 	if err != nil {
 		log.Fatalf("❌ Failed to initialize log parser: %v", err)
+	}
+
+	var jqCode *gojq.Code
+	if jqQuery != "" {
+		query, err := gojq.Parse(jqQuery)
+		if err != nil {
+			log.Fatalf("❌ Failed to parse jq query: %v", err)
+		}
+		jqCode, err = gojq.Compile(query)
+		if err != nil {
+			log.Fatalf("❌ Failed to compile jq query: %v", err)
+		}
 	}
 
 	for scanner.Scan() {
@@ -29,6 +42,25 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 		entry, parsed := parseLogLine(line)
 		if !parsed {
 			log.Printf("❌ Failed to parse log line: %q", line)
+		}
+
+		if jqCode != nil {
+			iter := jqCode.Run(entry)
+			v, ok := iter.Next()
+			if !ok {
+				log.Printf("❌ jq query returned no result")
+				continue
+			}
+			if err, ok := v.(error); ok {
+				log.Printf("❌ jq query error: %v", err)
+				continue
+			}
+
+			mapped, ok := v.(map[string]interface{})
+			if !ok {
+				mapped = map[string]interface{}{"value": v}
+			}
+			entry = mapped
 		}
 
 		raw := string(shared.MustJson(entry))
