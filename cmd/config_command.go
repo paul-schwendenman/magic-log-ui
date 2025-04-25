@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"regexp"
 
 	"github.com/BurntSushi/toml"
 )
@@ -103,6 +104,24 @@ func GetConfigValue(dotKey string) (string, error) {
 }
 
 func SetConfigValue(dotKey, value string) error {
+	switch dotKey {
+	case "defaults.log_format":
+		if value != "json" && value != "text" {
+			return fmt.Errorf("log_format must be 'json' or 'text'")
+		}
+	case "defaults.launch", "defaults.no_launch":
+		if value != "true" && value != "false" {
+			return fmt.Errorf("%s must be 'true' or 'false'", dotKey)
+		}
+	default:
+		if strings.HasPrefix(dotKey, "presets.") {
+			_, err := regexp.Compile(value)
+			if err != nil {
+				return fmt.Errorf("invalid regex: %v", err)
+			}
+		}
+	}
+
 	cfg, path, err := loadConfigMap()
 	if err != nil {
 		return err
