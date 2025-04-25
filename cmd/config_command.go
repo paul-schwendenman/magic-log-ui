@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"regexp"
+	"strconv"
 
 	"github.com/BurntSushi/toml"
 )
@@ -112,7 +113,12 @@ func SetConfigValue(dotKey, value string) error {
 		}
 	case "defaults.launch":
 		if value != "true" && value != "false" {
-			return fmt.Errorf("%s must be 'true' or 'false'", dotKey)
+			return fmt.Errorf("launch must be 'true' or 'false'")
+		}
+	case "defaults.port":
+		portNum, err := strconv.Atoi(value)
+		if err != nil || portNum < 1 || portNum > 65535 {
+			return fmt.Errorf("port must be a number between 1 and 65535")
 		}
 	default:
 		if strings.HasPrefix(dotKey, "presets.") {
