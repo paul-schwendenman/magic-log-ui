@@ -106,33 +106,6 @@ func GetConfigValue(dotKey string) (string, error) {
 
 func SetConfigValue(dotKey, value string) error {
 	dotKey = normalizeKey(dotKey)
-	switch dotKey {
-	case "defaults.log_format":
-		if value != "json" && value != "text" {
-			return fmt.Errorf("log_format must be 'json' or 'text'")
-		}
-	case "defaults.launch":
-		if value != "true" && value != "false" {
-			return fmt.Errorf("launch must be 'true' or 'false'")
-		}
-	case "defaults.port":
-		portNum, err := strconv.Atoi(value)
-		if err != nil || portNum < 1 || portNum > 65535 {
-			return fmt.Errorf("port must be a number between 1 and 65535")
-		}
-	default:
-		if strings.HasPrefix(dotKey, "presets.") {
-			_, err := regexp.Compile(value)
-			if err != nil {
-				return fmt.Errorf("invalid regex: %v", err)
-			}
-		}
-	}
-
-	cfg, path, err := loadConfigMap()
-	if err != nil {
-		return err
-	}
 
 	parts := strings.Split(dotKey, ".")
 	if len(parts) != 2 {
@@ -140,13 +113,53 @@ func SetConfigValue(dotKey, value string) error {
 	}
 	section, key := parts[0], parts[1]
 
+	cfg, path, err := loadConfigMap()
+	if err != nil {
+		return err
+	}
+
 	sectionMap, ok := cfg[section].(map[string]any)
 	if !ok {
 		sectionMap = map[string]any{}
 	}
-	sectionMap[key] = value
-	cfg[section] = sectionMap
 
+	// 🚦 Validate and cast value for known keys
+	if section == "defaults" {
+		switch key {
+		case "log_format":
+			if value != "json" && value != "text" {
+				return fmt.Errorf("log_format must be 'json' or 'text'")
+			}
+			sectionMap[key] = value
+
+		case "launch":
+			if value != "true" && value != "false" {
+				return fmt.Errorf("launch must be 'true' or 'false'")
+			}
+			sectionMap[key] = (value == "true")
+
+		case "port":
+			portNum, err := strconv.Atoi(value)
+			if err != nil || portNum < 1 || portNum > 65535 {
+				return fmt.Errorf("port must be a number between 1 and 65535")
+			}
+			sectionMap[key] = portNum
+
+		default:
+			// Allow unknown default keys as strings
+			sectionMap[key] = value
+		}
+	} else if section == "presets" {
+		_, err := regexp.Compile(value)
+		if err != nil {
+			return fmt.Errorf("invalid regex: %v", err)
+		}
+		sectionMap[key] = value
+	} else {
+		sectionMap[key] = value
+	}
+
+	cfg[section] = sectionMap
 	return writeConfigMap(cfg, path)
 }
 
