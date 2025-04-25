@@ -2,6 +2,8 @@ package config
 
 import (
 	"flag"
+	"fmt"
+	"os"
 )
 
 type FinalConfig struct {
@@ -31,6 +33,16 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		listPresets = flag.Bool("list-presets", false, "List available presets and exit.")
 	)
 
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `Usage:
+magic-log [flags]
+magic-log config [get|set|unset] <key> [value]
+
+Flags:
+`)
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	cfgFile, err := Load()
@@ -49,7 +61,7 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		DBFile:      resolveDBFile(*dbFile, *noDBFile, cfgFile.Defaults.DBFile, flagPassed["db-file"]),
 		Port:        pickInt(*port, cfgFile.Defaults.Port, flagPassed["port"]),
 		Launch:      resolveLaunch(*launch, *noLaunch, cfgFile.Defaults.Launch, flagPassed["launch"]),
-		Echo:		 *echo,
+		Echo:        *echo,
 		LogFormat:   pickStr(*logFormat, cfgFile.Defaults.LogFormat, flagPassed["log-format"]),
 		ParsePreset: pickStr(*parsePreset, cfgFile.Defaults.ParsePreset, flagPassed["parse-preset"]),
 		ParseRegex:  pickStr(*parseRegex, cfgFile.Defaults.ParseRegex, flagPassed["parse-regex"]),
