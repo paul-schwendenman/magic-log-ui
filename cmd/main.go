@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
@@ -23,12 +24,18 @@ type Config struct {
 	DBFile     string
 	Port       int
 	Launch     bool
+	Echo       bool
 	LogFormat  string
 	ParseRegex string
 	Version    string
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "config" {
+		handleConfigCommand(os.Args[2:])
+		return
+	}
+
 	final, cfgFile, err := config.ParseArgsAndConfig()
 	if err != nil {
 		log.Fatalf("❌ %v", err)
@@ -57,6 +64,7 @@ func main() {
 		DBFile:     final.DBFile,
 		Port:       final.Port,
 		Launch:     final.Launch,
+		Echo:       final.Echo,
 		Version:    version,
 		LogFormat:  final.LogFormat,
 		ParseRegex: resolvedRegex,
@@ -70,13 +78,23 @@ func Run(config Config) {
 	db := logdb.MustInit(config.DBFile, ctx)
 	logInsert := logdb.MustPrepareInsert(db, ctx)
 
+	if config.DBFile == "" {
+		log.Println("🧠 Connected to in-memory DuckDB database")
+	} else {
+		absPath, err := filepath.Abs(config.DBFile)
+		if err != nil {
+			absPath = config.DBFile // fallback
+		}
+		log.Printf("💾 Connected to DuckDB file: %s\n", absPath)
+	}
+
 	go server.Start(config.Port, staticFiles, db, ctx)
 
 	if config.Launch {
 		launchBrowser(config.Port)
 	}
 
-	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, ctx)
+	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.Echo, ctx)
 
 	select {}
 }
@@ -94,7 +112,7 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 		return "", fmt.Errorf("unknown preset: %s", preset)
 	}
 
-	return "", nil
+	return "^(?P<message>.*)$", nil
 }
 
 func launchBrowser(port int) {

@@ -6,7 +6,7 @@ Magic Log UI is a local-first log viewer for streaming structured JSON logs into
 
 - Ingests structured JSON or plain text logs from stdin
 - Regex-based parsing for text logs, with support for custom or preset patterns (e.g. apache, nginx, sveltekit)
-  -️ Configurable via CLI or .magiclogrc in your home directory (TOML)
+- Configurable via CLI or .magiclogrc in your home directory (TOML)
 - Query logs in real-time using SQL (DuckDB in-memory or persistent)
 - Real-time browser UI with WebSocket streaming
 - View and re-run past queries
@@ -20,20 +20,6 @@ Magic Log UI is a local-first log viewer for streaming structured JSON logs into
 ```
 brew tap paul-schwendenman/magic-log-ui
 brew install magic-log
-```
-
-## Build project
-
-This command will build the frontend and then package the app
-
-```
-make build
-```
-
-## Run tests
-
-```
-go test ./...
 ```
 
 ## Configuration
@@ -52,7 +38,49 @@ parse_preset = "sveltekit"
 parse_regex = ""
 ```
 
-## Manuel Testing
+It is possible to manage the config using the CLI, like so:
+
+```
+magic-log config set log_format text
+magic-log config set port 4001
+magic-log config set presets.myapp 'regex...'
+```
+
+You can also fetch values:
+
+```
+magic-log config get log_format
+magic-log config get port
+magic-log config get presets.myapp
+```
+
+And remove them:
+
+```
+magic-log config unset log_format
+magic-log config unset port
+magic-log config unset presets.myapp
+```
+
+## Development
+
+### Build project
+
+This command will build the frontend and then package the app
+
+```
+make build
+```
+
+### Run tests
+
+```
+go test ./...
+```
+
+## Manual Testing
+
+The following sections contain some snippets for testing the app manually by producing various logs
 
 ### Publish a few messages
 
