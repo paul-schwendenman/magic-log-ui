@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
