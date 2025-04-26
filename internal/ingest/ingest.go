@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/jqfilter"
+	"github.com/paul-schwendenman/magic-log-ui/internal/server/handlers"
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
 
@@ -106,9 +107,8 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 			log.Printf("❌ Failed to insert log: %v", err)
 		}
 
-		// Broadcast (optional)
 		transformed["created_at"] = timestamp
-		// handlers.Broadcast(transformed) // Uncomment if you broadcast after ingest
+		handlers.Broadcast(transformed)
 	}
 
 	if err := scanner.Err(); err != nil {
