@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	_ "github.com/marcboeker/go-duckdb"
 )
@@ -65,4 +66,28 @@ func MustPrepareInsert(db *sql.DB, ctx context.Context) *sql.Stmt {
 		log.Fatal(err)
 	}
 	return stmt
+}
+
+func StartAutoAnalyze(db *sql.DB, ctx context.Context) {
+	go func() {
+		log.Println("🧠 Auto-analyze background job started")
+
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				_, err := db.ExecContext(ctx, `ANALYZE logs`)
+				if err != nil {
+					log.Printf("⚠️ Failed to analyze logs table: %v", err)
+				} else {
+					log.Println("🧠 Refreshed statistics on logs table")
+				}
+			case <-ctx.Done():
+				log.Println("🛑 Stopping auto-analyze")
+				return
+			}
+		}
+	}()
 }

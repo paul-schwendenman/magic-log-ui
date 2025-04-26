@@ -28,6 +28,7 @@ type Config struct {
 	LogFormat  string
 	ParseRegex string
 	JqFilter   string
+	AutoAnalyze bool
 	Version    string
 }
 
@@ -69,6 +70,7 @@ func main() {
 		Version:    version,
 		LogFormat:  final.LogFormat,
 		JqFilter:   final.JqFilter,
+		AutoAnalyze: final.AutoAnalyze,
 		ParseRegex: resolvedRegex,
 	})
 
@@ -79,6 +81,10 @@ func Run(config Config) {
 
 	db := logdb.MustInit(config.DBFile, ctx)
 	logInsert := logdb.MustPrepareInsert(db, ctx)
+
+	if config.AutoAnalyze {
+		logdb.StartAutoAnalyze(db, ctx)
+	}
 
 	if config.DBFile == "" {
 		log.Println("🧠 Connected to in-memory DuckDB database")

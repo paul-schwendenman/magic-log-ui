@@ -15,6 +15,7 @@ type FinalConfig struct {
 	ParsePreset string
 	ParseRegex  string
 	JqFilter    string
+	AutoAnalyze bool
 	ShowVersion bool
 	ListPresets bool
 }
@@ -27,12 +28,13 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		launch      = flag.Bool("launch", false, "Open the UI in a browser.")
 		noLaunch    = flag.Bool("no-launch", false, "Disable UI auto-launch (overrides config).")
 		echo        = flag.Bool("echo", false, "Echo parsed stdin input to stdout")
+		noAutoAnalyze = flag.Bool("no-auto-analyze", false, "Disable automatic ANALYZE of logs table")
 		logFormat   = flag.String("log-format", "json", "Log format: json or text.")
 		parseRegex  = flag.String("parse-regex", "", "Custom regex to parse logs.")
 		parsePreset = flag.String("parse-preset", "", "Regex preset to use.")
 		jqFilter    = flag.String("jq-filter", "", "A jq expression to apply to parsed logs")
-		showVersion = flag.Bool("version", false, "Print version and exit.")
 		listPresets = flag.Bool("list-presets", false, "List available presets and exit.")
+		showVersion = flag.Bool("version", false, "Print version and exit.")
 	)
 
 	flag.Usage = func() {
@@ -68,6 +70,7 @@ Flags:
 		ParsePreset: pickStr(*parsePreset, cfgFile.Defaults.ParsePreset, flagPassed["parse-preset"]),
 		ParseRegex:  pickStr(*parseRegex, cfgFile.Defaults.ParseRegex, flagPassed["parse-regex"]),
 		JqFilter:    pickStr(*jqFilter, cfgFile.Defaults.JqFilter, flagPassed["jq-filter"]),
+		AutoAnalyze: !*noAutoAnalyze,
 		ShowVersion: *showVersion,
 		ListPresets: *listPresets,
 	}
