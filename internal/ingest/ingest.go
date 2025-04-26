@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/itchyny/gojq"
+	"github.com/paul-schwendenman/magic-log-ui/internal/jqfilter"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server/handlers"
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
@@ -24,18 +24,7 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 		log.Fatalf("❌ Failed to initialize log parser: %v", err)
 	}
 
-	var jqCode *gojq.Code
-	if jqQuery != "" {
-		query, err := gojq.Parse(jqQuery)
-		if err != nil {
-			log.Fatalf("❌ Failed to parse jq query: %v", err)
-		}
-		jqCode, err = gojq.Compile(query)
-		if err != nil {
-			log.Fatalf("❌ Failed to compile jq query: %v", err)
-		}
-		log.Printf("🔀 JQ transform enabled: %s", jqQuery)
-	}
+	jqfilter.Init(jqQuery)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -45,24 +34,7 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 			log.Printf("❌ Failed to parse log line: %q", line)
 		}
 
-		if jqCode != nil {
-			iter := jqCode.Run(entry)
-			v, ok := iter.Next()
-			if !ok {
-				log.Printf("❌ jq query returned no result")
-				continue
-			}
-			if err, ok := v.(error); ok {
-				log.Printf("❌ jq query error: %v", err)
-				continue
-			}
-
-			mapped, ok := v.(map[string]interface{})
-			if !ok {
-				mapped = map[string]interface{}{"value": v}
-			}
-			entry = mapped
-		}
+		entry = mapToLogEntry(jqfilter.Apply(logEntryToStringMap(entry)))
 
 		raw := string(shared.MustJson(entry))
 		createdAt := time.Now().UTC()
@@ -147,4 +119,20 @@ func parseTextLogWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, boo
 	}
 
 	return entry, true
+}
+
+func mapToLogEntry(m map[string]string) shared.LogEntry {
+	e := make(shared.LogEntry, len(m))
+	for k, v := range m {
+		e[k] = v
+	}
+	return e
+}
+
+func logEntryToStringMap(entry shared.LogEntry) map[string]string {
+	m := make(map[string]string, len(entry))
+	for k, v := range entry {
+		m[k] = fmt.Sprintf("%v", v)
+	}
+	return m
 }
