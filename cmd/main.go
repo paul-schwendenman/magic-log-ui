@@ -68,6 +68,7 @@ func main() {
 		Echo:       final.Echo,
 		Version:    version,
 		LogFormat:  final.LogFormat,
+		JqFilter: final.JqFilter,
 		ParseRegex: resolvedRegex,
 	})
 

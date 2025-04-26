@@ -34,6 +34,7 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 		if err != nil {
 			log.Fatalf("❌ Failed to compile jq query: %v", err)
 		}
+		log.Printf("🔀 JQ transform enabled: %s", jqQuery)
 	}
 
 	for scanner.Scan() {
