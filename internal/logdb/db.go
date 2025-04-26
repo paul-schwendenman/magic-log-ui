@@ -35,6 +35,9 @@ func MustInit(path string, ctx context.Context) *sql.DB {
 
 	_, err = db.ExecContext(ctx, `
 		CREATE INDEX IF NOT EXISTS idx_created_at ON logs(created_at);
+		CREATE INDEX IF NOT EXISTS idx_timestamp ON logs(timestamp);
+		CREATE INDEX IF NOT EXISTS idx_trace_id ON logs(trace_id);
+		CREATE INDEX IF NOT EXISTS idx_level ON logs(level);
 	`)
 	if err != nil {
 		log.Fatal(err)
