@@ -3,14 +3,14 @@ name: Build & Release
 on:
   push:
     tags:
-      - 'v*'
-    # branches:
-    #   - main
-    #   - master
-  pull_request:
-    branches:
-      - main
-      - master
+      - "v*"
+  #   branches:
+  #     - main
+  #     - master
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - master
   workflow_dispatch:
 
 permissions:
@@ -116,7 +116,7 @@ jobs:
     name: Publish Homebrew Dev Tap
     needs: release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-')
 
     steps:
       - name: Download all artifacts
