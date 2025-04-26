@@ -12,52 +12,103 @@ import (
 	"time"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/jqfilter"
-	"github.com/paul-schwendenman/magic-log-ui/internal/server/handlers"
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
 
 func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, jqQuery string, echo bool, ctx context.Context) {
 	scanner := bufio.NewScanner(input)
 
-	parseLogLine, err := makeLogParser(logFormat, parseRegexStr)
-	if err != nil {
-		log.Fatalf("❌ Failed to initialize log parser: %v", err)
-	}
-
+	// Initialize jq filter if any
 	jqfilter.Init(jqQuery)
 
 	for scanner.Scan() {
-		line := scanner.Text()
-
-		entry, parsed := parseLogLine(line)
-		if !parsed {
-			log.Printf("❌ Failed to parse log line: %q", line)
-		}
-
-		entry = mapToLogEntry(jqfilter.Apply(logEntryToStringMap(entry)))
-
-		raw := string(shared.MustJson(entry))
-		createdAt := time.Now().UTC()
+		rawLine := scanner.Text()
 
 		if echo {
-			fmt.Println(raw)
+			fmt.Println(rawLine)
 		}
 
-		_, err := stmt.ExecContext(
+		var parsed shared.LogEntry
+		var parsedLogJson []byte
+		var err error
+		regexUsed := false
+
+		// Attempt to parse the line
+		if logFormat == "json" {
+			err = json.Unmarshal([]byte(rawLine), &parsed)
+		}
+
+		if err != nil || logFormat == "text" {
+			// fallback to regex if given
+			parsed, err = parseWithRegex(rawLine, parseRegexStr)
+			if err != nil {
+				// totally fallback
+				parsed = shared.LogEntry{
+					"message": rawLine,
+					"level":   "raw",
+				}
+			} else {
+				regexUsed = true
+			}
+		}
+
+		// Save parsed_log
+		parsedLogJson = shared.MustJson(parsed)
+
+		// Apply jq transformation
+		// transformed := shared.LogEntry(jqfilter.Apply(logEntryToStringMap(parsed)))
+		transformed := mapToLogEntry(jqfilter.Apply(logEntryToStringMap(parsed)))
+
+		// Save final log
+		finalLogJson := shared.MustJson(transformed)
+
+		// Extract useful fields
+		traceID, _ := safeString(transformed, "trace_id")
+		level, _ := safeString(transformed, "level")
+		message, _ := safeString(transformed, "message")
+
+		if level == "" {
+			level = "info"
+		}
+		if message == "" {
+			message = "(no message)"
+		}
+
+		// Extract timestamp from log if exists
+		timestamp := time.Now().UTC()
+		if ts, ok := safeString(transformed, "timestamp"); ok {
+			parsedTs, err := time.Parse(time.RFC3339, ts)
+			if err == nil {
+				timestamp = parsedTs
+			}
+		}
+
+		regexPattern := ""
+		if regexUsed {
+			regexPattern = parseRegexStr
+		}
+
+		// Insert into DB
+		_, err = stmt.ExecContext(
 			ctx,
-			entry["trace_id"],
-			entry["level"],
-			entry["message"],
-			raw,
-			createdAt,
+			traceID,
+			level,
+			message,
+			rawLine,
+			string(parsedLogJson),
+			string(finalLogJson),
+			time.Now().UTC(), // created_at
+			timestamp,
+			nullify(regexPattern),
+			nullify(jqQuery),
 		)
 		if err != nil {
 			log.Printf("❌ Failed to insert log: %v", err)
-			continue
 		}
 
-		entry["created_at"] = createdAt
-		handlers.Broadcast(entry)
+		// Broadcast (optional)
+		transformed["created_at"] = timestamp
+		// handlers.Broadcast(transformed) // Uncomment if you broadcast after ingest
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -67,58 +118,24 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr stri
 	}
 }
 
-func makeLogParser(format string, regexStr string) (func(string) (shared.LogEntry, bool), error) {
-	if format == "text" && regexStr != "" {
-		re, err := regexp.Compile(regexStr)
-		if err != nil {
-			return nil, err
-		}
-		return func(line string) (shared.LogEntry, bool) {
-			return parseTextLogWithRegex(line, re)
-		}, nil
+func parseWithRegex(line, pattern string) (shared.LogEntry, error) {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
 	}
 
-	// default to JSON
-	return func(line string) (shared.LogEntry, bool) {
-		return parseJSONLog(line)
-	}, nil
-}
-
-func parseJSONLog(line string) (shared.LogEntry, bool) {
-	var entry shared.LogEntry
-	if err := json.Unmarshal([]byte(line), &entry); err == nil {
-		return entry, true
-	}
-	return shared.LogEntry{
-		"message": line,
-		"level":   "raw",
-	}, false
-}
-
-func parseTextLogWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, bool) {
-	matches := re.FindStringSubmatch(line)
-	if matches == nil {
-		return shared.LogEntry{
-			"message": line,
-			"level":   "raw",
-		}, false
+	match := re.FindStringSubmatch(line)
+	if match == nil {
+		return nil, fmt.Errorf("no match")
 	}
 
-	entry := shared.LogEntry{}
+	result := shared.LogEntry{}
 	for i, name := range re.SubexpNames() {
-		if i > 0 && name != "" {
-			entry[name] = matches[i]
+		if i != 0 && name != "" {
+			result[name] = match[i]
 		}
 	}
-
-	if _, ok := entry["level"]; !ok {
-		entry["level"] = "info"
-	}
-	if _, ok := entry["message"]; !ok {
-		entry["message"] = line
-	}
-
-	return entry, true
+	return result, nil
 }
 
 func mapToLogEntry(m map[string]string) shared.LogEntry {
@@ -135,4 +152,19 @@ func logEntryToStringMap(entry shared.LogEntry) map[string]string {
 		m[k] = fmt.Sprintf("%v", v)
 	}
 	return m
+}
+
+func safeString(m map[string]any, key string) (string, bool) {
+	v, ok := m[key]
+	if !ok {
+		return "", false
+	}
+	return fmt.Sprintf("%v", v), true
+}
+
+func nullify(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
 }
