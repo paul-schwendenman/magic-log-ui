@@ -11,12 +11,14 @@ STATIC_DIR := $(BUILD_DIR)/static
 all: build
 
 clean:
-	rm -rf $(STATIC_DIR) $(NAME)
+	rm -rf $(STATIC_DIR) $(NAME) $(WEB_DIR)/build/
 
 frontend:
 	cd $(WEB_DIR) && pnpm install && pnpm build
 	mkdir -p $(STATIC_DIR)
-	cp -r $(WEB_DIR)/build/* $(STATIC_DIR)/
+	# cp -r $(WEB_DIR)/build/* $(STATIC_DIR)/
+	rsync -av --delete "$(WEB_DIR)/build/" "$(STATIC_DIR)/"
+
 
 backend:
 	go build -ldflags "-X main.version=$(VERSION)" -o $(NAME) ./$(BUILD_DIR)
