@@ -147,7 +147,12 @@ func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p
 func broadcast(entry shared.LogEntry, echo bool) {
 	handlers.Broadcast(entry)
 	if echo {
-		fmt.Println(entry)
+		out, err := json.Marshal(entry)
+		if err != nil {
+			log.Printf("⚠️ Failed to encode entry for echo: %v", err)
+			return
+		}
+		fmt.Println(string(out))
 	}
 }
 
