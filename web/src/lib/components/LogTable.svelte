@@ -21,7 +21,25 @@
 	const colHelp = createColumnHelper<LogEntry>();
 
 	const columnDefs = [
-		colHelp.accessor('created_at', { id: 'created_at', header: 'Time' }),
+		colHelp.accessor('timestamp', {
+			id: 'timestamp',
+			header: 'Time',
+			cell: ({ cell }) => {
+				const isoString = cell.getValue();
+				const date = new Date(isoString);
+				// Format nicely, e.g. "Apr 26, 10:15 PM"
+				const friendly = date.toLocaleString(undefined, {
+					month: 'short',
+					day: 'numeric',
+					hour: 'numeric',
+					minute: '2-digit',
+					second: '2-digit',
+					hour12: true
+				});
+				return friendly;
+			}
+		}),
+
 		colHelp.accessor('trace_id', { id: 'trace_id', header: 'Trace ID' }),
 		colHelp.accessor('level', { id: 'level', header: 'Level' }),
 		colHelp.accessor('message', { id: 'message', header: 'Message' }),

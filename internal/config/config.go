@@ -16,21 +16,28 @@ type Config struct {
 		LogFormat   string `toml:"log_format"`
 		ParsePreset string `toml:"parse_preset"`
 		ParseRegex  string `toml:"parse_regex"`
+		JqFilter    string `toml:"jq_filter"`
 	} `toml:"defaults"`
 }
 
 func Load() (*Config, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	path := os.Getenv("MAGIC_LOG_CONFIG")
+	if path == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+		path = filepath.Join(home, ".magiclogrc")
 	}
 
-	path := filepath.Join(home, ".magiclogrc")
+	return LoadFromFile(path)
+}
 
+func LoadFromFile(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{}, nil // no config is fine
+			return &Config{}, nil
 		}
 		return nil, err
 	}

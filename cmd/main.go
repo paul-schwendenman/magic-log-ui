@@ -21,13 +21,15 @@ var version = "dev"
 var staticFiles embed.FS
 
 type Config struct {
-	DBFile     string
-	Port       int
-	Launch     bool
-	Echo       bool
-	LogFormat  string
-	ParseRegex string
-	Version    string
+	DBFile      string
+	Port        int
+	Launch      bool
+	Echo        bool
+	LogFormat   string
+	ParseRegex  string
+	JqFilter    string
+	AutoAnalyze bool
+	Version     string
 }
 
 func main() {
@@ -61,13 +63,15 @@ func main() {
 	}
 
 	Run(Config{
-		DBFile:     final.DBFile,
-		Port:       final.Port,
-		Launch:     final.Launch,
-		Echo:       final.Echo,
-		Version:    version,
-		LogFormat:  final.LogFormat,
-		ParseRegex: resolvedRegex,
+		DBFile:      final.DBFile,
+		Port:        final.Port,
+		Launch:      final.Launch,
+		Echo:        final.Echo,
+		Version:     version,
+		LogFormat:   final.LogFormat,
+		JqFilter:    final.JqFilter,
+		AutoAnalyze: final.AutoAnalyze,
+		ParseRegex:  resolvedRegex,
 	})
 
 }
@@ -77,6 +81,10 @@ func Run(config Config) {
 
 	db := logdb.MustInit(config.DBFile, ctx)
 	logInsert := logdb.MustPrepareInsert(db, ctx)
+
+	if config.AutoAnalyze {
+		logdb.StartAutoAnalyze(db, ctx)
+	}
 
 	if config.DBFile == "" {
 		log.Println("🧠 Connected to in-memory DuckDB database")
@@ -94,7 +102,7 @@ func Run(config Config) {
 		launchBrowser(config.Port)
 	}
 
-	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.Echo, ctx)
+	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.JqFilter, config.Echo, ctx)
 
 	select {}
 }

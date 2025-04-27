@@ -4,16 +4,19 @@ Magic Log UI is a local-first log viewer for streaming structured JSON logs into
 
 ## Features
 
-- Ingests structured JSON or plain text logs from stdin
-- Regex-based parsing for text logs, with support for custom or preset patterns (e.g. apache, nginx, sveltekit)
-- Configurable via CLI or .magiclogrc in your home directory (TOML)
-- Query logs in real-time using SQL (DuckDB in-memory or persistent)
-- Real-time browser UI with WebSocket streaming
-- View and re-run past queries
-- One-file executable — no external setup, just run and go
-- Fully testable Go codebase with coverage support
-- Optional log persistence with --db-file
-- Homebrew install available: brew install paul-schwendenman/magic-log
+- Ingests structured JSON **or** plain text logs from stdin
+- Regex-based parsing for text logs, with support for custom or preset patterns (e.g., apache, nginx, sveltekit)
+- JQ-style transformations to reshape or extract fields during ingestion
+- Configurable via CLI flags **or** a `.magiclogrc` config file (TOML), with optional `MAGIC_LOG_CONFIG` override
+- Query logs live in real-time using SQL (DuckDB — in-memory or persistent database modes)
+- Real-time browser UI with dynamic WebSocket streaming
+- View, save, and re-run past queries from the browser
+- Auto-analyze feature keeps query performance fast (optional --no-auto-analyze flag)
+- Environment variable override support for flexible deployment
+- One-file executable — no external database or server setup needed
+- Fully testable Go codebase with coverage reporting
+- Optional log persistence with `--db-file`
+- Homebrew install available: `brew install paul-schwendenman/magic-log`
 
 ## Installation
 
@@ -118,4 +121,29 @@ String with regex:
 
 ```
 ./csv_echoer.py ~/Downloads/extract.csv --column Message | go run ./cmd/main.go
+```
+
+### JQ Filter Examples
+
+You can reshape incoming logs during ingestion using `--jq-filter`, based on JQ syntax.
+
+#### Rename fields and keep the rest
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+--jq-filter='{message: .msg} + .'
+```
+
+#### Add new static field
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+--jq-filter='{app: "magic-log", trace_id: .trace_id, message: .msg}'
+```
+
+#### Drop fields
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+--jq-filter='del(.time, .msg)'
 ```

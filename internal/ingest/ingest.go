@@ -11,107 +11,221 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/paul-schwendenman/magic-log-ui/internal/jqfilter"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server/handlers"
 	"github.com/paul-schwendenman/magic-log-ui/internal/shared"
 )
 
-func Start(input io.Reader, stmt *sql.Stmt, logFormat string, parseRegexStr string, echo bool, ctx context.Context) {
-	scanner := bufio.NewScanner(input)
+type parsers struct {
+	logFormat  string
+	parseRegex *regexp.Regexp
+	jqEnabled  bool
+	jqFilter   string
+}
 
-	parseLogLine, err := makeLogParser(logFormat, parseRegexStr)
-	if err != nil {
-		log.Fatalf("❌ Failed to initialize log parser: %v", err)
-	}
+func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery string, echo bool, ctx context.Context) {
+	scanner := attach(input)
+	parsers := buildParsers(logFormat, parseRegexStr, jqQuery)
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		rawLine := scanner.Text()
 
-		entry, parsed := parseLogLine(line)
-		if !parsed {
-			log.Printf("❌ Failed to parse log line: %q", line)
-		}
+		parsed := extract(rawLine, parsers)
+		transformed := transform(parsed, parsers)
 
-		raw := string(shared.MustJson(entry))
-		createdAt := time.Now().UTC()
-
-		if echo {
-			fmt.Println(raw)
-		}
-
-		_, err := stmt.ExecContext(
-			ctx,
-			entry["trace_id"],
-			entry["level"],
-			entry["message"],
-			raw,
-			createdAt,
-		)
+		err := load(stmt, rawLine, parsed, transformed, parsers, ctx)
 		if err != nil {
 			log.Printf("❌ Failed to insert log: %v", err)
-			continue
 		}
 
-		entry["created_at"] = createdAt
-		handlers.Broadcast(entry)
+		broadcast(transformed, echo)
 	}
 
+	handleScannerError(scanner)
+}
+
+func attach(input io.Reader) *bufio.Scanner {
+	return bufio.NewScanner(input)
+}
+
+func buildParsers(logFormat, parseRegexStr, jqQuery string) parsers {
+	var regex *regexp.Regexp
+	if parseRegexStr != "" {
+		var err error
+		regex, err = regexp.Compile(parseRegexStr)
+		if err != nil {
+			log.Fatalf("❌ Invalid regex: %v", err)
+		}
+	}
+
+	jqfilter.Init(jqQuery)
+
+	return parsers{
+		logFormat:  logFormat,
+		parseRegex: regex,
+		jqEnabled:  jqQuery != "",
+		jqFilter:   jqQuery,
+	}
+}
+
+func extract(rawLine string, p parsers) shared.LogEntry {
+	var parsed shared.LogEntry
+	var err error
+
+	if p.logFormat == "json" {
+		err = json.Unmarshal([]byte(rawLine), &parsed)
+	}
+
+	if err != nil || p.logFormat == "text" {
+		if p.parseRegex != nil {
+			parsed, err = parseWithRegex(rawLine, p.parseRegex)
+			if err == nil {
+				return parsed
+			}
+		}
+		parsed = shared.LogEntry{
+			"message": rawLine,
+			"level":   "raw",
+		}
+	}
+
+	return parsed
+}
+
+func transform(entry shared.LogEntry, p parsers) shared.LogEntry {
+	if p.jqEnabled {
+		entry = mapToLogEntry(jqfilter.Apply(logEntryToStringMap(entry)))
+	}
+	ensureTimestamp(entry)
+
+	return entry
+}
+
+func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p parsers, ctx context.Context) error {
+	traceID, _ := safeString(transformed, "trace_id")
+	level, _ := safeString(transformed, "level")
+	message, _ := safeString(transformed, "message")
+
+	if level == "" {
+		level = "info"
+	}
+	if message == "" {
+		message = "(no message)"
+	}
+
+	timestamp := time.Now().UTC()
+	if ts, ok := safeString(transformed, "timestamp"); ok {
+		parsedTs, err := time.Parse(time.RFC3339, ts)
+		if err == nil {
+			timestamp = parsedTs
+		}
+	}
+
+	parsedLogJson := shared.MustJson(parsed)
+	finalLogJson := shared.MustJson(transformed)
+
+	regexPattern := ""
+	if p.parseRegex != nil {
+		regexPattern = p.parseRegex.String()
+	}
+
+	_, err := stmt.ExecContext(
+		ctx,
+		traceID,
+		level,
+		message,
+		rawLine,
+		string(parsedLogJson),
+		string(finalLogJson),
+		time.Now().UTC(),
+		timestamp,
+		nullify(regexPattern),
+		nullify(p.jqFilter),
+	)
+
+	return err
+}
+
+func broadcast(entry shared.LogEntry, echo bool) {
+	handlers.Broadcast(entry)
+	if echo {
+		out, err := json.Marshal(entry)
+		if err != nil {
+			log.Printf("⚠️ Failed to encode entry for echo: %v", err)
+			return
+		}
+		fmt.Println(string(out))
+	}
+}
+
+func handleScannerError(scanner *bufio.Scanner) {
 	if err := scanner.Err(); err != nil {
 		log.Printf("⚠️ Error while scanning input: %v", err)
 	} else {
-		log.Println("📭 STDIN closed — no longer receiving logs")
+		log.Println("📬 STDIN closed — no longer receiving logs")
 	}
 }
 
-func makeLogParser(format string, regexStr string) (func(string) (shared.LogEntry, bool), error) {
-	if format == "text" && regexStr != "" {
-		re, err := regexp.Compile(regexStr)
-		if err != nil {
-			return nil, err
-		}
-		return func(line string) (shared.LogEntry, bool) {
-			return parseTextLogWithRegex(line, re)
-		}, nil
+func parseWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, error) {
+	match := re.FindStringSubmatch(line)
+	if match == nil {
+		return nil, fmt.Errorf("no match")
 	}
 
-	// default to JSON
-	return func(line string) (shared.LogEntry, bool) {
-		return parseJSONLog(line)
-	}, nil
-}
-
-func parseJSONLog(line string) (shared.LogEntry, bool) {
-	var entry shared.LogEntry
-	if err := json.Unmarshal([]byte(line), &entry); err == nil {
-		return entry, true
-	}
-	return shared.LogEntry{
-		"message": line,
-		"level":   "raw",
-	}, false
-}
-
-func parseTextLogWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, bool) {
-	matches := re.FindStringSubmatch(line)
-	if matches == nil {
-		return shared.LogEntry{
-			"message": line,
-			"level":   "raw",
-		}, false
-	}
-
-	entry := shared.LogEntry{}
+	result := shared.LogEntry{}
 	for i, name := range re.SubexpNames() {
-		if i > 0 && name != "" {
-			entry[name] = matches[i]
+		if i != 0 && name != "" {
+			result[name] = match[i]
+		}
+	}
+	return result, nil
+}
+
+func mapToLogEntry(m map[string]string) shared.LogEntry {
+	e := make(shared.LogEntry, len(m))
+	for k, v := range m {
+		e[k] = v
+	}
+	return e
+}
+
+func logEntryToStringMap(entry shared.LogEntry) map[string]string {
+	m := make(map[string]string, len(entry))
+	for k, v := range entry {
+		m[k] = fmt.Sprintf("%v", v)
+	}
+	return m
+}
+
+func ensureTimestamp(entry shared.LogEntry) {
+	if entry == nil {
+		entry = make(shared.LogEntry)
+	}
+
+	now := time.Now().UTC()
+
+	if ts, ok := safeString(entry, "timestamp"); ok {
+		parsedTs, err := time.Parse(time.RFC3339, ts)
+		if err == nil {
+			entry["timestamp"] = parsedTs.Format(time.RFC3339)
+			return
 		}
 	}
 
-	if _, ok := entry["level"]; !ok {
-		entry["level"] = "info"
-	}
-	if _, ok := entry["message"]; !ok {
-		entry["message"] = line
-	}
+	entry["timestamp"] = now.Format(time.RFC3339)
+}
 
-	return entry, true
+func safeString(m map[string]any, key string) (string, bool) {
+	v, ok := m[key]
+	if !ok {
+		return "", false
+	}
+	return fmt.Sprintf("%v", v), true
+}
+
+func nullify(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
 }
