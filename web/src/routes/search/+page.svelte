@@ -12,7 +12,7 @@
 	import type { TimeRange } from '$lib/types';
 
 	const initialLimit = 10;
-	const initialQuery = 'SELECT * FROM logs';
+	const initialQuery = 'SELECT log FROM logs';
 
 	let drawerOpen = $state(false);
 	let query = $state(initialQuery);
