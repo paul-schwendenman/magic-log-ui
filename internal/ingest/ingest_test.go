@@ -141,3 +141,95 @@ func TestIngest_RegexNoMatchFallback(t *testing.T) {
 		t.Errorf("Expected fallback message 'does not match', got %s", msg)
 	}
 }
+
+func TestIngest_WithJQ(t *testing.T) {
+	db, stmt, ctx := setupTestDB(t)
+	defer db.Close()
+
+	jsonLog := `{"trace_id":"jqtest123","level":"info","message":"user login"}`
+	input := strings.NewReader(jsonLog + "\n")
+
+	jq := `{trace_id: .trace_id, level: .level, message: .message, id: .trace_id, text: .message}`
+
+	go ingest.Start(input, stmt, "json", "", jq, false, ctx)
+	time.Sleep(200 * time.Millisecond)
+
+	row := db.QueryRow(`SELECT CAST(log AS TEXT) FROM logs WHERE trace_id = ?`, "jqtest123")
+	var logJSON string
+	if err := row.Scan(&logJSON); err != nil {
+		t.Fatalf("Failed to query: %v", err)
+	}
+
+	if !strings.Contains(logJSON, `"id":"jqtest123"`) || !strings.Contains(logJSON, `"text":"user login"`) {
+		t.Errorf("Unexpected JQ output: %s", logJSON)
+	}
+}
+
+func TestIngest_TimestampExtraction(t *testing.T) {
+	db, stmt, ctx := setupTestDB(t)
+	defer db.Close()
+
+	jsonLog := `{"trace_id":"time123","level":"info","message":"timestamp test","timestamp":"2025-01-01T12:00:00Z"}`
+	input := strings.NewReader(jsonLog + "\n")
+
+	go ingest.Start(input, stmt, "json", "", "", false, ctx)
+	time.Sleep(200 * time.Millisecond)
+
+	row := db.QueryRow(`SELECT timestamp FROM logs WHERE trace_id = ?`, "time123")
+	var ts time.Time
+	if err := row.Scan(&ts); err != nil {
+		t.Fatalf("Failed to query: %v", err)
+	}
+
+	expected, _ := time.Parse(time.RFC3339, "2025-01-01T12:00:00Z")
+	if !ts.Equal(expected) {
+		t.Errorf("Expected timestamp %v, got %v", expected, ts)
+	}
+}
+
+func TestIngest_BadRegexFailsToParse(t *testing.T) {
+	db, stmt, ctx := setupTestDB(t)
+	defer db.Close()
+
+	line := `this won't match`
+	regex := `\[(?P<level>\w+)] (?P<timestamp>\S+ \S+) (?P<message>.+)`
+	input := strings.NewReader(line + "\n")
+
+	go ingest.Start(input, stmt, "text", regex, "", false, ctx)
+	time.Sleep(200 * time.Millisecond)
+
+	row := db.QueryRow(`SELECT level, message FROM logs`)
+	var level, msg string
+	if err := row.Scan(&level, &msg); err != nil {
+		t.Fatalf("Failed to query: %v", err)
+	}
+	if level != "raw" {
+		t.Errorf("Expected fallback level 'raw', got %s", level)
+	}
+	if msg != "this won't match" {
+		t.Errorf("Expected fallback message, got %s", msg)
+	}
+}
+
+func TestIngest_NoRegexNoJQ_JSONPassthrough(t *testing.T) {
+	db, stmt, ctx := setupTestDB(t)
+	defer db.Close()
+
+	jsonLog := `{"trace_id":"passthru123","level":"info","message":"hello"}`
+	input := strings.NewReader(jsonLog + "\n")
+
+	go ingest.Start(input, stmt, "json", "", "", false, ctx)
+	time.Sleep(200 * time.Millisecond)
+
+	row := db.QueryRow(`SELECT message, level FROM logs WHERE trace_id = ?`, "passthru123")
+	var msg, level string
+	if err := row.Scan(&msg, &level); err != nil {
+		t.Fatalf("Failed to query: %v", err)
+	}
+	if msg != "hello" {
+		t.Errorf("Expected 'hello', got %s", msg)
+	}
+	if level != "info" {
+		t.Errorf("Expected level 'info', got %s", level)
+	}
+}
