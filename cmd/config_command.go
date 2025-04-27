@@ -155,7 +155,7 @@ func SetConfigValue(dotKey, value string) error {
 			// Allow unknown default keys as strings
 			sectionMap[key] = value
 		}
-	} else if section == "presets" {
+	} else if section == "regex_presets" {
 		_, err := regexp.Compile(value)
 		if err != nil {
 			return fmt.Errorf("invalid regex: %v", err)

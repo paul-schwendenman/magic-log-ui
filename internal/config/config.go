@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Presets  map[string]string `toml:"presets"`
+	RegexPresets  map[string]string `toml:"regex_presets"`
 	Defaults struct {
 		DBFile      string `toml:"db_file"`
 		Port        int    `toml:"port"`

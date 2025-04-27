@@ -49,8 +49,8 @@ func main() {
 	}
 
 	if final.ListPresets {
-		all := getAllPresets(cfgFile)
-		fmt.Println("📜 Available parse presets:")
+		all := getRegexPresets(cfgFile)
+		fmt.Println("📜 Available regexp presets:")
 		for name := range all {
 			fmt.Printf("  - %s\n", name)
 		}
@@ -113,7 +113,7 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	}
 
 	if preset != "" {
-		all := getAllPresets(cfg)
+		all := getRegexPresets(cfg)
 		if regex, ok := all[preset]; ok {
 			return regex, nil
 		}
@@ -149,15 +149,15 @@ func isCommandAvailable(name string) bool {
 	return err == nil
 }
 
-func getAllPresets(cfg *config.Config) map[string]string {
-	presets := map[string]string{
+func getRegexPresets(cfg *config.Config) map[string]string {
+	regex_presets := map[string]string{
 		"apache": `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`,
 	}
 
 	// Merge in user-defined (override if names match)
-	for k, v := range cfg.Presets {
-		presets[k] = v
+	for k, v := range cfg.RegexPresets {
+		regex_presets[k] = v
 	}
 
-	return presets
+	return regex_presets
 }

@@ -33,7 +33,7 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		parseRegex    = flag.String("parse-regex", "", "Custom regex to parse logs.")
 		parsePreset   = flag.String("parse-preset", "", "Regex preset to use.")
 		jqFilter      = flag.String("jq-filter", "", "A jq expression to apply to parsed logs")
-		listPresets   = flag.Bool("list-presets", false, "List available presets and exit.")
+		listPresets   = flag.Bool("list-presets", false, "List available regex presets and exit.")
 		showVersion   = flag.Bool("version", false, "Print version and exit.")
 	)
 
