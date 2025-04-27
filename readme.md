@@ -122,3 +122,28 @@ String with regex:
 ```
 ./csv_echoer.py ~/Downloads/extract.csv --column Message | go run ./cmd/main.go
 ```
+
+### JQ Filter Examples
+
+You can reshape incoming logs during ingestion using `--jq-filter`, based on JQ syntax.
+
+#### Rename fields and keep the rest
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+--jq-filter='{message: .msg} + .'
+```
+
+#### Add new static field
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+--jq-filter='{app: "magic-log", trace_id: .trace_id, message: .msg}'
+```
+
+#### Drop fields
+
+```
+./generate_logs.sh | go run ./cmd/main.go
+--jq-filter='del(.time, .msg)'
+```
