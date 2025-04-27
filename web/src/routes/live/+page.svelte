@@ -8,7 +8,7 @@
 		trace_id: true,
 		level: true,
 		message: true,
-		raw: false
+		raw: true
 	};
 </script>
 

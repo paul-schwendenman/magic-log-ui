@@ -6,3 +6,5 @@ coverage.out
 
 *.db
 *.db.wal
+*.duckdb
+*.duckdb.wal
