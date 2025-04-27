@@ -3,8 +3,8 @@
 
 	const links = [
 		{ href: '/', label: 'Home' },
-		{ href: '/live', label: 'Live (beta)' },
-		{ href: '/search', label: 'Search' }
+		{ href: '/live', label: 'Live Tail' },
+		{ href: '/search', label: 'Log Explorer' }
 		// { href: '/table', label: 'Table (alpha)' }
 		// add more pages here
 	];
