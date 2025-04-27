@@ -21,12 +21,15 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	path := os.Getenv("MAGIC_LOG_CONFIG")
+	if path == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+		path = filepath.Join(home, ".magiclogrc")
 	}
 
-	path := filepath.Join(home, ".magiclogrc")
 	return LoadFromFile(path)
 }
 
