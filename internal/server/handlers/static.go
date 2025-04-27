@@ -24,7 +24,14 @@ func StaticHandler(staticFiles embed.FS) http.HandlerFunc {
 		data, err := fs.ReadFile(content, path)
 
 		if err != nil {
-			http.NotFound(w, r)
+			data, err = fs.ReadFile(content, "200.html")
+			if err != nil {
+				http.Error(w, "200.html not found", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html")
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
 			return
 		}
 
