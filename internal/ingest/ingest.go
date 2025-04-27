@@ -38,10 +38,7 @@ func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery st
 			log.Printf("❌ Failed to insert log: %v", err)
 		}
 
-		broadcast(transformed)
-		if echo {
-			fmt.Println(transformed)
-		}
+		broadcast(transformed, echo)
 	}
 
 	handleScannerError(scanner)
@@ -147,8 +144,11 @@ func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p
 	return err
 }
 
-func broadcast(entry shared.LogEntry) {
+func broadcast(entry shared.LogEntry, echo bool) {
 	handlers.Broadcast(entry)
+	if echo {
+		fmt.Println(entry)
+	}
 }
 
 func handleScannerError(scanner *bufio.Scanner) {
