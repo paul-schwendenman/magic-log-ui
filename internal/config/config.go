@@ -27,11 +27,14 @@ func Load() (*Config, error) {
 	}
 
 	path := filepath.Join(home, ".magiclogrc")
+	return LoadFromFile(path)
+}
 
+func LoadFromFile(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{}, nil // no config is fine
+			return &Config{}, nil
 		}
 		return nil, err
 	}
