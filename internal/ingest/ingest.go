@@ -17,10 +17,10 @@ import (
 )
 
 type parsers struct {
-	logFormat    string
-	parseRegex   *regexp.Regexp
-	jqEnabled    bool
-	jqFilter     string
+	logFormat  string
+	parseRegex *regexp.Regexp
+	jqEnabled  bool
+	jqFilter   string
 }
 
 func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery string, echo bool, ctx context.Context) {

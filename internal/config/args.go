@@ -22,19 +22,19 @@ type FinalConfig struct {
 
 func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 	var (
-		dbFile      = flag.String("db-file", "", "Path to a DuckDB database file.")
-		noDBFile    = flag.Bool("no-db-file", false, "Force in-memory DB even if config has db_file.")
-		port        = flag.Int("port", 3000, "Port to serve the web UI on.")
-		launch      = flag.Bool("launch", false, "Open the UI in a browser.")
-		noLaunch    = flag.Bool("no-launch", false, "Disable UI auto-launch (overrides config).")
-		echo        = flag.Bool("echo", false, "Echo parsed stdin input to stdout")
+		dbFile        = flag.String("db-file", "", "Path to a DuckDB database file.")
+		noDBFile      = flag.Bool("no-db-file", false, "Force in-memory DB even if config has db_file.")
+		port          = flag.Int("port", 3000, "Port to serve the web UI on.")
+		launch        = flag.Bool("launch", false, "Open the UI in a browser.")
+		noLaunch      = flag.Bool("no-launch", false, "Disable UI auto-launch (overrides config).")
+		echo          = flag.Bool("echo", false, "Echo parsed stdin input to stdout")
 		noAutoAnalyze = flag.Bool("no-auto-analyze", false, "Disable automatic ANALYZE of logs table")
-		logFormat   = flag.String("log-format", "json", "Log format: json or text.")
-		parseRegex  = flag.String("parse-regex", "", "Custom regex to parse logs.")
-		parsePreset = flag.String("parse-preset", "", "Regex preset to use.")
-		jqFilter    = flag.String("jq-filter", "", "A jq expression to apply to parsed logs")
-		listPresets = flag.Bool("list-presets", false, "List available presets and exit.")
-		showVersion = flag.Bool("version", false, "Print version and exit.")
+		logFormat     = flag.String("log-format", "json", "Log format: json or text.")
+		parseRegex    = flag.String("parse-regex", "", "Custom regex to parse logs.")
+		parsePreset   = flag.String("parse-preset", "", "Regex preset to use.")
+		jqFilter      = flag.String("jq-filter", "", "A jq expression to apply to parsed logs")
+		listPresets   = flag.Bool("list-presets", false, "List available presets and exit.")
+		showVersion   = flag.Bool("version", false, "Print version and exit.")
 	)
 
 	flag.Usage = func() {

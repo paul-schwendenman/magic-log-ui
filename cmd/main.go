@@ -21,15 +21,15 @@ var version = "dev"
 var staticFiles embed.FS
 
 type Config struct {
-	DBFile     string
-	Port       int
-	Launch     bool
-	Echo       bool
-	LogFormat  string
-	ParseRegex string
-	JqFilter   string
+	DBFile      string
+	Port        int
+	Launch      bool
+	Echo        bool
+	LogFormat   string
+	ParseRegex  string
+	JqFilter    string
 	AutoAnalyze bool
-	Version    string
+	Version     string
 }
 
 func main() {
@@ -63,15 +63,15 @@ func main() {
 	}
 
 	Run(Config{
-		DBFile:     final.DBFile,
-		Port:       final.Port,
-		Launch:     final.Launch,
-		Echo:       final.Echo,
-		Version:    version,
-		LogFormat:  final.LogFormat,
-		JqFilter:   final.JqFilter,
+		DBFile:      final.DBFile,
+		Port:        final.Port,
+		Launch:      final.Launch,
+		Echo:        final.Echo,
+		Version:     version,
+		LogFormat:   final.LogFormat,
+		JqFilter:    final.JqFilter,
 		AutoAnalyze: final.AutoAnalyze,
-		ParseRegex: resolvedRegex,
+		ParseRegex:  resolvedRegex,
 	})
 
 }
