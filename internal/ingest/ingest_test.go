@@ -19,8 +19,26 @@ func setupTestDB(t *testing.T) (*sql.DB, *sql.Stmt, context.Context) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _ = db.Exec(`CREATE TABLE logs (trace_id TEXT, level TEXT, message TEXT, raw JSON, created_at TIMESTAMP)`)
-	stmt, err := db.Prepare("INSERT INTO logs VALUES (?, ?, ?, ?, ?)")
+
+	_, _ = db.Exec(`CREATE TABLE logs (
+		id UUID DEFAULT uuid(),
+		trace_id TEXT,
+		level TEXT,
+		message TEXT,
+		raw_log TEXT,
+		parsed_log JSON,
+		log JSON,
+		created_at TIMESTAMP DEFAULT current_timestamp,
+		timestamp TIMESTAMP,
+		regex_pattern TEXT,
+		jq_filter TEXT
+	)`)
+
+	stmt, err := db.Prepare(`
+		INSERT INTO logs (
+			trace_id, level, message, raw_log, parsed_log, log, created_at, timestamp, regex_pattern, jq_filter
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`)
 	if err != nil {
 		t.Fatal(err)
 	}
