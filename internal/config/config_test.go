@@ -27,7 +27,6 @@ func TestLoadDefaultConfig(t *testing.T) {
 	}
 }
 
-
 func TestLoad(t *testing.T) {
 	tmp := t.TempDir()
 	path := filepath.Join(tmp, ".magiclogrc")

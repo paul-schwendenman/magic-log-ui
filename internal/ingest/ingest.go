@@ -198,6 +198,10 @@ func logEntryToStringMap(entry shared.LogEntry) map[string]string {
 }
 
 func ensureTimestamp(entry shared.LogEntry) {
+	if entry == nil {
+		entry = make(shared.LogEntry)
+	}
+
 	now := time.Now().UTC()
 
 	if ts, ok := safeString(entry, "timestamp"); ok {
