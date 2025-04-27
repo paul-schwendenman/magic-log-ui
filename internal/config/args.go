@@ -38,13 +38,28 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 	)
 
 	flag.Usage = func() {
+		bold := func(s string) string {
+			return "\033[1m" + s + "\033[0m"
+		}
+
 		fmt.Fprintf(os.Stderr, `Usage:
 magic-log [flags]
 magic-log config [get|set|unset] <key> [value]
 
-Flags:
-`)
+%s
+`, bold("Flags:"))
+
 		flag.PrintDefaults()
+
+		fmt.Fprintf(os.Stderr, `
+%s
+  The CLI reads config from ~/.magiclogrc by default.
+  You can override the config path using the MAGIC_LOG_CONFIG environment variable.
+
+%s
+  MAGIC_LOG_CONFIG=/path/to/custom.toml magic-log --port 4000
+  magic-log config set defaults.port 4000
+`, bold("Config:"), bold("Examples:"))
 	}
 
 	flag.Parse()
