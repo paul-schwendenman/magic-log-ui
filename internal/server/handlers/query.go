@@ -73,7 +73,12 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 
 		userQuery = strings.TrimSuffix(strings.TrimSpace(userQuery), ";")
 
-		countQuery := fmt.Sprintf(`WITH q AS (%s) SELECT COUNT(*) FROM q %s`, userQuery, timeFilter)
+		countQuery := fmt.Sprintf(`
+			WITH
+				logs as (select * from main.logs %s),
+				q AS (%s)
+			SELECT COUNT(*) FROM q
+		`, timeFilter, userQuery)
 		var totalRows int
 		err = db.QueryRowContext(ctx, countQuery).Scan(&totalRows)
 		if err != nil {
@@ -84,12 +89,12 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 		totalPages := int(math.Ceil(float64(totalRows) / float64(limit)))
 
 		safeQuery := fmt.Sprintf(`
-			WITH q AS (%s)
+			WITH
+				logs AS (select * from main.logs %s %s),
+				q AS (%s)
 			SELECT * FROM q
-			%s %s
 			LIMIT %d OFFSET %d
 		`,
-			userQuery,
 			timeFilter,
 			func() string {
 				if hasOrderBy {
@@ -97,6 +102,7 @@ func QueryHandler(db *sql.DB, ctx context.Context) http.HandlerFunc {
 				}
 				return "ORDER BY created_at DESC"
 			}(),
+			userQuery,
 			limit+1,
 			offset,
 		)
