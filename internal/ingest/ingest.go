@@ -93,10 +93,12 @@ func extract(rawLine string, p parsers) shared.LogEntry {
 }
 
 func transform(entry shared.LogEntry, p parsers) shared.LogEntry {
-	if !p.jqEnabled {
-		return entry
+	if p.jqEnabled {
+		entry = mapToLogEntry(jqfilter.Apply(logEntryToStringMap(entry)))
 	}
-	return mapToLogEntry(jqfilter.Apply(logEntryToStringMap(entry)))
+	ensureTimestamp(entry)
+
+	return entry
 }
 
 func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p parsers, ctx context.Context) error {
@@ -193,6 +195,20 @@ func logEntryToStringMap(entry shared.LogEntry) map[string]string {
 		m[k] = fmt.Sprintf("%v", v)
 	}
 	return m
+}
+
+func ensureTimestamp(entry shared.LogEntry) {
+	now := time.Now().UTC()
+
+	if ts, ok := safeString(entry, "timestamp"); ok {
+		parsedTs, err := time.Parse(time.RFC3339, ts)
+		if err == nil {
+			entry["timestamp"] = parsedTs.Format(time.RFC3339)
+			return
+		}
+	}
+
+	entry["timestamp"] = now.Format(time.RFC3339)
 }
 
 func safeString(m map[string]any, key string) (string, bool) {
