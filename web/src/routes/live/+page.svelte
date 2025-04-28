@@ -12,7 +12,7 @@
 		raw: true
 	};
 
-	const logs = createPaginationStore(filteredLiveLogs, 500);
+	const logs = createPaginationStore(filteredLiveLogs, 100);
 </script>
 
 <h2 class="my-2 text-xl font-bold">Live Logs</h2>
