@@ -73,7 +73,6 @@ func main() {
 		log.Fatalf("❌ %v", err)
 	}
 
-
 	Run(Config{
 		DBFile:      final.DBFile,
 		Port:        final.Port,
