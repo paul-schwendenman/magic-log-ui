@@ -15,7 +15,7 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 	return $logs.filter((log) =>
 		Object.values(log)
 			.map((item) => {
-				return typeof item === 'object' ? JSON.stringify(item) : String(null);
+				return typeof item === 'object' ? JSON.stringify(item) : String(item);
 			})
 			.join(' ')
 			.toLowerCase()
