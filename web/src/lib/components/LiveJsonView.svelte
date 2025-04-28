@@ -10,11 +10,11 @@
 </script>
 
 <div>
-	<h2 class="my-4 flex text-xl font-bold">
+	<h2 class="my-4 text-xl font-bold">
 		<span>
 			{m.live_logs()}
 		</span>
-		<WebsocketStatusIndicator />
+		<WebsocketStatusIndicator showConnected={true} />
 	</h2>
 	<div class="space-y-2 lg:max-h-[90vh] lg:overflow-y-auto">
 		{#each $logs.items as log (log)}
