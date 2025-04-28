@@ -37,8 +37,10 @@ db_file = "logs.db"
 port = 4000
 launch = true
 log_format = "text"
-parse_preset = "sveltekit"
-parse_regex = ""
+regex_preset = "sveltekit"
+regex = ""
+jq = ""
+jq_preset = ""
 ```
 
 It is possible to manage the config using the CLI, like so:
@@ -85,10 +87,36 @@ go test ./...
 
 The following sections contain some snippets for testing the app manually by producing various logs
 
+Tip: To run the local build with these snippets use an alias:
+
+```
+alias magic-log="go run ./cmd"
+```
+
+And you should see something like:
+
+```
+$ magic-log -version
+magic-log version: dev
+```
+
+Instead of:
+
+```
+$ magic-log -version
+magic-log version: v0.0.6
+```
+
+To unset later use `unalias`
+
+```
+$ unalias magic-log
+```
+
 ### Publish a few messages
 
 ```
-yes '{"timestamp": "2025-04-10T12:00:00Z", "trace_id": "abc123", "level": "info", "message": "ping"}' | head -n 100 | go run ./cmd/main.go
+yes '{"timestamp": "2025-04-10T12:00:00Z", "trace_id": "abc123", "level": "info", "message": "ping"}' | head -n 100 | magic-log
 ```
 
 ### Publish messages continuously
@@ -97,7 +125,7 @@ yes '{"timestamp": "2025-04-10T12:00:00Z", "trace_id": "abc123", "level": "info"
 while true; do
   echo "{\"timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\", \"level\": \"info\", \"message\": \"live test log\", \"trace_id\": \"abc123\"}"
   sleep 1
-done | go run ./cmd/main.go
+done | magic-log
 ```
 
 ### Random logs
@@ -105,22 +133,22 @@ done | go run ./cmd/main.go
 JSON format:
 
 ```
-./generate_logs.sh | go run ./cmd/main.go
+./generate_logs.sh | magic-log
 ```
 
 String with regex:
 
 ```
 ./generate_logs.sh --format text | \
-  go run ./cmd/main.go \
+  magic-log \
     --log-format=text \
-    --parse-regex="\\[(?P<level>\\w+)] (?P<time>\\S+) \\[(?P<trace_id>\\w+)] (?P<msg>.+)"
+    --regex="\\[(?P<level>\\w+)] (?P<time>\\S+) \\[(?P<trace_id>\\w+)] (?P<msg>.+)"
 ```
 
 ### Pipe logs from CSV
 
 ```
-./csv_echoer.py ~/Downloads/extract.csv --column Message | go run ./cmd/main.go
+./csv_echoer.py ~/Downloads/extract.csv --column Message | magic-log
 ```
 
 ### JQ Filter Examples
@@ -130,20 +158,20 @@ You can reshape incoming logs during ingestion using `--jq`, based on JQ syntax.
 #### Rename fields and keep the rest
 
 ```
-./generate_logs.sh | go run ./cmd/main.go
+./generate_logs.sh | magic-log \
 --jq='{message: .msg} + .'
 ```
 
 #### Add new static field
 
 ```
-./generate_logs.sh | go run ./cmd/main.go
+./generate_logs.sh | magic-log \
 --jq='{app: "magic-log", trace_id: .trace_id, message: .msg}'
 ```
 
 #### Drop fields
 
 ```
-./generate_logs.sh | go run ./cmd/main.go
+./generate_logs.sh | magic-log \
 --jq='del(.time, .msg)'
 ```

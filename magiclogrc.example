@@ -2,5 +2,8 @@
 apache = '''(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)'''
 sveltekit = '''\[(?P<level>\w+)] (?P<time>\S+) \[(?P<trace_id>\w+)] (?P<msg>.+)'''
 
+[jq_presets]
+simple = '''{ message: .msg } + .'''
+
 [defaults]
 log_format = "json"
