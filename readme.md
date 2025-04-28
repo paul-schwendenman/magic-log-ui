@@ -46,7 +46,7 @@ It is possible to manage the config using the CLI, like so:
 ```
 magic-log config set log_format text
 magic-log config set port 4001
-magic-log config set presets.myapp 'regex...'
+magic-log config set regex_presets.myapp 'regex...'
 ```
 
 You can also fetch values:
@@ -54,7 +54,7 @@ You can also fetch values:
 ```
 magic-log config get log_format
 magic-log config get port
-magic-log config get presets.myapp
+magic-log config get regex_presets.myapp
 ```
 
 And remove them:
@@ -62,7 +62,7 @@ And remove them:
 ```
 magic-log config unset log_format
 magic-log config unset port
-magic-log config unset presets.myapp
+magic-log config unset regex_presets.myapp
 ```
 
 ## Development
@@ -125,25 +125,25 @@ String with regex:
 
 ### JQ Filter Examples
 
-You can reshape incoming logs during ingestion using `--jq-filter`, based on JQ syntax.
+You can reshape incoming logs during ingestion using `--jq`, based on JQ syntax.
 
 #### Rename fields and keep the rest
 
 ```
 ./generate_logs.sh | go run ./cmd/main.go
---jq-filter='{message: .msg} + .'
+--jq='{message: .msg} + .'
 ```
 
 #### Add new static field
 
 ```
 ./generate_logs.sh | go run ./cmd/main.go
---jq-filter='{app: "magic-log", trace_id: .trace_id, message: .msg}'
+--jq='{app: "magic-log", trace_id: .trace_id, message: .msg}'
 ```
 
 #### Drop fields
 
 ```
 ./generate_logs.sh | go run ./cmd/main.go
---jq-filter='del(.time, .msg)'
+--jq='del(.time, .msg)'
 ```

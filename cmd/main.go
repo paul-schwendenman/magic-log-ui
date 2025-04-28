@@ -49,15 +49,26 @@ func main() {
 	}
 
 	if final.ListPresets {
-		all := getAllPresets(cfgFile)
-		fmt.Println("📜 Available parse presets:")
+		all := getRegexPresets(cfgFile)
+		fmt.Println("📜 Available regexp presets:")
+		for name := range all {
+			fmt.Printf("  - %s\n", name)
+		}
+
+		all = getJqPresets(cfgFile)
+		fmt.Println("📜 Available jq presets:")
 		for name := range all {
 			fmt.Printf("  - %s\n", name)
 		}
 		return
 	}
 
-	resolvedRegex, err := resolveRegex(final.ParsePreset, final.ParseRegex, cfgFile)
+	resolvedRegex, err := resolveRegex(final.RegexPreset, final.Regex, cfgFile)
+	if err != nil {
+		log.Fatalf("❌ %v", err)
+	}
+
+	resolvedJqFilter, err := resolveJqFilter(final.JqPreset, final.JqFilter, cfgFile)
 	if err != nil {
 		log.Fatalf("❌ %v", err)
 	}
@@ -69,7 +80,7 @@ func main() {
 		Echo:        final.Echo,
 		Version:     version,
 		LogFormat:   final.LogFormat,
-		JqFilter:    final.JqFilter,
+		JqFilter:    resolvedJqFilter,
 		AutoAnalyze: final.AutoAnalyze,
 		ParseRegex:  resolvedRegex,
 	})
@@ -113,7 +124,7 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	}
 
 	if preset != "" {
-		all := getAllPresets(cfg)
+		all := getRegexPresets(cfg)
 		if regex, ok := all[preset]; ok {
 			return regex, nil
 		}
@@ -121,6 +132,22 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	}
 
 	return "^(?P<message>.*)$", nil
+}
+
+func resolveJqFilter(preset, raw string, cfg *config.Config) (string, error) {
+	if raw != "" && preset == "" {
+		return raw, nil
+	}
+
+	if preset != "" {
+		all := getJqPresets(cfg)
+		if jqFilter, ok := all[preset]; ok {
+			return jqFilter, nil
+		}
+		return "", fmt.Errorf("unknown preset: %s", preset)
+	}
+
+	return "", nil
 }
 
 func launchBrowser(port int) {
@@ -149,15 +176,25 @@ func isCommandAvailable(name string) bool {
 	return err == nil
 }
 
-func getAllPresets(cfg *config.Config) map[string]string {
-	presets := map[string]string{
+func getRegexPresets(cfg *config.Config) map[string]string {
+	regex_presets := map[string]string{
 		"apache": `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`,
 	}
 
 	// Merge in user-defined (override if names match)
-	for k, v := range cfg.Presets {
-		presets[k] = v
+	for k, v := range cfg.RegexPresets {
+		regex_presets[k] = v
 	}
 
-	return presets
+	return regex_presets
+}
+
+func getJqPresets(cfg *config.Config) map[string]string {
+	jq_presets := map[string]string{}
+
+	for k, v := range cfg.JQPresets {
+		jq_presets[k] = v
+	}
+
+	return jq_presets
 }
