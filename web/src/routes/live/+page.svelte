@@ -2,6 +2,7 @@
 	import LiveControls from '$lib/components/LiveControls.svelte';
 	import LogTable from '$lib/components/LogTable.svelte';
 	import { liveFilter, filteredLiveLogs } from '$lib/stores/liveLogs';
+	import { createPaginationStore } from '$lib/stores/paginatedStore';
 
 	let initialVisibility = {
 		timestamp: true,
@@ -10,6 +11,8 @@
 		message: true,
 		raw: true
 	};
+
+	const logs = createPaginationStore(filteredLiveLogs, 500);
 </script>
 
 <h2 class="my-2 text-xl font-bold">Live Logs</h2>
@@ -21,4 +24,4 @@
 
 <LiveControls />
 
-<LogTable logs={$filteredLiveLogs} {initialVisibility} />
+<LogTable logs={$logs.items} {initialVisibility} />

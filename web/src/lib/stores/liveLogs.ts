@@ -7,7 +7,7 @@ import { useWebSocket } from '$lib/useWebSocket';
 export const liveFilter = writable('');
 export const paused = writable(false);
 export const liveLogs = createBufferedLogsStore<LogEntry>({
-	max: 500,
+	max: 50_000,
 	flushInterval: 100
 });
 export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {

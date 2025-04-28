@@ -3,6 +3,9 @@
 	import { isConnected } from '$lib/useWebSocket';
 	import { liveLogs, paused } from '$lib/stores/liveLogs';
 	import LogLineSimple from './LogLineSimple.svelte';
+	import { createPaginationStore } from '$lib/stores/paginatedStore';
+
+	const logs = createPaginationStore(liveLogs, 10);
 </script>
 
 <div>
@@ -23,7 +26,7 @@
 		{/if}
 	</h2>
 	<div class="space-y-2 lg:max-h-[90vh] lg:overflow-y-auto">
-		{#each $liveLogs as log (log)}
+		{#each $logs.items as log (log)}
 			<LogLineSimple {log} />
 		{/each}
 	</div>
