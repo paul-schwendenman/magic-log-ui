@@ -54,13 +54,25 @@ func main() {
 		for name := range all {
 			fmt.Printf("  - %s\n", name)
 		}
+
+		all = getJqPresets(cfgFile)
+		fmt.Println("📜 Available jq presets:")
+		for name := range all {
+			fmt.Printf("  - %s\n", name)
+		}
 		return
 	}
 
-	resolvedRegex, err := resolveRegex(final.ParsePreset, final.ParseRegex, cfgFile)
+	resolvedRegex, err := resolveRegex(final.RegexPreset, final.Regex, cfgFile)
 	if err != nil {
 		log.Fatalf("❌ %v", err)
 	}
+
+	resolvedJqFilter, err := resolveJqFilter(final.JqPreset, final.JqFilter, cfgFile)
+	if err != nil {
+		log.Fatalf("❌ %v", err)
+	}
+
 
 	Run(Config{
 		DBFile:      final.DBFile,
@@ -69,7 +81,7 @@ func main() {
 		Echo:        final.Echo,
 		Version:     version,
 		LogFormat:   final.LogFormat,
-		JqFilter:    final.JqFilter,
+		JqFilter:    resolvedJqFilter,
 		AutoAnalyze: final.AutoAnalyze,
 		ParseRegex:  resolvedRegex,
 	})
@@ -123,6 +135,22 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	return "^(?P<message>.*)$", nil
 }
 
+func resolveJqFilter(preset, raw string, cfg *config.Config) (string, error) {
+	if raw != "" && preset == "" {
+		return raw, nil
+	}
+
+	if preset != "" {
+		all := getJqPresets(cfg)
+		if jqFilter, ok := all[preset]; ok {
+			return jqFilter, nil
+		}
+		return "", fmt.Errorf("unknown preset: %s", preset)
+	}
+
+	return "", nil
+}
+
 func launchBrowser(port int) {
 	url := fmt.Sprintf("http://localhost:%d", port)
 
@@ -160,4 +188,14 @@ func getRegexPresets(cfg *config.Config) map[string]string {
 	}
 
 	return regex_presets
+}
+
+func getJqPresets(cfg *config.Config) map[string]string {
+	jq_presets := map[string]string{}
+
+	for k, v := range cfg.JQPresets {
+		jq_presets[k] = v
+	}
+
+	return jq_presets
 }

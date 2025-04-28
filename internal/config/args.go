@@ -12,9 +12,10 @@ type FinalConfig struct {
 	Launch      bool
 	Echo        bool
 	LogFormat   string
-	ParsePreset string
-	ParseRegex  string
+	RegexPreset string
+	Regex       string
 	JqFilter    string
+	JqPreset    string
 	AutoAnalyze bool
 	ShowVersion bool
 	ListPresets bool
@@ -30,10 +31,11 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		echo          = flag.Bool("echo", false, "Echo parsed stdin input to stdout")
 		noAutoAnalyze = flag.Bool("no-auto-analyze", false, "Disable automatic ANALYZE of logs table")
 		logFormat     = flag.String("log-format", "json", "Log format: json or text.")
-		parseRegex    = flag.String("parse-regex", "", "Custom regex to parse logs.")
-		parsePreset   = flag.String("parse-preset", "", "Regex preset to use.")
-		jqFilter      = flag.String("jq-filter", "", "A jq expression to apply to parsed logs")
-		listPresets   = flag.Bool("list-presets", false, "List available regex presets and exit.")
+		parseRegex    = flag.String("regex", "", "Custom regex to parse logs.")
+		regexPreset   = flag.String("regex-preset", "", "Regex preset to use.")
+		jqFilter      = flag.String("jq", "", "A jq expression to apply to parsed logs")
+		jqPreset      = flag.String("jq-preset", "", "Regex preset to use.")
+		listPresets   = flag.Bool("list-presets", false, "List available regex and jq presets and exit.")
 		showVersion   = flag.Bool("version", false, "Print version and exit.")
 	)
 
@@ -82,9 +84,10 @@ magic-log config [get|set|unset] <key> [value]
 		Launch:      resolveLaunch(*launch, *noLaunch, cfgFile.Defaults.Launch, flagPassed["launch"]),
 		Echo:        *echo,
 		LogFormat:   pickStr(*logFormat, cfgFile.Defaults.LogFormat, flagPassed["log-format"]),
-		ParsePreset: pickStr(*parsePreset, cfgFile.Defaults.ParsePreset, flagPassed["parse-preset"]),
-		ParseRegex:  pickStr(*parseRegex, cfgFile.Defaults.ParseRegex, flagPassed["parse-regex"]),
-		JqFilter:    pickStr(*jqFilter, cfgFile.Defaults.JqFilter, flagPassed["jq-filter"]),
+		RegexPreset: pickStr(*regexPreset, cfgFile.Defaults.RegexPreset, flagPassed["regex-preset"]),
+		Regex:       pickStr(*parseRegex, cfgFile.Defaults.Regex, flagPassed["regex"]),
+		JqFilter:    pickStr(*jqFilter, cfgFile.Defaults.JqFilter, flagPassed["jq"]),
+		JqPreset:    pickStr(*jqPreset, cfgFile.Defaults.JqPreset, flagPassed["jq-preset"]),
 		AutoAnalyze: !*noAutoAnalyze,
 		ShowVersion: *showVersion,
 		ListPresets: *listPresets,
