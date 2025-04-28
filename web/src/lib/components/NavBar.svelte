@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { m } from '$lib/paraglide/messages';
 
 	const links = [
-		{ href: '/', label: 'Home' },
-		{ href: '/live', label: 'Live Tail' },
-		{ href: '/search', label: 'Log Explorer' }
+		{ href: '/', label: m.ok_neat_mallard_fade() },
+		{ href: '/live', label: m.top_slow_shad_nudge() },
+		{ href: '/search', label: m.best_silly_antelope_vent() }
 		// { href: '/table', label: 'Table (alpha)' }
 		// add more pages here
 	];

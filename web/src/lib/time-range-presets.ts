@@ -1,30 +1,31 @@
 import { sub } from 'date-fns';
 import type { TimeRange } from './types';
+import { m } from './paraglide/messages';
 
 export const presets: TimeRange[] = [
 	{
-		label: '5 Minutes',
+		label: m.grassy_wacky_okapi_clip(),
 		from: sub(new Date(), { minutes: 5 }),
 		to: new Date(),
 		durationMs: 5 * 60_000,
 		live: true
 	},
 	{
-		label: '15 Minutes',
+		label: m.same_salty_marmot_grow(),
 		from: sub(new Date(), { minutes: 15 }),
 		to: new Date(),
 		durationMs: 15 * 60_000,
 		live: true
 	},
 	{
-		label: '30 Minutes',
+		label: m.round_slow_goose_drop(),
 		from: sub(new Date(), { minutes: 30 }),
 		to: new Date(),
 		durationMs: 30 * 60_000,
 		live: true
 	},
 	{
-		label: '1 Hour',
+		label: m.flaky_major_fly_rise(),
 		from: sub(new Date(), { hours: 1 }),
 		to: new Date(),
 		durationMs: 60 * 60_000,
@@ -32,7 +33,7 @@ export const presets: TimeRange[] = [
 		live: true
 	},
 	{
-		label: '4 Hours',
+		label: m.patient_solid_slug_sail(),
 		from: sub(new Date(), { hours: 4 }),
 		to: new Date(),
 		durationMs: 4 * 60 * 60_000,
@@ -40,7 +41,7 @@ export const presets: TimeRange[] = [
 		live: true
 	},
 	{
-		label: '12 Hours',
+		label: m.pretty_spicy_okapi_scold(),
 		from: sub(new Date(), { hours: 12 }),
 		to: new Date(),
 		durationMs: 12 * 60 * 60_000,
@@ -48,7 +49,7 @@ export const presets: TimeRange[] = [
 		live: true
 	},
 	{
-		label: '24 Hours',
+		label: m.cute_flaky_pigeon_embrace(),
 		from: sub(new Date(), { days: 1 }),
 		to: new Date(),
 		durationMs: 24 * 60 * 60_000,
@@ -56,7 +57,7 @@ export const presets: TimeRange[] = [
 		live: true
 	},
 	{
-		label: '3 Days',
+		label: m.honest_aqua_walrus_quell(),
 		from: sub(new Date(), { days: 3 }),
 		to: new Date(),
 		durationMs: 3 * 24 * 60 * 60_000,
