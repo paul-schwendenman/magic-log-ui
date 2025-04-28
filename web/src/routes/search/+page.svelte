@@ -26,7 +26,7 @@
 	let timeRange: TimeRange = $state({
 		from: new Date(Date.now() - 15 * 60 * 1000),
 		to: new Date(),
-		label: '15 Minutes',
+		label: m.same_salty_marmot_grow(),
 		durationMs: 15 * 60 * 1000,
 		live: true
 	});
