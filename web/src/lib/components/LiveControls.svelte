@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
 	import { paused, liveLogs } from '$lib/stores/liveLogs';
 	const bufferSize = liveLogs.bufferSize;
 	const isBufferFull = liveLogs.isBufferFull;
@@ -17,14 +18,14 @@
 			onclick={togglePause}
 			class="rounded bg-gray-700 px-4 py-1 text-sm text-white hover:bg-gray-600"
 		>
-			{$paused ? 'Resume' : 'Pause'}
+			{$paused ? m.mild_good_skunk_buzz() : m.proof_spare_reindeer_praise()}
 		</button>
 
 		<button
 			onclick={liveLogs.clearLogs}
 			class="rounded bg-gray-700 px-4 py-1 text-sm text-white hover:bg-gray-600"
 		>
-			Clear
+			{m.teary_nimble_crossbill_taste()}
 		</button>
 
 		{#if $paused}
@@ -32,7 +33,7 @@
 				onclick={liveLogs.clearBuffer}
 				class="rounded bg-yellow-700 px-4 py-1 text-sm text-white hover:bg-yellow-600"
 			>
-				Flush
+				{m.calm_ideal_bee_peek()}
 			</button>
 		{/if}
 	</div>
@@ -43,9 +44,9 @@
 			class:font-bold={$isBufferFull}
 		>
 			{#if $isBufferFull}
-				Buffer full
+				{m.plane_calm_oryx_earn()}
 			{:else}
-				+{$bufferSize} buffered
+				{m.sweet_sound_toucan_bloom({ bufferSize: $bufferSize })}
 			{/if}
 		</div>
 	{/if}

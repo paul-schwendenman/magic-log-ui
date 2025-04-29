@@ -26,7 +26,7 @@
 	let timeRange: TimeRange = $state({
 		from: new Date(Date.now() - 15 * 60 * 1000),
 		to: new Date(),
-		label: '15 Minutes',
+		label: m.same_salty_marmot_grow(),
 		durationMs: 15 * 60 * 1000,
 		live: true
 	});
@@ -117,7 +117,7 @@
 		class="mt-4 flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm text-gray-300"
 	>
 		<div class="flex items-center gap-2">
-			<label for="limit" class="text-gray-400">Rows per page:</label>
+			<label for="limit" class="text-gray-400">{m.sea_fresh_spider_affirm()}</label>
 			<select
 				id="limit"
 				class="rounded border border-gray-600 bg-gray-800 p-1"
@@ -137,17 +137,17 @@
 				disabled={!$store.meta.hasPreviousPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
-				Previous
+				{m.knotty_close_crab_thrive()}
 			</button>
 
-			<span class="text-xs">Page {page + 1} of {totalPages}</span>
+			<span class="text-xs">{m.loud_game_chicken_dine({ page, totalPages })}</span>
 
 			<button
 				onclick={store.nextPage}
 				disabled={!$store.meta.hasNextPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
-				Next
+				{m.wise_only_flea_arrive()}
 			</button>
 		</div>
 	</div>

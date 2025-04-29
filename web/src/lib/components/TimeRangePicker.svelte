@@ -3,6 +3,7 @@
 	import { format } from 'date-fns';
 	import { presets } from '$lib/time-range-presets';
 	import type { TimeRange } from '$lib/types';
+	import { m } from '$lib/paraglide/messages';
 
 	export let value: TimeRange;
 	export let onChange: (range: TimeRange) => void;
@@ -107,7 +108,9 @@
 		</div>
 
 		{#if value.live}
-			<span class="rounded bg-green-700 px-2 py-1 text-xs font-semibold text-white">LIVE</span>
+			<span class="rounded bg-green-700 px-2 py-1 text-xs font-semibold text-white"
+				>{m.bland_any_dingo_empower()}</span
+			>
 		{/if}
 	</div>
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ExpandableCell from '$lib/components/ExpandableCell.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import {
 		createColumnHelper,
 		createSvelteTable,
@@ -23,7 +24,7 @@
 	const columnDefs = [
 		colHelp.accessor('timestamp', {
 			id: 'timestamp',
-			header: 'Time',
+			header: m.born_each_lobster_sing(),
 			cell: ({ cell }) => {
 				const isoString = cell.getValue();
 				const date = new Date(isoString);
@@ -40,12 +41,12 @@
 			}
 		}),
 
-		colHelp.accessor('trace_id', { id: 'trace_id', header: 'Trace ID' }),
-		colHelp.accessor('level', { id: 'level', header: 'Level' }),
-		colHelp.accessor('message', { id: 'message', header: 'Message' }),
+		colHelp.accessor('trace_id', { id: 'trace_id', header: m.tense_blue_maggot_nurture() }),
+		colHelp.accessor('level', { id: 'level', header: m.bland_ok_dolphin_kiss() }),
+		colHelp.accessor('message', { id: 'message', header: m.hour_top_cat_fear() }),
 		colHelp.accessor('raw', {
 			id: 'raw',
-			header: 'Raw',
+			header: m.agent_trite_cow_list(),
 			cell: ({ cell }) => renderComponent(ExpandableCell, { value: cell.getValue() })
 		})
 	];
