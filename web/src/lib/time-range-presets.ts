@@ -4,7 +4,7 @@ import { m } from './paraglide/messages';
 
 export const presets: TimeRangeConfig[] = [
 	{
-		label: '1 minute',
+		label: m.zany_royal_cod_pat(),
 		from: sub(new Date(), { minutes: 1 }),
 		to: new Date(),
 		durationMs: 5 * 60_000,
