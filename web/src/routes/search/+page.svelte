@@ -9,7 +9,7 @@
 	import { createQueryStore } from '$lib/stores/queryStore';
 	import { onMount } from 'svelte';
 	import TimeRangePicker from '$lib/components/TimeRangePicker.svelte';
-	import type { TimeRange } from '$lib/types';
+	import type { TimeRangeConfig } from '$lib/types';
 
 	const initialLimit = 10;
 	const initialQuery = 'SELECT log FROM logs';
@@ -23,11 +23,12 @@
 	const page = $derived($store.meta.page);
 	const totalPages = $derived($store.meta.totalPages);
 
-	let timeRange: TimeRange = $state({
+	let timeRange: TimeRangeConfig = $state({
 		from: new Date(Date.now() - 15 * 60 * 1000),
 		to: new Date(),
 		label: m.same_salty_marmot_grow(),
 		durationMs: 15 * 60 * 1000,
+		relative: true,
 		live: true
 	});
 
@@ -54,7 +55,7 @@
 		bind:value={timeRange}
 		onChange={(range) => {
 			timeRange = range;
-			store.setTimeRange(range);
+			store.setTimeRange({ to: timeRange.to, from: timeRange.from });
 		}}
 	/>
 
