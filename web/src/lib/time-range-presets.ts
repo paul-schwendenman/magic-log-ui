@@ -4,6 +4,14 @@ import { m } from './paraglide/messages';
 
 export const presets: TimeRangeConfig[] = [
 	{
+		label: '1 minute',
+		from: sub(new Date(), { minutes: 1 }),
+		to: new Date(),
+		durationMs: 5 * 60_000,
+		relative: true,
+		live: true
+	},
+	{
 		label: m.grassy_wacky_okapi_clip(),
 		from: sub(new Date(), { minutes: 5 }),
 		to: new Date(),
