@@ -10,8 +10,14 @@ export type LogEntry = {
 export type TimeRange = {
 	from: Date;
 	to: Date;
+};
+
+export type TimeRangeConfig = {
+	from: Date;
+	to: Date;
 	label: string; // e.g. "Past 15 Minutes"
 	durationMs?: number; // for live shifting
 	refreshMs?: number;
 	live?: boolean;
+	relative?: boolean;
 };

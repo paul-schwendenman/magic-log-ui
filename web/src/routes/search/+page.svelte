@@ -9,7 +9,7 @@
 	import { createQueryStore } from '$lib/stores/queryStore';
 	import { onMount } from 'svelte';
 	import TimeRangePicker from '$lib/components/TimeRangePicker.svelte';
-	import type { TimeRange } from '$lib/types';
+	import type { TimeRangeConfig } from '$lib/types';
 
 	const initialLimit = 10;
 	const initialQuery = 'SELECT log FROM logs';
@@ -23,11 +23,12 @@
 	const page = $derived($store.meta.page);
 	const totalPages = $derived($store.meta.totalPages);
 
-	let timeRange: TimeRange = $state({
+	let timeRange: TimeRangeConfig = $state({
 		from: new Date(Date.now() - 15 * 60 * 1000),
 		to: new Date(),
 		label: m.same_salty_marmot_grow(),
 		durationMs: 15 * 60 * 1000,
+		relative: true,
 		live: true
 	});
 
@@ -54,7 +55,7 @@
 		bind:value={timeRange}
 		onChange={(range) => {
 			timeRange = range;
-			store.setTimeRange(range);
+			store.setTimeRange({ to: timeRange.to, from: timeRange.from });
 		}}
 	/>
 
@@ -133,6 +134,13 @@
 
 		<div class="flex items-center gap-2">
 			<button
+				onclick={() => store.setPage(0)}
+				disabled={!$store.meta.hasPreviousPage}
+				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
+			>
+				{m.safe_bright_antelope_grip()}
+			</button>
+			<button
 				onclick={store.prevPage}
 				disabled={!$store.meta.hasPreviousPage}
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
@@ -148,6 +156,13 @@
 				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
 			>
 				{m.wise_only_flea_arrive()}
+			</button>
+			<button
+				onclick={() => store.setPage(totalPages - 1)}
+				disabled={!$store.meta.hasNextPage}
+				class="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
+			>
+				{m.few_short_slug_flow()}
 			</button>
 		</div>
 	</div>

@@ -72,10 +72,7 @@ export const createQueryStore = ({
 
 	const timeRangeStore = writable<TimeRange>({
 		from: new Date(Date.now() - 15 * 60 * 1000),
-		to: new Date(),
-		label: 'Past 15 Minutes',
-		durationMs: 15 * 60 * 1000,
-		live: true
+		to: new Date()
 	});
 
 	queryStore.subscribe(() => pageStore.set(0));
@@ -121,6 +118,7 @@ export const createQueryStore = ({
 		page: pageStore,
 		limit: limitStore,
 		nextPage,
-		prevPage
+		prevPage,
+		setPage: pageStore.set
 	};
 };

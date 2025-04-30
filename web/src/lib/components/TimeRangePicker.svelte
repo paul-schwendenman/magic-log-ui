@@ -2,11 +2,11 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { format } from 'date-fns';
 	import { presets } from '$lib/time-range-presets';
-	import type { TimeRange } from '$lib/types';
+	import type { TimeRangeConfig } from '$lib/types';
 	import { m } from '$lib/paraglide/messages';
 
-	export let value: TimeRange;
-	export let onChange: (range: TimeRange) => void;
+	export let value: TimeRangeConfig;
+	export let onChange: (range: TimeRangeConfig) => void;
 
 	let interval: ReturnType<typeof setInterval> | null = null;
 
@@ -20,14 +20,14 @@
 		stopLive();
 	});
 
-	function selectRange(preset: TimeRange) {
+	function selectRange(preset: TimeRangeConfig) {
 		stopLive();
 		const now = new Date();
 		onChange({
 			...preset,
 			from: new Date(now.getTime() - (preset.durationMs ?? 0)),
 			to: now,
-			live: preset.live ?? false
+			live: preset.live || value.live
 		});
 		if (preset.live && preset.durationMs) {
 			startLive();
@@ -39,7 +39,7 @@
 		const duration = value.to.getTime() - value.from.getTime();
 		const to = new Date(value.from.getTime());
 		const from = new Date(value.from.getTime() - duration);
-		onChange({ ...value, from, to, live: false });
+		onChange({ ...value, from, to, relative: false, live: false });
 	}
 
 	function stepForward() {
@@ -47,7 +47,7 @@
 		const duration = value.to.getTime() - value.from.getTime();
 		const from = new Date(value.to.getTime());
 		const to = new Date(value.to.getTime() + duration);
-		onChange({ ...value, from, to, live: false });
+		onChange({ ...value, from, to, relative: false, live: false });
 	}
 
 	function toggleLive() {
@@ -57,22 +57,32 @@
 		}
 		onChange({
 			...value,
-			live: !value.live,
-			from: !value.live && value.durationMs ? new Date(Date.now() - value.durationMs) : value.from,
-			to: !value.live ? new Date() : value.to
+			live: !value.live
+			// from: !value.live && value.durationMs ? new Date(Date.now() - value.durationMs) : value.from,
+			// to: !value.live ? new Date() : value.to
 		});
+	}
+
+	function reload() {
+		if (value.relative) {
+			const now = new Date();
+			onChange({
+				...value,
+				from: new Date(now.getTime() - (value.durationMs ?? 0)),
+				to: now
+				// live: true
+			});
+		} else {
+			onChange({
+				...value
+			});
+		}
 	}
 
 	function startLive() {
 		stopLive();
 		interval = setInterval(() => {
-			const now = new Date();
-			onChange({
-				...value,
-				from: new Date(now.getTime() - (value.durationMs ?? 0)),
-				to: now,
-				live: true
-			});
+			reload();
 		}, value.refreshMs ?? 5000);
 	}
 
@@ -95,7 +105,7 @@
 				}}
 				class="rounded border bg-gray-800 px-2 py-1 text-sm"
 			>
-				{#if !value.live}
+				{#if !value.relative}
 					<option value={value.label}>
 						{format(value.from, 'MMM d, h:mm a')} – {format(value.to, 'MMM d, h:mm a')}
 					</option>
@@ -120,6 +130,6 @@
 			{value.live ? '⏸' : '⏯'}
 		</button>
 		<button on:click={stepForward} class="rounded bg-gray-700 px-2 py-1">»</button>
-		<button on:click={() => onChange({ ...value })} class="rounded bg-gray-700 px-2 py-1">↻</button>
+		<button on:click={reload} class="rounded bg-gray-700 px-2 py-1">↻</button>
 	</div>
 </div>
