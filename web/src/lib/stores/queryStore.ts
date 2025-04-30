@@ -118,6 +118,7 @@ export const createQueryStore = ({
 		page: pageStore,
 		limit: limitStore,
 		nextPage,
-		prevPage
+		prevPage,
+		setPage: pageStore.set
 	};
 };
