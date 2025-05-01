@@ -12,6 +12,10 @@
 </script>
 
 <nav class="flex items-center gap-6 border-b border-gray-700 bg-gray-900 px-6 py-2 text-sm">
+	<a href="/" class="flex items-center gap-2 text-white font-bold">
+		<img src="/logo.png" alt="Magic Log logo" class="h-12 w-auto" />
+	</a>
+
 	{#each links as { href, label }}
 		<a {href} class="text-gray-300 hover:text-white" class:selected={$page.url.pathname === href}>
 			{label}
