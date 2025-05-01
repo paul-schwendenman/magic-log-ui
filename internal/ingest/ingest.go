@@ -125,7 +125,7 @@ func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p
 	finalLogJson := shared.MustJson(transformed)
 
 	regexPattern := ""
-	if p.parseRegex != nil {
+	if p.parseRegex != nil && p.logFormat == "text" {
 		regexPattern = p.parseRegex.String()
 	}
 
