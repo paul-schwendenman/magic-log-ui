@@ -11,7 +11,7 @@ STATIC_DIR := $(BUILD_DIR)/static
 all: build
 
 clean:
-	rm -rf $(STATIC_DIR) $(NAME) $(WEB_DIR)/build/
+	rm -rf $(STATIC_DIR) $(NAME) $(WEB_DIR)/build/ $(WEB_DIR)/src/lib/paraglide
 
 frontend:
 	cd $(WEB_DIR) && pnpm install && pnpm build

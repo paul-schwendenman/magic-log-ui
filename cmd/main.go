@@ -17,7 +17,7 @@ import (
 
 var version = "dev"
 
-//go:embed static/*
+//go:embed all:static/*
 var staticFiles embed.FS
 
 type Config struct {
