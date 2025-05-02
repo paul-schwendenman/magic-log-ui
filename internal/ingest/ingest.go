@@ -19,29 +19,30 @@ import (
 )
 
 type parsers struct {
-	logFormat       string
-	parseRegex      *regexp.Regexp
-	jqEnabled       bool
-	jqFilter        string
-	csvFields       []string
-	hasCSVHeader    bool
-	headerExtracted bool
+	logFormat  string
+	parseRegex *regexp.Regexp
+	jqEnabled  bool
+	jqFilter   string
+	csvFields  []string
 }
 
-func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery string, csvFieldsStr string, hasCSVHeader, echo bool, ctx context.Context) {
+func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery, csvFieldsStr string, hasCSVHeader bool, echo bool, ctx context.Context) {
 	scanner := attach(input)
 	parsers := buildParsers(logFormat, parseRegexStr, jqQuery, csvFieldsStr, hasCSVHeader)
+	headerExtracted := false
 
 	for scanner.Scan() {
 		rawLine := scanner.Text()
 
-		if logFormat == "csv" && parsers.csvFields == nil && !parsers.headerExtracted {
+		if logFormat == "csv" && hasCSVHeader && !headerExtracted {
 			header, err := readCSV(rawLine)
 			if err != nil {
 				log.Fatalf("❌ Failed to read CSV header: %v", err)
 			}
-			parsers.csvFields = header
-			parsers.headerExtracted = true
+			if parsers.csvFields == nil {
+				parsers.csvFields = header
+			}
+			headerExtracted = true
 			continue // Skip header row
 		}
 
@@ -81,13 +82,11 @@ func buildParsers(logFormat, parseRegexStr, jqQuery, csvFieldsStr string, hasCSV
 	}
 
 	return parsers{
-		logFormat:       logFormat,
-		parseRegex:      regex,
-		jqEnabled:       jqQuery != "",
-		jqFilter:        jqQuery,
-		csvFields:       csvFields,
-		hasCSVHeader:    hasCSVHeader,
-		headerExtracted: false,
+		logFormat:  logFormat,
+		parseRegex: regex,
+		jqEnabled:  jqQuery != "",
+		jqFilter:   jqQuery,
+		csvFields:  csvFields,
 	}
 }
 
