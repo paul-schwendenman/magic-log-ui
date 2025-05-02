@@ -27,7 +27,8 @@ func MustInit(path string, ctx context.Context) *sql.DB {
 			log JSON,
 			created_at TIMESTAMP DEFAULT current_timestamp,
 			regex_pattern TEXT,
-			jq_filter TEXT
+			jq_filter TEXT,
+			csv_headers TEXT,
 		);
 	`)
 	if err != nil {
@@ -59,8 +60,9 @@ func MustPrepareInsert(db *sql.DB, ctx context.Context) *sql.Stmt {
 	  created_at,
 	  timestamp,
 	  regex_pattern,
-	  jq_filter
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	  jq_filter,
+	  csv_headers
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 	if err != nil {
 		log.Fatal(err)

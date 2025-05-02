@@ -173,6 +173,7 @@ func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p
 		timestamp,
 		nullify(regexPattern),
 		nullify(p.jqFilter),
+		nullify(strings.Join(p.csvFields, ",")),
 	)
 
 	return err
