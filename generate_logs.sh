@@ -32,7 +32,7 @@ MESSAGES=(
 )
 
 if [[ "$FORMAT" == "csv" ]]; then
-  echo "timestamp,level,message,trace_id"
+  echo "timestamp,level,msg,trace_id"
 fi
 
 while true; do
