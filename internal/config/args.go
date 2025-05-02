@@ -101,7 +101,7 @@ magic-log config [get|set|unset] <key> [value]
 		JqFilter:     pickStr(*jqFilter, cfgFile.Defaults.JqFilter, flagPassed["jq"]),
 		JqPreset:     pickStr(*jqPreset, cfgFile.Defaults.JqPreset, flagPassed["jq-preset"]),
 		CSVFieldsStr: pickStr(*csvFieldsStr, cfgFile.Defaults.CSVFields, flagPassed["csv-fields"]),
-		HasCSVHeader: pickBool(*hasCSVHeader, cfgFile.Defaults.HasCSVHeader, flagPassed["has-csv-header"]),
+		HasCSVHeader: *hasCSVHeader || cfgFile.Defaults.HasCSVHeader,
 		AutoAnalyze:  !*noAutoAnalyze,
 		ShowVersion:  *showVersion,
 		ListPresets:  *listPresets,
