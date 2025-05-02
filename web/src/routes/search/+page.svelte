@@ -10,14 +10,13 @@
 	import { onMount } from 'svelte';
 	import TimeRangePicker from '$lib/components/TimeRangePicker.svelte';
 	import type { TimeRangeConfig } from '$lib/types';
-	import { writable } from 'svelte/store';
-	import { localStorageStore } from '$lib/stores/localStorageStore';
+	import { sessionStorageStore } from '$lib/stores/sessionStorageStore';
 
 	const initialLimit = 10;
 	const initialQuery = 'SELECT log FROM logs';
 
 	let drawerOpen = $state(false);
-	const query = localStorageStore('query', initialQuery);
+	const query = sessionStorageStore('query', initialQuery);
 	let showSuccess = $state(false);
 	let limit = $state(initialLimit);
 
