@@ -1,5 +1,4 @@
-import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { localStorageStore } from './stores/localStorageStore';
 
 export type QueryEntry = {
 	query: string;
@@ -7,17 +6,9 @@ export type QueryEntry = {
 	timestamp: number;
 };
 
-const initial: QueryEntry[] = browser
-	? JSON.parse(localStorage.getItem('queryHistory') || '[]')
-	: [];
+const initial: QueryEntry[] = [];
 
-export const queryHistory = writable<QueryEntry[]>(initial);
-
-if (browser) {
-	queryHistory.subscribe((value) => {
-		localStorage.setItem('queryHistory', JSON.stringify(value));
-	});
-}
+export const queryHistory = localStorageStore<QueryEntry[]>('queryHistory', initial);
 
 export function addQuery(entry: QueryEntry) {
 	queryHistory.update((history) => {
