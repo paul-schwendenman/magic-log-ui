@@ -11,12 +11,13 @@
 	import TimeRangePicker from '$lib/components/TimeRangePicker.svelte';
 	import type { TimeRangeConfig } from '$lib/types';
 	import { writable } from 'svelte/store';
+	import { localStorageStore } from '$lib/stores/localStorageStore';
 
 	const initialLimit = 10;
 	const initialQuery = 'SELECT log FROM logs';
 
 	let drawerOpen = $state(false);
-	const query = writable(initialQuery);
+	const query = localStorageStore('query', initialQuery);
 	let showSuccess = $state(false);
 	let limit = $state(initialLimit);
 
