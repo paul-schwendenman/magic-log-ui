@@ -10,12 +10,13 @@
 	import { onMount } from 'svelte';
 	import TimeRangePicker from '$lib/components/TimeRangePicker.svelte';
 	import type { TimeRangeConfig } from '$lib/types';
+	import { writable } from 'svelte/store';
 
 	const initialLimit = 10;
 	const initialQuery = 'SELECT log FROM logs';
 
 	let drawerOpen = $state(false);
-	let query = $state(initialQuery);
+	const query = writable(initialQuery);
 	let showSuccess = $state(false);
 	let limit = $state(initialLimit);
 
@@ -35,22 +36,22 @@
 	onMount(() =>
 		store.subscribe((state) => {
 			if (state.error) {
-				addQuery({ query, ok: false, timestamp: Date.now() });
+				addQuery({ query: $query, ok: false, timestamp: Date.now() });
 			} else {
 				showSuccess = true;
 				setTimeout(() => (showSuccess = false), 2500);
-				addQuery({ query, ok: true, timestamp: Date.now() });
+				addQuery({ query: $query, ok: true, timestamp: Date.now() });
 			}
 		})
 	);
 
 	function fetchQuery() {
-		return store.setQuery(query);
+		return store.setQuery($query);
 	}
 </script>
 
 <div class="mx-auto max-w-screen-xl space-y-4 p-4">
-	<QueryInput bind:query onQuery={fetchQuery} />
+	<QueryInput bind:query={$query} onQuery={fetchQuery} />
 	<TimeRangePicker
 		bind:value={timeRange}
 		onChange={(range) => {
@@ -104,7 +105,7 @@
 	<QueryDrawer
 		bind:open={drawerOpen}
 		onSelect={(q) => {
-			query = q;
+			$query = q;
 			drawerOpen = false;
 		}}
 	/>
