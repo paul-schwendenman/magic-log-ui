@@ -19,6 +19,8 @@ type Config struct {
 		Regex       string `toml:"regex"`
 		JqFilter    string `toml:"jq"`
 		JqPreset    string `toml:"jq_preset"`
+		CSVFields   string `toml:"csv_fields"`
+		HasCSVHeader bool  `toml:"has_csv_header"`
 	} `toml:"defaults"`
 }
 

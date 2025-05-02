@@ -28,6 +28,8 @@ type Config struct {
 	LogFormat   string
 	ParseRegex  string
 	JqFilter    string
+	CSVFieldsStr   string
+	HasCSVHeader bool
 	AutoAnalyze bool
 	Version     string
 }
@@ -81,6 +83,8 @@ func main() {
 		Version:     version,
 		LogFormat:   final.LogFormat,
 		JqFilter:    resolvedJqFilter,
+		CSVFieldsStr: final.CSVFieldsStr,
+		HasCSVHeader: final.HasCSVHeader,
 		AutoAnalyze: final.AutoAnalyze,
 		ParseRegex:  resolvedRegex,
 	})
@@ -113,7 +117,7 @@ func Run(config Config) {
 		launchBrowser(config.Port)
 	}
 
-	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.JqFilter, config.Echo, ctx)
+	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.JqFilter, config.CSVFieldsStr, config.HasCSVHeader, config.Echo, ctx)
 
 	select {}
 }
