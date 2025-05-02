@@ -11,16 +11,16 @@ type Config struct {
 	RegexPresets map[string]string `toml:"regex_presets"`
 	JQPresets    map[string]string `toml:"jq_presets"`
 	Defaults     struct {
-		DBFile      string `toml:"db_file"`
-		Port        int    `toml:"port"`
-		Launch      bool   `toml:"launch"`
-		LogFormat   string `toml:"log_format"`
-		RegexPreset string `toml:"regex_preset"`
-		Regex       string `toml:"regex"`
-		JqFilter    string `toml:"jq"`
-		JqPreset    string `toml:"jq_preset"`
-		CSVFields   string `toml:"csv_fields"`
-		HasCSVHeader bool  `toml:"has_csv_header"`
+		DBFile       string `toml:"db_file"`
+		Port         int    `toml:"port"`
+		Launch       bool   `toml:"launch"`
+		LogFormat    string `toml:"log_format"`
+		RegexPreset  string `toml:"regex_preset"`
+		Regex        string `toml:"regex"`
+		JqFilter     string `toml:"jq"`
+		JqPreset     string `toml:"jq_preset"`
+		CSVFields    string `toml:"csv_fields"`
+		HasCSVHeader bool   `toml:"has_csv_header"`
 	} `toml:"defaults"`
 }
 
