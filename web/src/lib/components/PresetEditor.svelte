@@ -20,29 +20,6 @@
 <section class="mb-6">
 	<h2 class="mb-2 text-xl font-semibold">{title}</h2>
 
-	<!-- Add preset -->
-	<div class="mb-4 flex gap-2">
-		<input class="w-1/3 rounded border p-2" placeholder="New preset name" bind:value={newKey} />
-		<input class="flex-1 rounded border p-2" placeholder="Value" bind:value={newValue} />
-		<button
-			class="rounded bg-green-500 p-2 text-white disabled:opacity-50"
-			on:click={addPreset}
-			disabled={!newKey || newKey in presets}
-			aria-label="Add"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				class="size-6"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-			</svg>
-		</button>
-	</div>
-
 	<!-- Existing presets -->
 	{#each Object.entries(presets) as [key, value]}
 		<div class="mb-2 flex items-center gap-2">
@@ -70,4 +47,27 @@
 			</button>
 		</div>
 	{/each}
+
+	<!-- Add preset -->
+	<div class="mb-4 flex gap-2">
+		<input class="w-1/3 rounded border p-2" placeholder="New preset name" bind:value={newKey} />
+		<input class="flex-1 rounded border p-2" placeholder="Value" bind:value={newValue} />
+		<button
+			class="rounded bg-green-500 p-2 text-white disabled:opacity-50"
+			on:click={addPreset}
+			disabled={!newKey || newKey in presets}
+			aria-label="Add"
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="size-6"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+			</svg>
+		</button>
+	</div>
 </section>
