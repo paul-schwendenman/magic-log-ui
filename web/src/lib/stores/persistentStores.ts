@@ -4,15 +4,17 @@ import { browser } from '$app/environment';
 export function persistentStore<T>(
 	key: string,
 	initial: T,
-	storage: Storage
+	getStorage: () => Storage
 ): Writable<T> {
 	const start = browser
-		? (JSON.parse(storage.getItem(key) ?? 'null') as T | null) ?? initial
+		? (JSON.parse(getStorage().getItem(key) ?? 'null') as T | null) ?? initial
 		: initial;
 
 	const store = writable<T>(start);
 
 	if (browser) {
+		const storage = getStorage();
+
 		store.subscribe((value) => {
 			storage.setItem(key, JSON.stringify(value));
 		});
