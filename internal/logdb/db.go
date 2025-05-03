@@ -52,6 +52,7 @@ func MustInit(path string, ctx context.Context) *sql.DB {
 func MustPrepareInsert(db *sql.DB, ctx context.Context) *sql.Stmt {
 	stmt, err := db.PrepareContext(ctx, `
 	INSERT INTO logs (
+	  id,
 	  trace_id,
 	  level,
 	  message,
@@ -64,7 +65,7 @@ func MustPrepareInsert(db *sql.DB, ctx context.Context) *sql.Stmt {
 	  regex_pattern,
 	  jq_filter,
 	  csv_headers
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 	if err != nil {
 		log.Fatal(err)

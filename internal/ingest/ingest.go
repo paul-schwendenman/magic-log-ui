@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"log"
 	"regexp"
@@ -161,8 +162,11 @@ func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p
 		regexPattern = p.parseRegex.String()
 	}
 
+	id := uuid.New().String()
+
 	_, err := stmt.ExecContext(
 		ctx,
+		id,
 		traceID,
 		level,
 		message,

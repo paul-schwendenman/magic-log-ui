@@ -37,6 +37,7 @@ func setupTestDB(t *testing.T) (*sql.DB, *sql.Stmt, context.Context) {
 	)`)
 
 	stmt, err := db.Prepare(`INSERT INTO logs (
+		id,
 		trace_id,
 		level,
 		message,
@@ -49,7 +50,7 @@ func setupTestDB(t *testing.T) (*sql.DB, *sql.Stmt, context.Context) {
 		regex_pattern,
 		jq_filter,
 		csv_headers
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {
 		t.Fatal(err)
