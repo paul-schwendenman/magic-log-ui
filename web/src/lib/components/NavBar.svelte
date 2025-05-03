@@ -5,7 +5,8 @@
 	const links = [
 		{ href: '/', label: m.ok_neat_mallard_fade() },
 		{ href: '/live', label: m.top_slow_shad_nudge() },
-		{ href: '/search', label: m.best_silly_antelope_vent() }
+		{ href: '/search', label: m.best_silly_antelope_vent() },
+		{ href: '/config', label: m.great_zesty_buzzard_savor() }
 		// { href: '/table', label: 'Table (alpha)' }
 		// add more pages here
 	];
