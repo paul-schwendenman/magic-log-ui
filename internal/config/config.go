@@ -33,7 +33,10 @@ func LoadFromFile(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{}, nil
+			return &Config{
+				RegexPresets: map[string]string{},
+				JQPresets:    map[string]string{},
+			}, nil
 		}
 		return nil, err
 	}
@@ -42,6 +45,14 @@ func LoadFromFile(path string) (*Config, error) {
 	if err := toml.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}
+
+	if cfg.RegexPresets == nil {
+		cfg.RegexPresets = make(map[string]string)
+	}
+	if cfg.JQPresets == nil {
+		cfg.JQPresets = make(map[string]string)
+	}
+
 	return &cfg, nil
 }
 

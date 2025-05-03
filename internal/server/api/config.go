@@ -10,7 +10,7 @@ import (
 var configPath string
 
 func init() {
-    configPath = config.GetConfigPath()
+	configPath = config.GetConfigPath()
 }
 
 func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
