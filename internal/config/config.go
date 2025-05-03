@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 
@@ -23,14 +24,7 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	path := os.Getenv("MAGIC_LOG_CONFIG")
-	if path == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-		path = filepath.Join(home, ".magiclogrc")
-	}
+	path := GetConfigPath()
 
 	return LoadFromFile(path)
 }
@@ -49,4 +43,31 @@ func LoadFromFile(path string) (*Config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+func Save(cfg *Config) error {
+	path := GetConfigPath()
+
+	return SaveToFile(path, cfg)
+}
+
+func SaveToFile(path string, cfg *Config) error {
+	var buf bytes.Buffer
+	if err := toml.NewEncoder(&buf).Encode(cfg); err != nil {
+		return err
+	}
+	return os.WriteFile(path, buf.Bytes(), 0644)
+}
+
+func GetConfigPath() string {
+	path := os.Getenv("MAGIC_LOG_CONFIG")
+	if path == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return ""
+		}
+		path = filepath.Join(home, ".magiclogrc")
+	}
+
+	return path
 }
