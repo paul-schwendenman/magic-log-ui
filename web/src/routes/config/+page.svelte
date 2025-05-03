@@ -63,14 +63,29 @@
 		{#if config?.regex_presets}
 			<section>
 				<h2 class="mb-2 text-xl font-semibold">Regex Presets</h2>
+				{#if Object.keys(config.regex_presets).length === 0}
+					<p class="mb-2 text-sm text-gray-500">No regex presets yet.</p>
+				{/if}
 				<div class="space-y-2">
 					{#each Object.entries(config.regex_presets) as [key, value], i}
-						<div class="flex gap-2">
-							<input class="w-1/3 rounded border p-2" bind:value={key} disabled />
+						<div class="flex items-center gap-2">
+							<input class="w-1/3 rounded border p-2" bind:value={key} />
 							<input class="flex-1 rounded border p-2" bind:value={config.regex_presets[key]} />
+							<button
+								on:click={() => delete config.regex_presets[key]}
+								class="text-red-600 hover:underline"
+							>
+								✕
+							</button>
 						</div>
 					{/each}
 				</div>
+				<button
+					on:click={() => (config.regex_presets['new_preset_' + Date.now()] = '')}
+					class="mt-2 text-sm text-blue-600 hover:underline"
+				>
+					+ Add Regex Preset
+				</button>
 			</section>
 		{/if}
 
@@ -78,14 +93,29 @@
 		{#if config?.jq_presets}
 			<section>
 				<h2 class="mb-2 text-xl font-semibold">JQ Presets</h2>
+				{#if Object.keys(config.jq_presets).length === 0}
+					<p class="mb-2 text-sm text-gray-500">No jq presets yet.</p>
+				{/if}
 				<div class="space-y-2">
 					{#each Object.entries(config.jq_presets) as [key, value], i}
-						<div class="flex gap-2">
-							<input class="w-1/3 rounded border p-2" bind:value={key} disabled />
+						<div class="flex items-center gap-2">
+							<input class="w-1/3 rounded border p-2" bind:value={key} />
 							<input class="flex-1 rounded border p-2" bind:value={config.jq_presets[key]} />
+							<button
+								on:click={() => delete config.jq_presets[key]}
+								class="text-red-600 hover:underline"
+							>
+								✕
+							</button>
 						</div>
 					{/each}
 				</div>
+				<button
+					on:click={() => (config.jq_presets['new_preset_' + Date.now()] = '')}
+					class="mt-2 text-sm text-blue-600 hover:underline"
+				>
+					+ Add JQ Preset
+				</button>
 			</section>
 		{/if}
 
