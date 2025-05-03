@@ -45,43 +45,49 @@
 		{/if}
 
 		<!-- Defaults -->
-		<section>
-			<h2 class="mb-2 text-xl font-semibold">Defaults</h2>
-			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				{#each Object.entries(config.defaults) as [key, value]}
-					<div>
-						<label class="block font-medium capitalize">{key}</label>
-						<input class="w-full rounded border p-2" bind:value={config.defaults[key]} />
-					</div>
-				{/each}
-			</div>
-		</section>
+		{#if config?.defaults}
+			<section>
+				<h2 class="mb-2 text-xl font-semibold">Defaults</h2>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					{#each Object.entries(config.defaults) as [key, value]}
+						<div>
+							<label class="block font-medium capitalize">{key}</label>
+							<input class="w-full rounded border p-2" bind:value={config.defaults[key]} />
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
 
 		<!-- Regex Presets -->
-		<section>
-			<h2 class="mb-2 text-xl font-semibold">Regex Presets</h2>
-			<div class="space-y-2">
-				{#each Object.entries(config.regex_presets) as [key, value]}
-					<div class="flex gap-2">
-						<input class="w-1/3 rounded border p-2" bind:value={key} disabled />
-						<input class="flex-1 rounded border p-2" bind:value={config.regex_presets[key]} />
-					</div>
-				{/each}
-			</div>
-		</section>
+		{#if config?.regex_presets}
+			<section>
+				<h2 class="mb-2 text-xl font-semibold">Regex Presets</h2>
+				<div class="space-y-2">
+					{#each Object.entries(config.regex_presets) as [key, value], i}
+						<div class="flex gap-2">
+							<input class="w-1/3 rounded border p-2" bind:value={key} disabled />
+							<input class="flex-1 rounded border p-2" bind:value={config.regex_presets[key]} />
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
 
 		<!-- JQ Presets -->
-		<section>
-			<h2 class="mb-2 text-xl font-semibold">JQ Presets</h2>
-			<div class="space-y-2">
-				{#each Object.entries(config.jq_presets) as [key, value]}
-					<div class="flex gap-2">
-						<input class="w-1/3 rounded border p-2" bind:value={key} disabled />
-						<input class="flex-1 rounded border p-2" bind:value={config.jq_presets[key]} />
-					</div>
-				{/each}
-			</div>
-		</section>
+		{#if config?.jq_presets}
+			<section>
+				<h2 class="mb-2 text-xl font-semibold">JQ Presets</h2>
+				<div class="space-y-2">
+					{#each Object.entries(config.jq_presets) as [key, value], i}
+						<div class="flex gap-2">
+							<input class="w-1/3 rounded border p-2" bind:value={key} disabled />
+							<input class="flex-1 rounded border p-2" bind:value={config.jq_presets[key]} />
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
 
 		<button
 			on:click={save}
