@@ -36,8 +36,8 @@ func setupTestDB(t *testing.T) (*sql.DB, *sql.Stmt, context.Context) {
 
 	stmt, err := db.Prepare(`
 		INSERT INTO logs (
-			trace_id, level, message, raw_log, parsed_log, log, created_at, timestamp, regex_pattern, jq_filter
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			id, trace_id, level, message, raw_log, parsed_log, log, created_at, timestamp, regex_pattern, jq_filter
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {
 		t.Fatal(err)
