@@ -10,6 +10,20 @@
 	let successMessage = '';
 	let successTimeout: ReturnType<typeof setTimeout> | null = null;
 
+	const defaultsFieldTypes: Record<string, 'string' | 'number' | 'boolean' | 'preset'> = {
+		db_file: 'string',
+		port: 'number',
+		launch: 'boolean',
+		log_format: 'string',
+		regex_preset: 'preset',
+		regex: 'string',
+		jq_filter: 'string',
+		jq_preset: 'preset'
+	};
+
+	$: regexPresetOptions = config?.regex_presets ? Object.keys(config.regex_presets) : [];
+	$: jqPresetOptions = config?.jq_presets ? Object.keys(config.jq_presets) : [];
+
 	onMount(async () => {
 		try {
 			const res = await fetch('/api/config');
@@ -105,20 +119,40 @@
 					{#each Object.entries(config.defaults) as [key, value]}
 						<div>
 							<label for={key} class="block font-medium capitalize">{key}</label>
-							{#if key === 'launch'}
-								<select id={key} class="w-full rounded border p-2" bind:value={config.defaults.launch}>
+							{#if defaultsFieldTypes[key] === 'boolean'}
+								<select
+									id={key}
+									class="w-full rounded border p-2"
+									bind:value={config.defaults[key]}
+								>
 									<option value={true}>true</option>
 									<option value={false}>false</option>
 								</select>
-							{:else if key === 'port'}
+							{:else if defaultsFieldTypes[key] === 'number'}
 								<input
 									id={key}
 									type="number"
 									class="w-full rounded border p-2"
-									bind:value={config.defaults.port}
+									bind:value={config.defaults[key]}
+									on:input={(e) => (config.defaults[key] = +e.target.value)}
 								/>
+							{:else if defaultsFieldTypes[key] === 'preset'}
+								<select
+									id={key}
+									class="w-full rounded border p-2"
+									bind:value={config.defaults[key]}
+								>
+									<option value="">-- select --</option>
+									{#each key === 'regex_preset' ? regexPresetOptions : jqPresetOptions as option}
+										<option value={option}>{option}</option>
+									{/each}
+								</select>
 							{:else}
-								<input id={key} class="w-full rounded border p-2" bind:value={config.defaults[key]} />
+								<input
+									id={key}
+									class="w-full rounded border p-2"
+									bind:value={config.defaults[key]}
+								/>
 							{/if}
 						</div>
 					{/each}
