@@ -119,54 +119,60 @@ func SetConfigValue(dotKey, value string) error {
 	}
 	section, key := parts[0], parts[1]
 
-	cfg, path, err := loadConfigMap()
+	// 🔄 Load current typed config
+	typedCfg, err := config.Load()
 	if err != nil {
 		return err
 	}
 
-	sectionMap, ok := cfg[section].(map[string]any)
-	if !ok {
-		sectionMap = map[string]any{}
-	}
-
-	// 🚦 Validate and cast value for known keys
-	if section == "defaults" {
+	// 🧪 Apply and validate in memory
+	switch section {
+	case "defaults":
 		switch key {
 		case "log_format":
-			if value != "json" && value != "text" {
+			if value != "text" && value != "json" {
 				return fmt.Errorf("log_format must be 'json' or 'text'")
 			}
-			sectionMap[key] = value
-
-		case "launch":
-			if value != "true" && value != "false" {
-				return fmt.Errorf("launch must be 'true' or 'false'")
-			}
-			sectionMap[key] = (value == "true")
-
+			typedCfg.Defaults.LogFormat = value
 		case "port":
-			portNum, err := strconv.Atoi(value)
-			if err != nil || portNum < 1 || portNum > 65535 {
-				return fmt.Errorf("port must be a number between 1 and 65535")
+			p, err := strconv.Atoi(value)
+			if err != nil || p < 1 || p > 65535 {
+				return fmt.Errorf("invalid port: %s", value)
 			}
-			sectionMap[key] = portNum
-
+			typedCfg.Defaults.Port = p
+		case "launch":
+			typedCfg.Defaults.Launch = (value == "true")
+		case "regex_preset":
+			typedCfg.Defaults.RegexPreset = value
+		case "jq_preset":
+			typedCfg.Defaults.JqPreset = value
 		default:
-			// Allow unknown default keys as strings
-			sectionMap[key] = value
+			return fmt.Errorf("unsupported default key: %s", key)
 		}
-	} else if section == "regex_presets" {
-		_, err := regexp.Compile(value)
-		if err != nil {
-			return fmt.Errorf("invalid regex: %v", err)
+	case "regex_presets":
+		if _, err := regexp.Compile(value); err != nil {
+			return fmt.Errorf("invalid regex: %w", err)
 		}
-		sectionMap[key] = value
-	} else {
-		sectionMap[key] = value
+		typedCfg.RegexPresets[key] = value
+
+	case "jq_presets":
+		if _, err := gojq.Parse(value); err != nil {
+			return fmt.Errorf("invalid jq expression: %w", err)
+		}
+		typedCfg.JQPresets[key] = value
+
+	default:
+		return fmt.Errorf("unknown section: %s", section)
 	}
 
-	cfg[section] = sectionMap
-	return writeConfigMap(cfg, path)
+	// ✅ Validate full config
+	if err := typedCfg.Validate(); err != nil {
+		return fmt.Errorf("invalid config: %w", err)
+	}
+
+	// 💾 Save back to file
+	path := configPath()
+	return config.SaveToFile(path, typedCfg)
 }
 
 func UnsetConfigValue(dotKey string) error {
