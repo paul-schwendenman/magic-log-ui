@@ -29,8 +29,11 @@ func handleConfigCommand(args []string) {
 			fmt.Fprintln(os.Stderr, "❌ Failed to load config:", err)
 			os.Exit(1)
 		}
-		if err := cfg.Validate(); err != nil {
-			fmt.Fprintln(os.Stderr, "❌ Invalid config:", err)
+		if errs := cfg.Validate(); len(errs) > 0 {
+			fmt.Fprintln(os.Stderr, "❌ Config is invalid:")
+			for _, e := range errs {
+				fmt.Fprintln(os.Stderr, "   -", e)
+			}
 			os.Exit(1)
 		}
 		fmt.Println("✅ Config is valid")

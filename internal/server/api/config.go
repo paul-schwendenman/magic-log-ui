@@ -29,8 +29,13 @@ func SaveConfigHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := newCfg.Validate(); err != nil {
-		http.Error(w, "Invalid config: "+err.Error(), http.StatusBadRequest)
+	if errs := newCfg.Validate(); len(errs) > 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(map[string][]string{
+			"errors": errorStrings(errs),
+		})
 		return
 	}
 
@@ -39,4 +44,12 @@ func SaveConfigHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func errorStrings(errs []error) []string {
+	out := make([]string, len(errs))
+	for i, e := range errs {
+		out[i] = e.Error()
+	}
+	return out
 }
