@@ -171,7 +171,11 @@
 
 		<!-- JQ Presets -->
 		{#if config?.jq_presets}
-			<PresetEditor title="JQ Presets" bind:presets={config.jq_presets} validateValue={validateJQ} />
+			<PresetEditor
+				title="JQ Presets"
+				bind:presets={config.jq_presets}
+				validateValue={validateJQ}
+			/>
 		{/if}
 
 		<button
