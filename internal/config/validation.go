@@ -57,7 +57,7 @@ func (c *Config) Validate() []error {
 		errs = append(errs, fmt.Errorf("defaults.log_format must be one of: text, json"))
 	}
 
-	if d.Port < 1 || d.Port > 65535 {
+	if d.Port < 0 || d.Port > 65535 {
 		errs = append(errs, fmt.Errorf("defaults.port must be between 1 and 65535"))
 	}
 
