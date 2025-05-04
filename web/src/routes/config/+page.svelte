@@ -164,14 +164,14 @@
 		{#if config?.regex_presets}
 			<PresetEditor
 				title="Regex Presets"
-				presets={config.regex_presets}
+				bind:presets={config.regex_presets}
 				validateValue={validateRegex}
 			/>
 		{/if}
 
 		<!-- JQ Presets -->
 		{#if config?.jq_presets}
-			<PresetEditor title="JQ Presets" presets={config.jq_presets} validateValue={validateJQ} />
+			<PresetEditor title="JQ Presets" bind:presets={config.jq_presets} validateValue={validateJQ} />
 		{/if}
 
 		<button
