@@ -15,12 +15,33 @@ import (
 )
 
 func handleConfigCommand(args []string) {
+	if len(args) == 0 {
+		fmt.Println("Usage: magic-log config [get|set|unset|validate] <key> [value]")
+		os.Exit(1)
+	}
+
+	cmd := args[0]
+
+	// Handle `validate` early
+	if cmd == "validate" {
+		cfg, err := config.Load()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "❌ Failed to load config:", err)
+			os.Exit(1)
+		}
+		if err := cfg.Validate(); err != nil {
+			fmt.Fprintln(os.Stderr, "❌ Invalid config:", err)
+			os.Exit(1)
+		}
+		fmt.Println("✅ Config is valid")
+		return
+	}
+
 	if len(args) < 2 {
 		fmt.Println("Usage: magic-log config [get|set|unset] <key> [value]")
 		os.Exit(1)
 	}
 
-	cmd := args[0]
 	key := args[1]
 
 	switch cmd {
@@ -51,18 +72,6 @@ func handleConfigCommand(args []string) {
 			fmt.Fprintln(os.Stderr, "❌", err)
 			os.Exit(1)
 		}
-
-	case "validate":
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "❌ failed to load config:", err)
-			os.Exit(1)
-		}
-		if err := cfg.Validate(); err != nil {
-			fmt.Fprintln(os.Stderr, "❌ invalid config:", err)
-			os.Exit(1)
-		}
-		fmt.Println("✅ config is valid")
 
 	default:
 		fmt.Println("Usage: magic-log config [get|set|unset] <key> [value]")
