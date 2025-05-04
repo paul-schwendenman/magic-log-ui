@@ -18,7 +18,7 @@ type Config struct {
 		LogFormat   string `toml:"log_format" json:"log_format"`
 		RegexPreset string `toml:"regex_preset" json:"regex_preset"`
 		Regex       string `toml:"regex" json:"regex"`
-		JqFilter    string `toml:"jq" json:"jq_filter"`
+		JqFilter    string `toml:"jq" json:"jq"`
 		JqPreset    string `toml:"jq_preset" json:"jq_preset"`
 	} `toml:"defaults" json:"defaults"`
 }

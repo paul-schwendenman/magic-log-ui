@@ -105,13 +105,21 @@
 					{#each Object.entries(config.defaults) as [key, value]}
 						<div>
 							<label for={key} class="block font-medium capitalize">{key}</label>
-							<input
-								id={key}
-								class="w-full rounded border p-2"
-								bind:value={config.defaults[key]}
-								type={key === 'port' ? 'number' : 'text'}
-								on:input={(e) => (config.defaults[key] = coerceDefault(key, e?.target?.value))}
-							/>
+							{#if key === 'launch'}
+								<select id={key} class="w-full rounded border p-2" bind:value={config.defaults.launch}>
+									<option value={true}>true</option>
+									<option value={false}>false</option>
+								</select>
+							{:else if key === 'port'}
+								<input
+									id={key}
+									type="number"
+									class="w-full rounded border p-2"
+									bind:value={config.defaults.port}
+								/>
+							{:else}
+								<input id={key} class="w-full rounded border p-2" bind:value={config.defaults[key]} />
+							{/if}
 						</div>
 					{/each}
 				</div>
