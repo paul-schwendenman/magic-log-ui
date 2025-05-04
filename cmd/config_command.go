@@ -207,8 +207,10 @@ var knownDefaults = map[string]bool{
 	"port":         true,
 	"launch":       true,
 	"db_file":      true,
-	"parse_preset": true,
-	"parse_regex":  true,
+	"regex_preset": true,
+	"regex":        true,
+	"jq":           true,
+	"jq_preset":    true,
 }
 
 func normalizeKey(dotKey string) string {

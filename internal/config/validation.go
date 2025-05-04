@@ -51,8 +51,6 @@ func (c *Config) Validate() error {
 
 	switch d.LogFormat {
 	case "", "text", "json":
-	// case "", "text", "json", "csv":
-		// ok
 	default:
 		return fmt.Errorf("log_format must be one of: text, json")
 	}

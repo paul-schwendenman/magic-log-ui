@@ -23,7 +23,6 @@ type Config struct {
 	} `toml:"defaults" json:"defaults"`
 }
 
-
 func Load() (*Config, error) {
 	path := GetConfigPath()
 
