@@ -8,38 +8,57 @@ import (
 )
 
 func (c *Config) Validate() error {
+	// --- Regex presets ---
 	for name, pattern := range c.RegexPresets {
 		if _, err := regexp.Compile(pattern); err != nil {
 			return fmt.Errorf("invalid regex in preset %q: %w", name, err)
 		}
 	}
 
+	// --- JQ presets ---
 	for name, jq := range c.JQPresets {
 		if _, err := gojq.Parse(jq); err != nil {
 			return fmt.Errorf("invalid JQ in preset %q: %w", name, err)
 		}
 	}
 
-	if c.Defaults.RegexPreset != "" {
-		if _, ok := c.RegexPresets[c.Defaults.RegexPreset]; !ok {
-			return fmt.Errorf("default regex_preset %q not found", c.Defaults.RegexPreset)
-		}
-	}
-	if c.Defaults.JqPreset != "" {
-		if _, ok := c.JQPresets[c.Defaults.JqPreset]; !ok {
-			return fmt.Errorf("default jq_preset %q not found", c.Defaults.JqPreset)
+	// --- Defaults ---
+	d := c.Defaults
+
+	if d.RegexPreset != "" {
+		if _, ok := c.RegexPresets[d.RegexPreset]; !ok {
+			return fmt.Errorf("default regex_preset %q not found", d.RegexPreset)
 		}
 	}
 
-	if c.Defaults.Regex != "" {
-		if _, err := regexp.Compile(c.Defaults.Regex); err != nil {
+	if d.JqPreset != "" {
+		if _, ok := c.JQPresets[d.JqPreset]; !ok {
+			return fmt.Errorf("default jq_preset %q not found", d.JqPreset)
+		}
+	}
+
+	if d.Regex != "" {
+		if _, err := regexp.Compile(d.Regex); err != nil {
 			return fmt.Errorf("default regex is invalid: %w", err)
 		}
 	}
-	if c.Defaults.JqFilter != "" {
-		if _, err := gojq.Parse(c.Defaults.JqFilter); err != nil {
+
+	if d.JqFilter != "" {
+		if _, err := gojq.Parse(d.JqFilter); err != nil {
 			return fmt.Errorf("default jq filter is invalid: %w", err)
 		}
+	}
+
+	switch d.LogFormat {
+	case "", "text", "json":
+	// case "", "text", "json", "csv":
+		// ok
+	default:
+		return fmt.Errorf("log_format must be one of: text, json")
+	}
+
+	if d.Port < 1 || d.Port > 65535 {
+		return fmt.Errorf("port must be between 1 and 65535")
 	}
 
 	return nil
