@@ -9,6 +9,9 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/itchyny/gojq"
+
+	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 )
 
 func handleConfigCommand(args []string) {
@@ -48,6 +51,18 @@ func handleConfigCommand(args []string) {
 			fmt.Fprintln(os.Stderr, "❌", err)
 			os.Exit(1)
 		}
+
+	case "validate":
+		cfg, err := config.Load()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "❌ failed to load config:", err)
+			os.Exit(1)
+		}
+		if err := cfg.Validate(); err != nil {
+			fmt.Fprintln(os.Stderr, "❌ invalid config:", err)
+			os.Exit(1)
+		}
+		fmt.Println("✅ config is valid")
 
 	default:
 		fmt.Println("Usage: magic-log config [get|set|unset] <key> [value]")
@@ -171,8 +186,7 @@ func SetConfigValue(dotKey, value string) error {
 	}
 
 	// 💾 Save back to file
-	path := configPath()
-	return config.SaveToFile(path, typedCfg)
+	return config.Save(typedCfg)
 }
 
 func UnsetConfigValue(dotKey string) error {
