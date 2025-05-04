@@ -71,6 +71,12 @@
 		// For real JQ parsing/validation, do it on backend
 		return null;
 	}
+
+	function coerceDefault(key: string, val: string): any {
+		if (key === 'port') return parseInt(val, 10);
+		if (key === 'launch') return val === 'true';
+		return val;
+	}
 </script>
 
 {#if loading}
@@ -99,7 +105,12 @@
 					{#each Object.entries(config.defaults) as [key, value]}
 						<div>
 							<label class="block font-medium capitalize">{key}</label>
-							<input class="w-full rounded border p-2" bind:value={config.defaults[key]} />
+							<input
+								class="..."
+								bind:value={config.defaults[key]}
+								type={key === 'port' ? 'number' : 'text'}
+								on:input={(e) => (config.defaults[key] = coerceDefault(key, e?.target?.value))}
+							/>
 						</div>
 					{/each}
 				</div>
