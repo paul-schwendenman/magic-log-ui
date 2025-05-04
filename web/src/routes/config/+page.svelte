@@ -104,9 +104,10 @@
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					{#each Object.entries(config.defaults) as [key, value]}
 						<div>
-							<label class="block font-medium capitalize">{key}</label>
+							<label for={key} class="block font-medium capitalize">{key}</label>
 							<input
-								class="..."
+								id={key}
+								class="w-full rounded border p-2"
 								bind:value={config.defaults[key]}
 								type={key === 'port' ? 'number' : 'text'}
 								on:input={(e) => (config.defaults[key] = coerceDefault(key, e?.target?.value))}
