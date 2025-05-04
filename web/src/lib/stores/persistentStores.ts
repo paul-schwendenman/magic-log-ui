@@ -7,7 +7,7 @@ export function persistentStore<T>(
 	getStorage: () => Storage
 ): Writable<T> {
 	const start = browser
-		? (JSON.parse(getStorage().getItem(key) ?? 'null') as T | null) ?? initial
+		? ((JSON.parse(getStorage().getItem(key) ?? 'null') as T | null) ?? initial)
 		: initial;
 
 	const store = writable<T>(start);
