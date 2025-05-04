@@ -193,8 +193,8 @@ func SetConfigValue(dotKey, value string) error {
 	}
 
 	// ✅ Validate full config
-	if err := typedCfg.Validate(); err != nil {
-		return fmt.Errorf("invalid config: %w", err)
+	if errs := typedCfg.Validate(); len(errs) > 0 {
+		return config.ValidationErrors(errs)
 	}
 
 	// 💾 Save back to file

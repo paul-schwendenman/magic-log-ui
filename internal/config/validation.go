@@ -3,9 +3,23 @@ package config
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/itchyny/gojq"
 )
+
+type ValidationErrors []error
+
+func (ve ValidationErrors) Error() string {
+	var sb strings.Builder
+	sb.WriteString("invalid config:\n")
+	for _, err := range ve {
+		sb.WriteString("  - ")
+		sb.WriteString(err.Error())
+		sb.WriteString("\n")
+	}
+	return sb.String()
+}
 
 func (c *Config) Validate() []error {
 	var errs []error
