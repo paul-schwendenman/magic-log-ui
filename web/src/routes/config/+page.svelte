@@ -18,7 +18,9 @@
 		regex_preset: 'preset',
 		regex: 'string',
 		jq_filter: 'string',
-		jq_preset: 'preset'
+		jq_preset: 'preset',
+		csv_fields: 'string',
+		has_csv_header: 'boolean',
 	};
 
 	$: regexPresetOptions = config?.regex_presets ? Object.keys(config.regex_presets) : [];
