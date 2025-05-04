@@ -148,7 +148,18 @@ String with regex:
 ### Pipe logs from CSV
 
 ```
+./generate_logs.sh --format csv | magic-log --log-format=csv --has-csv-header
+```
+
+Custom columns names:
+```
+$ ./generate_logs.sh --format csv | magic-log --log-format=csv --has-csv-header --csv-fields "timestamp,level,message,trace_id"
+```
+
+If one column is json that you want to ingest:
+```
 ./csv_echoer.py ~/Downloads/extract.csv --column Message | magic-log
+
 ```
 
 ### JQ Filter Examples

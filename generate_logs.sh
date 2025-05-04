@@ -11,7 +11,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     *)
-      echo "Usage: $0 [--format json|text]"
+      echo "Usage: $0 [--format json|text|csv]"
       exit 1
       ;;
   esac
@@ -31,6 +31,10 @@ MESSAGES=(
   "Retrying request"
 )
 
+if [[ "$FORMAT" == "csv" ]]; then
+  echo "timestamp,level,msg,trace_id"
+fi
+
 while true; do
   LEVEL=${LEVELS[$RANDOM % ${#LEVELS[@]}]}
   MESSAGE=${MESSAGES[$RANDOM % ${#MESSAGES[@]}]}
@@ -44,9 +48,12 @@ while true; do
       --arg msg "$MESSAGE" \
       --arg trace_id "$TRACE" \
       '{time: $time, level: $level, msg: $msg, trace_id: $trace_id}'
-  else
+  elif [[ "$FORMAT" == "text" ]]; then
     TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     echo "[$LEVEL] $TIME [$TRACE] $MESSAGE"
+  elif [[ "$FORMAT" == "csv" ]]; then
+    TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    echo "$TIME,$LEVEL,\"$MESSAGE\",$TRACE"
   fi
 
   sleep 0.2

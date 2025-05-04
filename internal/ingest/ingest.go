@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"context"
 	"database/sql"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"io"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/jqfilter"
@@ -22,14 +24,28 @@ type parsers struct {
 	parseRegex *regexp.Regexp
 	jqEnabled  bool
 	jqFilter   string
+	csvFields  []string
 }
 
-func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery string, echo bool, ctx context.Context) {
+func Start(input io.Reader, stmt *sql.Stmt, logFormat, parseRegexStr, jqQuery, csvFieldsStr string, hasCSVHeader bool, echo bool, ctx context.Context) {
 	scanner := attach(input)
-	parsers := buildParsers(logFormat, parseRegexStr, jqQuery)
+	parsers := buildParsers(logFormat, parseRegexStr, jqQuery, csvFieldsStr, hasCSVHeader)
+	headerExtracted := false
 
 	for scanner.Scan() {
 		rawLine := scanner.Text()
+
+		if logFormat == "csv" && hasCSVHeader && !headerExtracted {
+			header, err := readCSV(rawLine)
+			if err != nil {
+				log.Fatalf("❌ Failed to read CSV header: %v", err)
+			}
+			if parsers.csvFields == nil {
+				parsers.csvFields = header
+			}
+			headerExtracted = true
+			continue // Skip header row
+		}
 
 		parsed := extract(rawLine, parsers)
 		transformed := transform(parsed, parsers)
@@ -49,7 +65,7 @@ func attach(input io.Reader) *bufio.Scanner {
 	return bufio.NewScanner(input)
 }
 
-func buildParsers(logFormat, parseRegexStr, jqQuery string) parsers {
+func buildParsers(logFormat, parseRegexStr, jqQuery, csvFieldsStr string, hasCSVHeader bool) parsers {
 	var regex *regexp.Regexp
 	if parseRegexStr != "" {
 		var err error
@@ -61,11 +77,17 @@ func buildParsers(logFormat, parseRegexStr, jqQuery string) parsers {
 
 	jqfilter.Init(jqQuery)
 
+	var csvFields []string
+	if logFormat == "csv" && csvFieldsStr != "" {
+		csvFields = strings.Split(csvFieldsStr, ",")
+	}
+
 	return parsers{
 		logFormat:  logFormat,
 		parseRegex: regex,
 		jqEnabled:  jqQuery != "",
 		jqFilter:   jqQuery,
+		csvFields:  csvFields,
 	}
 }
 
@@ -87,6 +109,16 @@ func extract(rawLine string, p parsers) shared.LogEntry {
 		parsed = shared.LogEntry{
 			"message": rawLine,
 			"level":   "raw",
+		}
+	}
+
+	if p.logFormat == "csv" {
+		parsed, err = parseCSV(rawLine, p.csvFields)
+		if err != nil {
+			parsed = shared.LogEntry{
+				"message": rawLine,
+				"level":   "raw",
+			}
 		}
 	}
 
@@ -143,8 +175,10 @@ func load(stmt *sql.Stmt, rawLine string, parsed, transformed shared.LogEntry, p
 		string(finalLogJson),
 		time.Now().UTC(),
 		timestamp,
+		nullify(p.logFormat),
 		nullify(regexPattern),
 		nullify(p.jqFilter),
+		nullify(strings.Join(p.csvFields, ",")),
 	)
 
 	return err
@@ -183,6 +217,29 @@ func parseWithRegex(line string, re *regexp.Regexp) (shared.LogEntry, error) {
 		}
 	}
 	return result, nil
+}
+
+func readCSV(rawLine string) ([]string, error) {
+	reader := csv.NewReader(strings.NewReader(rawLine))
+	return reader.Read()
+}
+
+func parseCSV(rawLine string, fields []string) (shared.LogEntry, error) {
+	record, err := readCSV(rawLine)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(record) != len(fields) {
+		return nil, fmt.Errorf("CSV field count mismatch: expected %d, got %d", len(fields), len(record))
+	}
+
+	entry := make(shared.LogEntry)
+	for i, field := range fields {
+		entry[field] = record[i]
+	}
+
+	return entry, nil
 }
 
 func mapToLogEntry(m map[string]string) shared.LogEntry {
