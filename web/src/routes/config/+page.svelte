@@ -1,17 +1,21 @@
 <script lang="ts">
 	import PresetEditor from '$lib/components/PresetEditor.svelte';
 	import { onMount } from 'svelte';
+
 	let config: any = null;
 	let loading = true;
 	let saving = false;
-	let error = '';
+
+	let errorMessages: string[] = [];
+	let successMessage = '';
+	let successTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	onMount(async () => {
 		try {
 			const res = await fetch('/api/config');
 			config = await res.json();
 		} catch (e) {
-			error = 'Failed to load config.';
+			errorMessages = ['Failed to load config.'];
 		} finally {
 			loading = false;
 		}
@@ -19,16 +23,35 @@
 
 	async function save() {
 		saving = true;
-		error = '';
+		errorMessages = [];
+		successMessage = '';
+		if (successTimeout) clearTimeout(successTimeout);
+
 		try {
 			const res = await fetch('/api/config', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(config)
 			});
-			if (!res.ok) throw new Error('Save failed');
+
+			if (!res.ok) {
+				const contentType = res.headers.get('Content-Type');
+				if (contentType?.includes('application/json')) {
+					const data = await res.json();
+					errorMessages = Array.isArray(data.errors) ? data.errors : [JSON.stringify(data)];
+				} else {
+					const text = await res.text();
+					errorMessages = [text || 'Unknown error'];
+				}
+				return;
+			}
+
+			successMessage = '✅ Config saved successfully!';
+			successTimeout = setTimeout(() => {
+				successMessage = '';
+			}, 4000);
 		} catch (e) {
-			error = 'Failed to save config.';
+			errorMessages = ['Failed to save config.'];
 		} finally {
 			saving = false;
 		}
@@ -56,8 +79,16 @@
 	<div class="mx-auto max-w-3xl space-y-6 p-4">
 		<h1 class="text-2xl font-bold">App Settings</h1>
 
-		{#if error}
-			<div class="rounded bg-red-100 p-2 text-red-800">{error}</div>
+		{#if errorMessages.length}
+			<ul class="space-y-1 rounded bg-red-100 p-3 text-red-700">
+				{#each errorMessages as msg}
+					<li>• {msg}</li>
+				{/each}
+			</ul>
+		{/if}
+
+		{#if successMessage}
+			<div class="rounded bg-green-100 p-3 text-green-700">{successMessage}</div>
 		{/if}
 
 		<!-- Defaults -->
