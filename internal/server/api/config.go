@@ -28,6 +28,12 @@ func SaveConfigHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
+
+	if err := newCfg.Validate(); err != nil {
+		http.Error(w, "Invalid config: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	if err := config.SaveToFile(configPath, &newCfg); err != nil {
 		http.Error(w, "Failed to save config", http.StatusInternalServerError)
 		return
