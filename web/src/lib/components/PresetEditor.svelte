@@ -28,7 +28,9 @@
 	}
 
 	function removePreset(key: string) {
-		delete presets[key];
+		const updated = { ...presets };
+		delete updated[key];
+		presets = updated;
 	}
 </script>
 
