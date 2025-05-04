@@ -33,6 +33,21 @@
 			saving = false;
 		}
 	}
+
+	function validateRegex(value: string): string | null {
+		try {
+			new RegExp(value);
+			return null;
+		} catch {
+			return 'Invalid regular expression.';
+		}
+	}
+
+	function validateJQ(value: string): string | null {
+		if (!value.trim()) return 'JQ filter cannot be empty.';
+		// For real JQ parsing/validation, do it on backend
+		return null;
+	}
 </script>
 
 {#if loading}
@@ -62,12 +77,16 @@
 
 		<!-- Regex Presets -->
 		{#if config?.regex_presets}
-			<PresetEditor title="Regex Presets" presets={config.regex_presets} />
+			<PresetEditor
+				title="Regex Presets"
+				presets={config.regex_presets}
+				validateValue={validateRegex}
+			/>
 		{/if}
 
 		<!-- JQ Presets -->
 		{#if config?.jq_presets}
-			<PresetEditor title="JQ Presets" presets={config.jq_presets} />
+			<PresetEditor title="JQ Presets" presets={config.jq_presets} validateValue={validateJQ} />
 		{/if}
 
 		<button

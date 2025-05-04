@@ -1,12 +1,27 @@
 <script lang="ts">
 	export let title: string;
 	export let presets: Record<string, string>;
+	export let validateValue: (value: string) => string | null;
 
 	let newKey = '';
 	let newValue = '';
+	let error = '';
 
 	function addPreset() {
-		if (!newKey.trim() || newKey in presets) return;
+		error = '';
+		if (!newKey.trim()) {
+			error = 'Preset name is required.';
+			return;
+		}
+		if (newKey in presets) {
+			error = 'Preset name already exists.';
+			return;
+		}
+		const validationError = validateValue?.(newValue);
+		if (validationError) {
+			error = validationError;
+			return;
+		}
 		presets[newKey] = newValue;
 		newKey = '';
 		newValue = '';
@@ -19,6 +34,10 @@
 
 <section class="mb-6">
 	<h2 class="mb-2 text-xl font-semibold">{title}</h2>
+
+	{#if error}
+		<div class="mb-2 rounded bg-red-100 p-2 text-red-700">{error}</div>
+	{/if}
 
 	<!-- Existing presets -->
 	{#each Object.entries(presets) as [key, value]}
@@ -48,9 +67,9 @@
 		</div>
 	{/each}
 
-	<!-- Add preset -->
+	<!-- Add new preset -->
 	<div class="mb-4 flex gap-2">
-		<input class="w-1/3 rounded border p-2" placeholder="New preset name" bind:value={newKey} />
+		<input class="w-1/3 rounded border p-2" placeholder="Name" bind:value={newKey} />
 		<input class="flex-1 rounded border p-2" placeholder="Value" bind:value={newValue} />
 		<button
 			class="rounded bg-green-500 p-2 text-white disabled:opacity-50"
