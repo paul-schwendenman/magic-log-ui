@@ -29,7 +29,6 @@ func ParseArgsAndConfig() (*FinalConfig, *Config, error) {
 		noDBFile      = flag.Bool("no-db-file", false, "Force in-memory DB even if config has db_file.")
 		port          = flag.Int("port", 3000, "Port to serve the web UI on.")
 		launch        = flag.Bool("launch", false, "Open the UI in a browser.")
-		noLaunch      = flag.Bool("no-launch", false, "Disable UI auto-launch (overrides config).")
 		echo          = flag.Bool("echo", false, "Echo parsed stdin input to stdout")
 		noAutoAnalyze = flag.Bool("no-auto-analyze", false, "Disable automatic ANALYZE of logs table")
 		logFormat     = flag.String("log-format", "json", "Log format: json, csv or plain text.")
@@ -93,7 +92,7 @@ magic-log config [get|set|unset] <key> [value]
 	final := &FinalConfig{
 		DBFile:       resolveDBFile(*dbFile, *noDBFile, cfgFile.Defaults.DBFile, flagPassed["db-file"]),
 		Port:         pickInt(*port, cfgFile.Defaults.Port, flagPassed["port"]),
-		Launch:       resolveLaunch(*launch, *noLaunch, cfgFile.Defaults.Launch, flagPassed["launch"]),
+		Launch:       resolveLaunch(*launch, cfgFile.Defaults.Launch, flagPassed["launch"]),
 		Echo:         *echo,
 		LogFormat:    pickStr(*logFormat, cfgFile.Defaults.LogFormat, flagPassed["log-format"]),
 		RegexPreset:  pickStr(*regexPreset, cfgFile.Defaults.RegexPreset, flagPassed["regex-preset"]),
@@ -134,12 +133,9 @@ func pickBool(cli bool, def bool, passed bool) bool {
 	return def
 }
 
-func resolveLaunch(cli bool, noCli bool, def bool, passed bool) bool {
+func resolveLaunch(cli bool, def bool, passed bool) bool {
 	if passed {
 		return cli
-	}
-	if noCli {
-		return false
 	}
 	return def
 }

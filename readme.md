@@ -67,6 +67,8 @@ magic-log config unset port
 magic-log config unset regex_presets.myapp
 ```
 
+You can also use the UI to manage the config
+
 ## Development
 
 ### Build project
@@ -185,4 +187,28 @@ You can reshape incoming logs during ingestion using `--jq`, based on JQ syntax.
 ```
 ./generate_logs.sh | magic-log \
 --jq='del(.time, .msg)'
+```
+
+### Controlling the tool
+
+#### Launch flag
+
+`magic-log` is capable of opening a new browser tab with the UI using the `--launch` flag
+
+For example:
+
+```
+./generate_logs.sh | magic-log --launch
+```
+
+You can also use the config to set the default to `true`
+
+```
+magic-log config set launch true
+```
+
+Once the tool defaults to true you can still pass `--launch` to disable it like so:
+
+```
+./generate_logs.sh | magic-log --launch=false
 ```
