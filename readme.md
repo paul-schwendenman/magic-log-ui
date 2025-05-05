@@ -212,3 +212,23 @@ Once the tool defaults to true you can still pass `--launch` to disable it like 
 ```
 ./generate_logs.sh | magic-log --launch=false
 ```
+
+#### Setting the db file
+
+`magic-log` can persist logs to disc via a duckdb database or just use an in memory db. The
+in-memory is the default.
+
+Persisting logs to disc, using relative path:
+```
+... | magic-log --db-file="logs.duckdb"
+```
+
+Setting a default db via configuration:
+```
+magic-log config set db_file logs.duckdb
+```
+
+Overriding config to use in-memory database:
+```
+... | magic-log --db-file=""
+```
