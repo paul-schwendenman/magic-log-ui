@@ -34,10 +34,14 @@ magic-log [flags]
 magic-log config [get|set|unset] <key> [value]
 
 Flags:
+  -csv-fields string
+        Comma-separated field names for CSV logs (used with --log-format=csv)
   -db-file string
         Path to a DuckDB database file.
   -echo
         Echo parsed stdin input to stdout
+  -has-csv-header
+        Indicates if CSV logs include a header row (default true)
   -jq string
         A jq expression to apply to parsed logs
   -jq-preset string
@@ -47,17 +51,13 @@ Flags:
   -list-presets
         List available regex and jq presets and exit.
   -log-format string
-        Log format: json or text. (default "json")
+        Log format: json, csv or plain text. (default "json")
   -no-auto-analyze
         Disable automatic ANALYZE of logs table
-  -no-db-file
-        Force in-memory DB even if config has db_file.
-  -no-launch
-        Disable UI auto-launch (overrides config).
   -port int
         Port to serve the web UI on. (default 3000)
   -regex string
-        Custom regex to parse logs.
+        Custom regex to parse logs. Use with "text" format
   -regex-preset string
         Regex preset to use.
   -version
