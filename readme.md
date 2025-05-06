@@ -25,6 +25,53 @@ brew tap paul-schwendenman/magic-log-ui
 brew install magic-log
 ```
 
+## Command line options
+
+```
+$ magic-log --help
+Usage:
+magic-log [flags]
+magic-log config [get|set|unset] <key> [value]
+
+Flags:
+  -db-file string
+        Path to a DuckDB database file.
+  -echo
+        Echo parsed stdin input to stdout
+  -jq string
+        A jq expression to apply to parsed logs
+  -jq-preset string
+        Regex preset to use.
+  -launch
+        Open the UI in a browser.
+  -list-presets
+        List available regex and jq presets and exit.
+  -log-format string
+        Log format: json or text. (default "json")
+  -no-auto-analyze
+        Disable automatic ANALYZE of logs table
+  -no-db-file
+        Force in-memory DB even if config has db_file.
+  -no-launch
+        Disable UI auto-launch (overrides config).
+  -port int
+        Port to serve the web UI on. (default 3000)
+  -regex string
+        Custom regex to parse logs.
+  -regex-preset string
+        Regex preset to use.
+  -version
+        Print version and exit.
+
+Config:
+  The CLI reads config from ~/.magiclogrc by default.
+  You can override the config path using the MAGIC_LOG_CONFIG environment variable.
+
+Examples:
+  MAGIC_LOG_CONFIG=/path/to/custom.toml magic-log --port 4000
+  magic-log config set defaults.port 4000
+```
+
 ## Configuration
 
 `magic-log` reads configuration options from `$HOME/.magiclogrc`
