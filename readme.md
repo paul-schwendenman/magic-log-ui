@@ -25,6 +25,53 @@ brew tap paul-schwendenman/magic-log-ui
 brew install magic-log
 ```
 
+## Command line options
+
+```
+$ magic-log --help
+Usage:
+magic-log [flags]
+magic-log config [get|set|unset] <key> [value]
+
+Flags:
+  -csv-fields string
+        Comma-separated field names for CSV logs (used with --log-format=csv)
+  -db-file string
+        Path to a DuckDB database file.
+  -echo
+        Echo parsed stdin input to stdout
+  -has-csv-header
+        Indicates if CSV logs include a header row (default true)
+  -jq string
+        A jq expression to apply to parsed logs
+  -jq-preset string
+        Regex preset to use.
+  -launch
+        Open the UI in a browser.
+  -list-presets
+        List available regex and jq presets and exit.
+  -log-format string
+        Log format: json, csv or plain text. (default "json")
+  -no-auto-analyze
+        Disable automatic ANALYZE of logs table
+  -port int
+        Port to serve the web UI on. (default 3000)
+  -regex string
+        Custom regex to parse logs. Use with "text" format
+  -regex-preset string
+        Regex preset to use.
+  -version
+        Print version and exit.
+
+Config:
+  The CLI reads config from ~/.magiclogrc by default.
+  You can override the config path using the MAGIC_LOG_CONFIG environment variable.
+
+Examples:
+  MAGIC_LOG_CONFIG=/path/to/custom.toml magic-log --port 4000
+  magic-log config set defaults.port 4000
+```
+
 ## Configuration
 
 `magic-log` reads configuration options from `$HOME/.magiclogrc`
@@ -66,6 +113,8 @@ magic-log config unset log_format
 magic-log config unset port
 magic-log config unset regex_presets.myapp
 ```
+
+You can also use the UI to manage the config
 
 ## Development
 
@@ -185,4 +234,48 @@ You can reshape incoming logs during ingestion using `--jq`, based on JQ syntax.
 ```
 ./generate_logs.sh | magic-log \
 --jq='del(.time, .msg)'
+```
+
+### Controlling the tool
+
+#### Launch flag
+
+`magic-log` is capable of opening a new browser tab with the UI using the `--launch` flag
+
+For example:
+
+```
+./generate_logs.sh | magic-log --launch
+```
+
+You can also use the config to set the default to `true`
+
+```
+magic-log config set launch true
+```
+
+Once the tool defaults to true you can still pass `--launch` to disable it like so:
+
+```
+./generate_logs.sh | magic-log --launch=false
+```
+
+#### Setting the db file
+
+`magic-log` can persist logs to disc via a duckdb database or just use an in memory db. The
+in-memory is the default.
+
+Persisting logs to disc, using relative path:
+```
+... | magic-log --db-file="logs.duckdb"
+```
+
+Setting a default db via configuration:
+```
+magic-log config set db_file logs.duckdb
+```
+
+Overriding config to use in-memory database:
+```
+... | magic-log --db-file=""
 ```
