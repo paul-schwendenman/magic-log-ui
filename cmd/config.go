@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/paul-schwendenman/magic-log-ui/internal/app"
 	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 )
 
@@ -25,7 +26,7 @@ var configGetCmd = &cobra.Command{
 	Short: "Get a config value",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		val, err := config.GetConfigValue(args[0])
+		val, err := app.GetConfigValue(args[0])
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "❌", err)
 			os.Exit(1)
@@ -42,7 +43,7 @@ var configSetCmd = &cobra.Command{
 	Short: "Set a config value",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := config.SetConfigValue(args[0], args[1]); err != nil {
+		if err := app.SetConfigValue(args[0], args[1]); err != nil {
 			fmt.Fprintln(os.Stderr, "❌", err)
 			os.Exit(1)
 		}
@@ -54,7 +55,7 @@ var configUnsetCmd = &cobra.Command{
 	Short: "Unset a config value",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := config.UnsetConfigValue(args[0]); err != nil {
+		if err := app.UnsetConfigValue(args[0]); err != nil {
 			fmt.Fprintln(os.Stderr, "❌", err)
 			os.Exit(1)
 		}
