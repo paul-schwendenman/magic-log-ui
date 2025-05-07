@@ -1,6 +1,5 @@
 /*
 Copyright © 2025 Paul Schwendenman
-
 */
 package cmd
 
@@ -14,7 +13,7 @@ import (
 var presetsCmd = &cobra.Command{
 	Use:   "presets",
 	Short: "List available regex and jq presets",
-	Args: cobra.NoArgs,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {
