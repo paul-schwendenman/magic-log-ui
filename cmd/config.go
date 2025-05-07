@@ -18,7 +18,7 @@ import (
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage configuration settings",
-	Long: ``,
+	Long:  ``,
 }
 
 var configGetCmd = &cobra.Command{
@@ -81,7 +81,6 @@ var configValidateCmd = &cobra.Command{
 		fmt.Println("✅ Config is valid")
 	},
 }
-
 
 func init() {
 	configCmd.AddCommand(configGetCmd)

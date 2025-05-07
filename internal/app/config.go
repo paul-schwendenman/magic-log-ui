@@ -131,7 +131,6 @@ func UnsetConfigValue(dotKey string) error {
 	return writeConfigMap(cfg, path)
 }
 
-
 func loadConfigMap() (map[string]any, string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -160,7 +159,6 @@ func writeConfigMap(cfg map[string]any, path string) error {
 	defer file.Close()
 	return toml.NewEncoder(file).Encode(cfg)
 }
-
 
 var knownDefaults = map[string]bool{
 	"log_format":   true,
