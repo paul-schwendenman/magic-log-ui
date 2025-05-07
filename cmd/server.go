@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"embed"
-	"fmt"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/app"
 	"github.com/spf13/cobra"
