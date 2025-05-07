@@ -6,10 +6,8 @@ package cmd
 import (
 	"embed"
 	"fmt"
-	"log"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/app"
-	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,11 +42,6 @@ var serverCmd = &cobra.Command{
 			return
 		}
 
-		if viper.GetBool("list-presets") {
-			printPresets()
-			return
-		}
-
 		// resolvedRegex, err := app.ResolveRegex(final.RegexPreset, final.Regex, cfgFile)
 		// if err != nil {
 		// 	log.Fatalf("❌ %v", err)
@@ -78,38 +71,7 @@ func init() {
 	serverCmd.Flags().String("jq-preset", "", "jq preset to use")
 	serverCmd.Flags().String("csv-fields", "", "Comma-separated field names for CSV logs")
 	serverCmd.Flags().Bool("has-csv-header", true, "Whether CSV logs include a header row")
-	serverCmd.Flags().Bool("list-presets", false, "List regex/jq presets and exit")
 	serverCmd.Flags().Bool("version", false, "Print version and exit")
 
 	viper.BindPFlags(serverCmd.Flags())
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func printPresets() {
-	_, cfgFile, err := config.ParseArgsAndConfig()
-
-	if err != nil {
-		log.Fatalf("❌ %v", err)
-	}
-
-	all := app.GetRegexPresets(cfgFile)
-	fmt.Println("📜 Available regexp presets:")
-	for name := range all {
-		fmt.Printf("  - %s\n", name)
-	}
-
-	all = app.GetJqPresets(cfgFile)
-	fmt.Println("📜 Available jq presets:")
-	for name := range all {
-		fmt.Printf("  - %s\n", name)
-	}
-	return
 }
