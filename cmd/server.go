@@ -17,7 +17,6 @@ var version = "dev"
 //go:embed all:static/*
 var staticFiles embed.FS
 
-// serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Start the log server and ingest process",
@@ -34,12 +33,6 @@ var serverCmd = &cobra.Command{
 			CSVFieldsStr: viper.GetString("csv-fields"),
 			HasCSVHeader: viper.GetBool("has-csv-header"),
 			AutoAnalyze:  !viper.GetBool("no-auto-analyze"),
-			Version:      version,
-		}
-
-		if viper.GetBool("version") {
-			fmt.Println("magic-log version:", version)
-			return
 		}
 
 		// resolvedRegex, err := app.ResolveRegex(final.RegexPreset, final.Regex, cfgFile)
@@ -71,7 +64,6 @@ func init() {
 	serverCmd.Flags().String("jq-preset", "", "jq preset to use")
 	serverCmd.Flags().String("csv-fields", "", "Comma-separated field names for CSV logs")
 	serverCmd.Flags().Bool("has-csv-header", true, "Whether CSV logs include a header row")
-	serverCmd.Flags().Bool("version", false, "Print version and exit")
 
 	viper.BindPFlags(serverCmd.Flags())
 }
