@@ -83,7 +83,7 @@ var configValidateCmd = &cobra.Command{
 
 func init() {
 	configGetCmd.ValidArgsFunction = completeConfigKeys
-	configSetCmd.ValidArgsFunction = completeConfigKeys
+	configSetCmd.ValidArgsFunction = completeConfigKeyValues
 	configUnsetCmd.ValidArgsFunction = completeConfigKeys
 
 	configCmd.AddCommand(configGetCmd)
@@ -112,4 +112,68 @@ func completeConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([
 	}
 
 	return keys, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeConfigKeyValues(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		// completing first arg: the key
+		return getAllConfigKeys(), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	if len(args) == 1 {
+		key := args[0]
+		return suggestValuesForKey(key), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func getAllConfigKeys() []string {
+	cfg, _, err := app.LoadConfigMap()
+	if err != nil {
+		return nil
+	}
+
+	var keys []string
+	for k, v := range cfg {
+		if section, ok := v.(map[string]any); ok {
+			for subk := range section {
+				keys = append(keys, fmt.Sprintf("%s.%s", k, subk))
+			}
+		} else {
+			keys = append(keys, k)
+		}
+	}
+	return keys
+}
+
+func suggestValuesForKey(key string) []string {
+	switch key {
+	case "log_format":
+		return []string{"json", "text"}
+	case "launch", "has_csv_header":
+		return []string{"true", "false"}
+	case "regex_preset":
+		return getKeysFromSection("regex_presets")
+	case "jq_preset":
+		return getKeysFromSection("jq_presets")
+	default:
+		return nil
+	}
+}
+
+func getKeysFromSection(section string) []string {
+	cfg, _, err := app.LoadConfigMap()
+	if err != nil {
+		return nil
+	}
+	sec, ok := cfg[section].(map[string]any)
+	if !ok {
+		return nil
+	}
+	var keys []string
+	for k := range sec {
+		keys = append(keys, k)
+	}
+	return keys
 }
