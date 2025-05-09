@@ -8,12 +8,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/BurntSushi/toml"
 	"github.com/itchyny/gojq"
 )
 
 func GetConfigValue(key string) (string, error) {
-	cfg, _, err := LoadConfigMap()
+	cfg, _, err := loadConfigMap()
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +42,7 @@ func GetConfigValue(key string) (string, error) {
 }
 
 func SetConfigValue(dotKey, value string) error {
-	cfg, path, err := LoadConfigMap()
+	cfg, path, err := loadConfigMap()
 	if err != nil {
 		return err
 	}
@@ -105,7 +106,7 @@ func SetConfigValue(dotKey, value string) error {
 
 
 func UnsetConfigValue(dotKey string) error {
-	cfg, path, err := LoadConfigMap()
+	cfg, path, err := loadConfigMap()
 	if err != nil {
 		return err
 	}
@@ -141,7 +142,7 @@ func UnsetConfigValue(dotKey string) error {
 }
 
 
-func LoadConfigMap() (map[string]any, string, error) {
+func loadConfigMap() (map[string]any, string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, "", err
@@ -168,4 +169,130 @@ func writeConfigMap(cfg map[string]any, path string) error {
 	}
 	defer file.Close()
 	return toml.NewEncoder(file).Encode(cfg)
+}
+
+func CompleteConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cfg, _, err := loadConfigMap()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	var keys []string
+	for k, v := range cfg {
+		switch section := v.(type) {
+		case map[string]any:
+			for subk := range section {
+				keys = append(keys, fmt.Sprintf("%s.%s", k, subk))
+			}
+		default:
+			keys = append(keys, k)
+		}
+	}
+
+	return keys, cobra.ShellCompDirectiveNoFileComp
+}
+
+var knownTopLevelKeys = []string{
+	"port",
+	"launch",
+	"log_format",
+	"regex",
+	"regex_preset",
+	"jq",
+	"jq_preset",
+	"csv_fields",
+	"has_csv_header",
+}
+
+var knownSections = []string{
+	"regex_presets",
+	"jq_presets",
+}
+
+func CompleteKnownConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		var keys []string
+
+		// Top-level keys
+		for _, k := range knownTopLevelKeys {
+			keys = append(keys, k)
+		}
+
+		// Section stubs
+		for _, s := range knownSections {
+			keys = append(keys, s+".")
+		}
+
+		return keys, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	if len(args) == 1 {
+		return suggestValuesForKey(args[0]), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeConfigKeyValues(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		// completing first arg: the key
+		return getAllConfigKeys(), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	if len(args) == 1 {
+		key := args[0]
+		return suggestValuesForKey(key), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func getAllConfigKeys() []string {
+	cfg, _, err := loadConfigMap()
+	if err != nil {
+		return nil
+	}
+
+	var keys []string
+	for k, v := range cfg {
+		if section, ok := v.(map[string]any); ok {
+			for subk := range section {
+				keys = append(keys, fmt.Sprintf("%s.%s", k, subk))
+			}
+		} else {
+			keys = append(keys, k)
+		}
+	}
+	return keys
+}
+
+func suggestValuesForKey(key string) []string {
+	switch key {
+	case "log_format":
+		return []string{"json", "text"}
+	case "launch", "has_csv_header":
+		return []string{"true", "false"}
+	case "regex_preset":
+		return getKeysFromSection("regex_presets")
+	case "jq_preset":
+		return getKeysFromSection("jq_presets")
+	default:
+		return nil
+	}
+}
+
+func getKeysFromSection(section string) []string {
+	cfg, _, err := loadConfigMap()
+	if err != nil {
+		return nil
+	}
+	sec, ok := cfg[section].(map[string]any)
+	if !ok {
+		return nil
+	}
+	var keys []string
+	for k := range sec {
+		keys = append(keys, k)
+	}
+	return keys
 }
