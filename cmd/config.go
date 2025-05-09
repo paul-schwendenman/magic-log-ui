@@ -82,9 +82,32 @@ var configValidateCmd = &cobra.Command{
 }
 
 func init() {
+	configGetCmd.ValidArgsFunction = completeConfigKeys
+
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configUnsetCmd)
 	configCmd.AddCommand(configValidateCmd)
 	rootCmd.AddCommand(configCmd)
+}
+
+func completeConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cfg, _, err := app.LoadConfigMap()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	var keys []string
+	for k, v := range cfg {
+		switch section := v.(type) {
+		case map[string]any:
+			for subk := range section {
+				keys = append(keys, fmt.Sprintf("%s.%s", k, subk))
+			}
+		default:
+			keys = append(keys, k)
+		}
+	}
+
+	return keys, cobra.ShellCompDirectiveNoFileComp
 }

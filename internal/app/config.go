@@ -13,7 +13,7 @@ import (
 )
 
 func GetConfigValue(key string) (string, error) {
-	cfg, _, err := loadConfigMap()
+	cfg, _, err := LoadConfigMap()
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +41,7 @@ func GetConfigValue(key string) (string, error) {
 }
 
 func SetConfigValue(dotKey, value string) error {
-	cfg, path, err := loadConfigMap()
+	cfg, path, err := LoadConfigMap()
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func SetConfigValue(dotKey, value string) error {
 
 
 func UnsetConfigValue(dotKey string) error {
-	cfg, path, err := loadConfigMap()
+	cfg, path, err := LoadConfigMap()
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func UnsetConfigValue(dotKey string) error {
 }
 
 
-func loadConfigMap() (map[string]any, string, error) {
+func LoadConfigMap() (map[string]any, string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, "", err
