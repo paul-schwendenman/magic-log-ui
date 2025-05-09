@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/BurntSushi/toml"
 	"github.com/itchyny/gojq"
+	"github.com/spf13/cobra"
 )
 
 func GetConfigValue(key string) (string, error) {
@@ -104,7 +104,6 @@ func SetConfigValue(dotKey, value string) error {
 	return writeConfigMap(cfg, path)
 }
 
-
 func UnsetConfigValue(dotKey string) error {
 	cfg, path, err := loadConfigMap()
 	if err != nil {
@@ -140,7 +139,6 @@ func UnsetConfigValue(dotKey string) error {
 
 	return writeConfigMap(cfg, path)
 }
-
 
 func loadConfigMap() (map[string]any, string, error) {
 	home, err := os.UserHomeDir()
