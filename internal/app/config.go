@@ -14,30 +14,33 @@ import (
 	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 )
 
-func GetConfigValue(dotKey string) (string, error) {
-	dotKey = normalizeKey(dotKey)
-
+func GetConfigValue(key string) (string, error) {
 	cfg, _, err := loadConfigMap()
 	if err != nil {
 		return "", err
 	}
 
-	parts := strings.Split(dotKey, ".")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid key format: use section.key")
-	}
-	section, key := parts[0], parts[1]
-
-	sectionMap, ok := cfg[section].(map[string]any)
-	if !ok {
-		return "", nil
-	}
-	val, ok := sectionMap[key]
-	if !ok {
-		return "", nil
+	// Look for top-level scalar first
+	if val, ok := cfg[key]; ok {
+		return fmt.Sprintf("%v", val), nil
 	}
 
-	return fmt.Sprintf("%v", val), nil
+	if strings.Contains(key, ".") {
+		parts := strings.SplitN(key, ".", 2)
+		section, subkey := parts[0], parts[1]
+
+		sectionMap, ok := cfg[section].(map[string]any)
+		if !ok {
+			return "", fmt.Errorf("no such section: %s", section)
+		}
+		val, ok := sectionMap[subkey]
+		if !ok {
+			return "", fmt.Errorf("no such key: %s in section %s", subkey, section)
+		}
+		return fmt.Sprintf("%v", val), nil
+	}
+
+	return "", fmt.Errorf("key not found: %s", key)
 }
 
 func SetConfigValue(dotKey, value string) error {
