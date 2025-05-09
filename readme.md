@@ -138,7 +138,7 @@ The following sections contain some snippets for testing the app manually by pro
 Tip: To run the local build with these snippets use an alias:
 
 ```
-alias magic-log="go run ./cmd"
+alias magic-log="go run main.go"
 ```
 
 And you should see something like:
