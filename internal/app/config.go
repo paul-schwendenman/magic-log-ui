@@ -110,17 +110,26 @@ func UnsetConfigValue(dotKey string) error {
 		return err
 	}
 
-	dotKey = normalizeKey(dotKey)
-	parts := strings.Split(dotKey, ".")
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid key format: use section.key")
+	if !strings.Contains(dotKey, ".") {
+		if _, exists := cfg[dotKey]; !exists {
+			return fmt.Errorf("no such key: %s", dotKey)
+		}
+		delete(cfg, dotKey)
+		return writeConfigMap(cfg, path)
 	}
+
+	parts := strings.SplitN(dotKey, ".", 2)
 	section, key := parts[0], parts[1]
 
 	sectionMap, ok := cfg[section].(map[string]any)
 	if !ok {
 		return fmt.Errorf("no such section: %s", section)
 	}
+
+	if _, exists := sectionMap[key]; !exists {
+		return fmt.Errorf("no such key: %s in section %s", key, section)
+	}
+
 	delete(sectionMap, key)
 	if len(sectionMap) == 0 {
 		delete(cfg, section)
@@ -130,6 +139,7 @@ func UnsetConfigValue(dotKey string) error {
 
 	return writeConfigMap(cfg, path)
 }
+
 
 func loadConfigMap() (map[string]any, string, error) {
 	home, err := os.UserHomeDir()
