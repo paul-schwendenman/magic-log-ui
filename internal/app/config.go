@@ -64,7 +64,7 @@ func SetConfigValue(dotKey, value string) error {
 			}
 			cfg[dotKey] = value
 
-		case "regex", "jq", "csv_fields":
+		case "regex", "jq", "regex_preset", "jq_preset", "csv_fields":
 			cfg[dotKey] = value
 
 		case "has_csv_header":
