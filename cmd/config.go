@@ -83,7 +83,7 @@ var configValidateCmd = &cobra.Command{
 
 func init() {
 	configGetCmd.ValidArgsFunction = completeConfigKeys
-	configSetCmd.ValidArgsFunction = completeConfigKeyValues
+	configSetCmd.ValidArgsFunction = completeKnownConfigKeys
 	configUnsetCmd.ValidArgsFunction = completeConfigKeys
 
 	configCmd.AddCommand(configGetCmd)
@@ -112,6 +112,47 @@ func completeConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([
 	}
 
 	return keys, cobra.ShellCompDirectiveNoFileComp
+}
+
+var knownTopLevelKeys = []string{
+	"port",
+	"launch",
+	"log_format",
+	"regex",
+	"regex_preset",
+	"jq",
+	"jq_preset",
+	"csv_fields",
+	"has_csv_header",
+}
+
+var knownSections = []string{
+	"regex_presets",
+	"jq_presets",
+}
+
+func completeKnownConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		var keys []string
+
+		// Top-level keys
+		for _, k := range knownTopLevelKeys {
+			keys = append(keys, k)
+		}
+
+		// Section stubs
+		for _, s := range knownSections {
+			keys = append(keys, s+".")
+		}
+
+		return keys, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	if len(args) == 1 {
+		return suggestValuesForKey(args[0]), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeConfigKeyValues(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
