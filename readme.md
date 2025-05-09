@@ -74,12 +74,11 @@ Examples:
 
 ## Configuration
 
-`magic-log` reads configuration options from `$HOME/.magiclogrc`
+`magic-log` reads configuration options from a TOML file `$HOME/.magiclogrc`
 
 For example:
 
 ```
-[defaults]
 db_file = "logs.db"
 port = 4000
 launch = true
