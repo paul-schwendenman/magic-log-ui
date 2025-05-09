@@ -169,21 +169,3 @@ func writeConfigMap(cfg map[string]any, path string) error {
 	defer file.Close()
 	return toml.NewEncoder(file).Encode(cfg)
 }
-
-var knownDefaults = map[string]bool{
-	"log_format":   true,
-	"port":         true,
-	"launch":       true,
-	"db_file":      true,
-	"regex_preset": true,
-	"regex":        true,
-	"jq":           true,
-	"jq_preset":    true,
-}
-
-func normalizeKey(dotKey string) string {
-	if !strings.Contains(dotKey, ".") && knownDefaults[dotKey] {
-		return "defaults." + dotKey
-	}
-	return dotKey
-}
