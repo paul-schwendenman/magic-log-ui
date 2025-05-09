@@ -10,8 +10,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/itchyny/gojq"
-
-	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 )
 
 func GetConfigValue(key string) (string, error) {
@@ -20,7 +18,6 @@ func GetConfigValue(key string) (string, error) {
 		return "", err
 	}
 
-	// Look for top-level scalar first
 	if val, ok := cfg[key]; ok {
 		return fmt.Sprintf("%v", val), nil
 	}
@@ -44,68 +41,68 @@ func GetConfigValue(key string) (string, error) {
 }
 
 func SetConfigValue(dotKey, value string) error {
-	dotKey = normalizeKey(dotKey)
-
-	parts := strings.Split(dotKey, ".")
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid key format: use section.key")
-	}
-	section, key := parts[0], parts[1]
-
-	// 🔄 Load current typed config
-	typedCfg, err := config.Load()
+	cfg, path, err := loadConfigMap()
 	if err != nil {
 		return err
 	}
 
-	// 🧪 Apply and validate in memory
-	switch section {
-	case "defaults":
-		switch key {
-		case "log_format":
-			if value != "text" && value != "json" {
-				return fmt.Errorf("log_format must be 'json' or 'text'")
-			}
-			typedCfg.Defaults.LogFormat = value
+	if !strings.Contains(dotKey, ".") {
+		switch dotKey {
 		case "port":
 			p, err := strconv.Atoi(value)
 			if err != nil || p < 1 || p > 65535 {
 				return fmt.Errorf("invalid port: %s", value)
 			}
-			typedCfg.Defaults.Port = p
+			cfg[dotKey] = p
+
 		case "launch":
-			typedCfg.Defaults.Launch = (value == "true")
-		case "regex_preset":
-			typedCfg.Defaults.RegexPreset = value
-		case "jq_preset":
-			typedCfg.Defaults.JqPreset = value
+			cfg[dotKey] = (value == "true")
+
+		case "log_format":
+			if value != "text" && value != "json" {
+				return fmt.Errorf("log_format must be 'json' or 'text'")
+			}
+			cfg[dotKey] = value
+
+		case "regex", "jq", "csv_fields":
+			cfg[dotKey] = value
+
+		case "has_csv_header":
+			cfg[dotKey] = (value == "true")
+
 		default:
-			return fmt.Errorf("unsupported default key: %s", key)
+			return fmt.Errorf("unsupported config key: %s", dotKey)
 		}
+
+		return writeConfigMap(cfg, path)
+	}
+
+	parts := strings.SplitN(dotKey, ".", 2)
+	section, key := parts[0], parts[1]
+
+	switch section {
 	case "regex_presets":
 		if _, err := regexp.Compile(value); err != nil {
 			return fmt.Errorf("invalid regex: %w", err)
 		}
-		typedCfg.RegexPresets[key] = value
-
 	case "jq_presets":
 		if _, err := gojq.Parse(value); err != nil {
 			return fmt.Errorf("invalid jq expression: %w", err)
 		}
-		typedCfg.JQPresets[key] = value
-
 	default:
 		return fmt.Errorf("unknown section: %s", section)
 	}
 
-	// ✅ Validate full config
-	if errs := typedCfg.Validate(); len(errs) > 0 {
-		return config.ValidationErrors(errs)
+	sectionMap, ok := cfg[section].(map[string]any)
+	if !ok {
+		sectionMap = map[string]any{}
 	}
+	sectionMap[key] = value
+	cfg[section] = sectionMap
 
-	// 💾 Save back to file
-	return config.Save(typedCfg)
+	return writeConfigMap(cfg, path)
 }
+
 
 func UnsetConfigValue(dotKey string) error {
 	cfg, path, err := loadConfigMap()
