@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/itchyny/gojq"
 	"github.com/spf13/cobra"
 )
 import "github.com/paul-schwendenman/magic-log-ui/internal/shared"
@@ -66,12 +64,12 @@ func SetConfigValue(dotKey, value string) error {
 
 	switch section {
 	case "regex_presets":
-		if _, err := regexp.Compile(value); err != nil {
-			return fmt.Errorf("invalid regex: %w", err)
+		if _, err := shared.ValidateRegex(key)(value); err != nil {
+			return err
 		}
 	case "jq_presets":
-		if _, err := gojq.Parse(value); err != nil {
-			return fmt.Errorf("invalid jq expression: %w", err)
+		if _, err := shared.ValidateJQ(key)(value); err != nil {
+			return err
 		}
 	default:
 		return fmt.Errorf("unknown section: %s", section)
