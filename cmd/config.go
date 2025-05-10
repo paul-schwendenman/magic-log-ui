@@ -84,7 +84,7 @@ var configValidateCmd = &cobra.Command{
 func init() {
 	configGetCmd.ValidArgsFunction = app.CompleteConfigKeys
 	configSetCmd.ValidArgsFunction = app.CompleteKnownConfigKeys
-	configUnsetCmd.ValidArgsFunction = app.CompleteConfigKeys
+	configUnsetCmd.ValidArgsFunction = app.CompleteConfigUnsetKeys
 
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)

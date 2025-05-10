@@ -171,6 +171,26 @@ func CompleteConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([
 	return keys, cobra.ShellCompDirectiveNoFileComp
 }
 
+func CompleteConfigUnsetKeys(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cfg, _, err := loadConfigMap()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	var keys []string
+	for k, v := range cfg {
+		if sectionMap, ok := v.(map[string]any); ok {
+			for subk := range sectionMap {
+				keys = append(keys, fmt.Sprintf("%s.%s", k, subk))
+			}
+		} else {
+			keys = append(keys, k)
+		}
+	}
+
+	return keys, cobra.ShellCompDirectiveNoFileComp
+}
+
 type KeyMeta struct {
 	Coerce  func(string) (any, error)
 	Suggest func() []string
