@@ -174,19 +174,31 @@ func CompleteConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([
 }
 
 type KeyMeta struct {
-	Coerce func(string) (any, error)
+	Coerce  func(string) (any, error)
+	Suggest func() []string
 }
 
 var knownKeys = map[string]KeyMeta{
-	"port":           {Coerce: shared.ParseIntInRange("port", 1, 65535)},
-	"launch":         {Coerce: shared.ParseBool("launch")},
-	"log_format":     {Coerce: shared.ParseEnum("log_format", "json", "text")},
-	"has_csv_header": {Coerce: shared.ParseBool("has_csv_header")},
-	"regex":          {Coerce: shared.StringPassThrough("regex")},
-	"regex_preset":   {Coerce: shared.StringPassThrough("regex_preset")},
-	"jq":             {Coerce: shared.StringPassThrough("jq")},
-	"jq_preset":      {Coerce: shared.StringPassThrough("jq_preset")},
-	"csv_fields":     {Coerce: shared.StringPassThrough("csv_fields")},
+	"port": {
+		Coerce:  shared.ParseIntInRange("port", 1, 65535),
+		Suggest: nil, // no completions
+	},
+	"launch": {
+		Coerce:  shared.ParseBool("launch"),
+		Suggest: func() []string { return []string{"true", "false"} },
+	},
+	"log_format": {
+		Coerce:  shared.ParseEnum("log_format", "json", "text"),
+		Suggest: func() []string { return []string{"json", "text"} },
+	},
+	"regex_preset": {
+		Coerce:  shared.StringPassThrough("regex_preset"),
+		Suggest: func() []string { return getKeysFromSection("regex_presets") },
+	},
+	"jq_preset": {
+		Coerce:  shared.StringPassThrough("jq_preset"),
+		Suggest: func() []string { return getKeysFromSection("jq_presets") },
+	},
 }
 
 var knownTopLevelKeys = []string{
@@ -264,18 +276,10 @@ func getAllConfigKeys() []string {
 }
 
 func suggestValuesForKey(key string) []string {
-	switch key {
-	case "log_format":
-		return []string{"json", "text"}
-	case "launch", "has_csv_header":
-		return []string{"true", "false"}
-	case "regex_preset":
-		return getKeysFromSection("regex_presets")
-	case "jq_preset":
-		return getKeysFromSection("jq_presets")
-	default:
-		return nil
+	if meta, ok := knownKeys[key]; ok && meta.Suggest != nil {
+		return meta.Suggest()
 	}
+	return nil
 }
 
 func getKeysFromSection(section string) []string {
