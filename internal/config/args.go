@@ -62,7 +62,7 @@ magic-log config [get|set|unset] <key> [value]
 
 %s
   MAGIC_LOG_CONFIG=/path/to/custom.toml magic-log --port 4000
-  magic-log config set defaults.port 4000
+  magic-log config set port 4000
 `, bold("Config:"), bold("Examples:"))
 	}
 
