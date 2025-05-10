@@ -178,39 +178,43 @@ type KeyMeta struct {
 	Suggest func() []string
 }
 
-var knownKeys = map[string]KeyMeta{
+var knownKeys = map[string]shared.KeyMeta{
 	"port": {
 		Coerce:  shared.ParseIntInRange("port", 1, 65535),
-		Suggest: nil, // no completions
+		Suggest: nil,
 	},
 	"launch": {
 		Coerce:  shared.ParseBool("launch"),
+		Suggest: func() []string { return []string{"true", "false"} },
+	},
+	"has_csv_header": {
+		Coerce:  shared.ParseBool("has_csv_header"),
 		Suggest: func() []string { return []string{"true", "false"} },
 	},
 	"log_format": {
 		Coerce:  shared.ParseEnum("log_format", "json", "text"),
 		Suggest: func() []string { return []string{"json", "text"} },
 	},
+	"regex": {
+		Coerce:  shared.StringPassThrough("regex"),
+		Suggest: nil,
+	},
 	"regex_preset": {
 		Coerce:  shared.StringPassThrough("regex_preset"),
 		Suggest: func() []string { return getKeysFromSection("regex_presets") },
+	},
+	"jq": {
+		Coerce:  shared.StringPassThrough("jq"),
+		Suggest: nil,
 	},
 	"jq_preset": {
 		Coerce:  shared.StringPassThrough("jq_preset"),
 		Suggest: func() []string { return getKeysFromSection("jq_presets") },
 	},
-}
-
-var knownTopLevelKeys = []string{
-	"port",
-	"launch",
-	"log_format",
-	"regex",
-	"regex_preset",
-	"jq",
-	"jq_preset",
-	"csv_fields",
-	"has_csv_header",
+	"csv_fields": {
+		Coerce:  shared.StringPassThrough("csv_fields"),
+		Suggest: nil,
+	},
 }
 
 var knownSections = []string{
@@ -223,7 +227,7 @@ func CompleteKnownConfigKeys(cmd *cobra.Command, args []string, toComplete strin
 		var keys []string
 
 		// Top-level keys
-		for _, k := range knownTopLevelKeys {
+		for k := range knownKeys {
 			keys = append(keys, k)
 		}
 
