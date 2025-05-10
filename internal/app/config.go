@@ -48,31 +48,41 @@ func SetConfigValue(dotKey, value string) error {
 	}
 
 	if !strings.Contains(dotKey, ".") {
-		switch dotKey {
-		case "port":
-			p, err := strconv.Atoi(value)
-			if err != nil || p < 1 || p > 65535 {
-				return fmt.Errorf("invalid port: %s", value)
-			}
-			cfg[dotKey] = p
+		typ, ok := knownKeys[dotKey]
+		if !ok {
+			return fmt.Errorf("unsupported config key: %s", dotKey)
+		}
 
-		case "launch":
+		switch {
+		case typ == "int":
+			n, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("expected integer for %s", dotKey)
+			}
+			cfg[dotKey] = n
+
+		case typ == "bool":
 			cfg[dotKey] = (value == "true")
 
-		case "log_format":
-			if value != "text" && value != "json" {
-				return fmt.Errorf("log_format must be 'json' or 'text'")
+		case strings.HasPrefix(typ, "enum:"):
+			allowed := strings.Split(strings.TrimPrefix(typ, "enum:"), ",")
+			valid := false
+			for _, a := range allowed {
+				if a == value {
+					valid = true
+					break
+				}
+			}
+			if !valid {
+				return fmt.Errorf("%s must be one of: %s", dotKey, strings.Join(allowed, ", "))
 			}
 			cfg[dotKey] = value
 
-		case "regex", "jq", "regex_preset", "jq_preset", "csv_fields":
+		case typ == "string":
 			cfg[dotKey] = value
-
-		case "has_csv_header":
-			cfg[dotKey] = (value == "true")
 
 		default:
-			return fmt.Errorf("unsupported config key: %s", dotKey)
+			return fmt.Errorf("unsupported type for key: %s", dotKey)
 		}
 
 		return writeConfigMap(cfg, path)
@@ -188,6 +198,18 @@ func CompleteConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([
 	}
 
 	return keys, cobra.ShellCompDirectiveNoFileComp
+}
+
+var knownKeys = map[string]string{
+	"port":            "int",
+	"launch":          "bool",
+	"has_csv_header":  "bool",
+	"log_format":      "enum:text,json",
+	"regex":           "string",
+	"jq":              "string",
+	"regex_preset":    "string",
+	"jq_preset":       "string",
+	"csv_fields":      "string",
 }
 
 var knownTopLevelKeys = []string{
