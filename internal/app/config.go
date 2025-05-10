@@ -178,22 +178,22 @@ type KeyMeta struct {
 	Suggest func() []string
 }
 
-var knownKeys = map[string]shared.KeyMeta{
+var knownKeys = map[string]KeyMeta{
 	"port": {
 		Coerce:  shared.ParseIntInRange("port", 1, 65535),
 		Suggest: nil,
 	},
 	"launch": {
 		Coerce:  shared.ParseBool("launch"),
-		Suggest: func() []string { return []string{"true", "false"} },
+		Suggest: shared.SuggestBool,
 	},
 	"has_csv_header": {
 		Coerce:  shared.ParseBool("has_csv_header"),
-		Suggest: func() []string { return []string{"true", "false"} },
+		Suggest: shared.SuggestBool,
 	},
 	"log_format": {
 		Coerce:  shared.ParseEnum("log_format", "json", "text"),
-		Suggest: func() []string { return []string{"json", "text"} },
+		Suggest: func() []string { return []string{"json", "text", "csv"} },
 	},
 	"regex": {
 		Coerce:  shared.StringPassThrough("regex"),

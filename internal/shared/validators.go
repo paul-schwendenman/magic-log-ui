@@ -65,3 +65,7 @@ func ValidateJQ(key string) func(string) (any, error) {
 		return s, nil
 	}
 }
+
+func SuggestBool() []string {
+	return []string{"true", "false"}
+}
