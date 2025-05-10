@@ -196,7 +196,7 @@ var knownKeys = map[string]KeyMeta{
 		Suggest: func() []string { return []string{"json", "text", "csv"} },
 	},
 	"regex": {
-		Coerce:  shared.StringPassThrough("regex"),
+		Coerce:  shared.ValidateRegex("regex"),
 		Suggest: nil,
 	},
 	"regex_preset": {
@@ -204,7 +204,7 @@ var knownKeys = map[string]KeyMeta{
 		Suggest: func() []string { return getKeysFromSection("regex_presets") },
 	},
 	"jq": {
-		Coerce:  shared.StringPassThrough("jq"),
+		Coerce:  shared.ValidateJQ("jq"),
 		Suggest: nil,
 	},
 	"jq_preset": {
