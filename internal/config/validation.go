@@ -39,7 +39,8 @@ func (c *Config) Validate() []error {
 	}
 
 	// --- Defaults ---
-	d := c.Defaults
+	d := c
+	// d := c.Defaults
 
 	if d.RegexPreset != "" {
 		if _, ok := c.RegexPresets[d.RegexPreset]; !ok {

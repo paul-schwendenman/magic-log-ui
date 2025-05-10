@@ -9,20 +9,19 @@ import (
 )
 
 type Config struct {
+	DBFile       string            `toml:"db_file" json:"db_file"`
+	Port         int               `toml:"port" json:"port"`
+	Launch       bool              `toml:"launch" json:"launch"`
+	LogFormat    string            `toml:"log_format" json:"log_format"`
+	RegexPreset  string            `toml:"regex_preset" json:"regex_preset"`
+	Regex        string            `toml:"regex" json:"regex"`
+	JqFilter     string            `toml:"jq" json:"jq"`
+	JqPreset     string            `toml:"jq_preset" json:"jq_preset"`
+	CSVFields    string            `toml:"csv_fields" json:"csv_fields"`
+	HasCSVHeader bool              `toml:"has_csv_header" json:"has_csv_header"`
+
 	RegexPresets map[string]string `toml:"regex_presets" json:"regex_presets"`
 	JQPresets    map[string]string `toml:"jq_presets" json:"jq_presets"`
-	Defaults     struct {
-		DBFile       string `toml:"db_file" json:"db_file"`
-		Port         int    `toml:"port" json:"port"`
-		Launch       bool   `toml:"launch" json:"launch"`
-		LogFormat    string `toml:"log_format" json:"log_format"`
-		RegexPreset  string `toml:"regex_preset" json:"regex_preset"`
-		Regex        string `toml:"regex" json:"regex"`
-		JqFilter     string `toml:"jq" json:"jq"`
-		JqPreset     string `toml:"jq_preset" json:"jq_preset"`
-		CSVFields    string `toml:"csv_fields" json:"csv_fields"`
-		HasCSVHeader bool   `toml:"has_csv_header" json:"has_csv_header"`
-	} `toml:"defaults" json:"defaults"`
 }
 
 func Load() (*Config, error) {
