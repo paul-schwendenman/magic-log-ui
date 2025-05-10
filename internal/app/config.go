@@ -5,13 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/itchyny/gojq"
 	"github.com/spf13/cobra"
 )
+import "github.com/paul-schwendenman/magic-log-ui/internal/shared"
 
 func GetConfigValue(key string) (string, error) {
 	cfg, _, err := loadConfigMap()
@@ -48,43 +48,16 @@ func SetConfigValue(dotKey, value string) error {
 	}
 
 	if !strings.Contains(dotKey, ".") {
-		typ, ok := knownKeys[dotKey]
+		meta, ok := knownKeys[dotKey]
 		if !ok {
 			return fmt.Errorf("unsupported config key: %s", dotKey)
 		}
 
-		switch {
-		case typ == "int":
-			n, err := strconv.Atoi(value)
-			if err != nil {
-				return fmt.Errorf("expected integer for %s", dotKey)
-			}
-			cfg[dotKey] = n
-
-		case typ == "bool":
-			cfg[dotKey] = (value == "true")
-
-		case strings.HasPrefix(typ, "enum:"):
-			allowed := strings.Split(strings.TrimPrefix(typ, "enum:"), ",")
-			valid := false
-			for _, a := range allowed {
-				if a == value {
-					valid = true
-					break
-				}
-			}
-			if !valid {
-				return fmt.Errorf("%s must be one of: %s", dotKey, strings.Join(allowed, ", "))
-			}
-			cfg[dotKey] = value
-
-		case typ == "string":
-			cfg[dotKey] = value
-
-		default:
-			return fmt.Errorf("unsupported type for key: %s", dotKey)
+		coerced, err := meta.Coerce(value)
+		if err != nil {
+			return err
 		}
-
+		cfg[dotKey] = coerced
 		return writeConfigMap(cfg, path)
 	}
 
@@ -200,16 +173,20 @@ func CompleteConfigKeys(cmd *cobra.Command, args []string, toComplete string) ([
 	return keys, cobra.ShellCompDirectiveNoFileComp
 }
 
-var knownKeys = map[string]string{
-	"port":            "int",
-	"launch":          "bool",
-	"has_csv_header":  "bool",
-	"log_format":      "enum:text,json",
-	"regex":           "string",
-	"jq":              "string",
-	"regex_preset":    "string",
-	"jq_preset":       "string",
-	"csv_fields":      "string",
+type KeyMeta struct {
+	Coerce func(string) (any, error)
+}
+
+var knownKeys = map[string]KeyMeta{
+	"port":           {Coerce: shared.ParseIntInRange("port", 1, 65535)},
+	"launch":         {Coerce: shared.ParseBool("launch")},
+	"log_format":     {Coerce: shared.ParseEnum("log_format", "json", "text")},
+	"has_csv_header": {Coerce: shared.ParseBool("has_csv_header")},
+	"regex":          {Coerce: shared.StringPassThrough("regex")},
+	"regex_preset":   {Coerce: shared.StringPassThrough("regex_preset")},
+	"jq":             {Coerce: shared.StringPassThrough("jq")},
+	"jq_preset":      {Coerce: shared.StringPassThrough("jq_preset")},
+	"csv_fields":     {Coerce: shared.StringPassThrough("csv_fields")},
 }
 
 var knownTopLevelKeys = []string{
