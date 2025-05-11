@@ -1,8 +1,9 @@
 <script lang="ts">
 	import PresetEditor from '$lib/components/PresetEditor.svelte';
+	import type { Config } from '$lib/types';
 	import { onMount } from 'svelte';
 
-	let config: any = null;
+	let config: Config | null = null;
 	let loading = true;
 	let saving = false;
 
@@ -23,7 +24,10 @@
 		has_csv_header: 'boolean'
 	};
 
-	const defaultConfig = {
+	const defaultConfig: Pick<
+		Config,
+		'regex_presets' | 'jq_presets' | 'has_csv_header' | 'launch' | 'port'
+	> = {
 		jq_presets: {},
 		regex_presets: {},
 		has_csv_header: false,
@@ -37,7 +41,7 @@
 	onMount(async () => {
 		try {
 			const res = await fetch('/api/config');
-			const rawConfig = await res.json();
+			const rawConfig: Partial<Config> = await res.json();
 			config = { ...defaultConfig, ...rawConfig };
 		} catch (e) {
 			errorMessages = ['Failed to load config.'];
@@ -122,7 +126,6 @@
 			<div class="rounded bg-green-100 p-3 text-green-700">{successMessage}</div>
 		{/if}
 
-		<!-- Defaults -->
 		{#if config}
 			<section>
 				<h2 class="mb-2 text-xl font-semibold">Defaults</h2>
