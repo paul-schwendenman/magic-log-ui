@@ -109,31 +109,61 @@ as well as any defined regex or jq presets.
 Examples:
   magic-log config validate`,
 	Args: cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.Load()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "❌ Failed to load config:", err)
-			os.Exit(1)
+			return fmt.Errorf("❌ Failed to load config: %w", err)
 		}
 		if errs := cfg.Validate(); len(errs) > 0 {
 			fmt.Fprintln(os.Stderr, "❌ Config is invalid:")
 			for _, e := range errs {
 				fmt.Fprintln(os.Stderr, "   -", e)
 			}
-			os.Exit(1)
+			return fmt.Errorf("configuration validation failed")
 		}
 		fmt.Println("✅ Config is valid")
+		return nil
+	},
+}
+
+var configEditCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edit the raw config file in your editor",
+	Long: `Opens your configuration file in $EDITOR.
+
+After editing, the file is validated. If it is valid, it replaces your existing config.
+If invalid, the errors are shown and the original config is preserved.`,
+	Args: cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		noBackup, _ := cmd.Flags().GetBool("no-backup")
+		noValidate, _ := cmd.Flags().GetBool("no-validate")
+		editorFlag, _ := cmd.Flags().GetString("editor")
+
+		opts := app.EditOptions{
+			Editor:     editorFlag,
+			NoBackup:   noBackup,
+			NoValidate: noValidate,
+		}
+		return app.EditConfig(opts)
 	},
 }
 
 func init() {
+	configEditCmd.Flags().Bool("no-backup", false, "Do not create a .bak file before saving")
+	configEditCmd.Flags().Bool("no-validate", false, "Skip validation of the edited config")
+	configEditCmd.Flags().String("editor", "", "Editor to use instead of $EDITOR")
+
 	configGetCmd.ValidArgsFunction = app.CompleteConfigKeys
 	configSetCmd.ValidArgsFunction = app.CompleteKnownConfigKeys
 	configUnsetCmd.ValidArgsFunction = app.CompleteConfigUnsetKeys
+
+	configEditCmd.SilenceUsage = true
+	configValidateCmd.SilenceUsage = true
 
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configUnsetCmd)
 	configCmd.AddCommand(configValidateCmd)
+	configCmd.AddCommand(configEditCmd)
 	rootCmd.AddCommand(configCmd)
 }
