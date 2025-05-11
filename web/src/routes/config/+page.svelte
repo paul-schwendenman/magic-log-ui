@@ -10,17 +10,17 @@
 	let successMessage = '';
 	let successTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const defaultsFieldTypes: Record<string, 'string' | 'number' | 'boolean' | 'preset'> = {
+	const configFieldTypes: Record<string, 'string' | 'number' | 'boolean' | 'preset'> = {
 		db_file: 'string',
 		port: 'number',
 		launch: 'boolean',
 		log_format: 'string',
 		regex_preset: 'preset',
 		regex: 'string',
-		jq_filter: 'string',
+		jq: 'string',
 		jq_preset: 'preset',
 		csv_fields: 'string',
-		has_csv_header: 'boolean',
+		has_csv_header: 'boolean'
 	};
 
 	$: regexPresetOptions = config?.regex_presets ? Object.keys(config.regex_presets) : [];
@@ -114,65 +114,47 @@
 		{/if}
 
 		<!-- Defaults -->
-		{#if config?.defaults}
+		{#if config}
 			<section>
 				<h2 class="mb-2 text-xl font-semibold">Defaults</h2>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					{#each Object.entries(config.defaults) as [key, value]}
+					{#each Object.entries(configFieldTypes) as [key, type]}
 						<div>
 							<label for={key} class="block font-medium capitalize">{key}</label>
-							{#if defaultsFieldTypes[key] === 'boolean'}
-								<select
-									id={key}
-									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-								>
+							{#if type === 'boolean'}
+								<select id={key} class="w-full rounded border p-2" bind:value={config[key]}>
 									<option value={true}>true</option>
 									<option value={false}>false</option>
 								</select>
-							{:else if defaultsFieldTypes[key] === 'number'}
+							{:else if type === 'number'}
 								<input
 									id={key}
 									type="number"
 									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-									on:input={(e) => (config.defaults[key] = +e.target.value)}
+									bind:value={config[key]}
+									on:input={(e) => (config[key] = +e.target.value)}
 								/>
-							{:else if defaultsFieldTypes[key] === 'preset'}
-								<select
-									id={key}
-									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-								>
+							{:else if type === 'preset'}
+								<select id={key} class="w-full rounded border p-2" bind:value={config[key]}>
 									<option value="">-- select --</option>
 									{#each key === 'regex_preset' ? regexPresetOptions : jqPresetOptions as option}
 										<option value={option}>{option}</option>
 									{/each}
 								</select>
 							{:else}
-								<input
-									id={key}
-									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-								/>
+								<input id={key} class="w-full rounded border p-2" bind:value={config[key]} />
 							{/if}
 						</div>
 					{/each}
 				</div>
 			</section>
-		{/if}
 
-		<!-- Regex Presets -->
-		{#if config?.regex_presets}
 			<PresetEditor
 				title="Regex Presets"
 				bind:presets={config.regex_presets}
 				validateValue={validateRegex}
 			/>
-		{/if}
 
-		<!-- JQ Presets -->
-		{#if config?.jq_presets}
 			<PresetEditor
 				title="JQ Presets"
 				bind:presets={config.jq_presets}
