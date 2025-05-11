@@ -51,6 +51,18 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.magiclogrc)")
+	rootCmd.Flags().String("db-file", "", "Path to a DuckDB database file")
+	rootCmd.Flags().Int("port", 3000, "Port to serve the web UI on")
+	rootCmd.Flags().Bool("launch", false, "Open the UI in a browser")
+	rootCmd.Flags().Bool("echo", false, "Echo parsed stdin input to stdout")
+	rootCmd.Flags().Bool("no-auto-analyze", false, "Disable automatic ANALYZE of logs table")
+	rootCmd.Flags().String("log-format", "json", "Log format: json, csv or plain text")
+	rootCmd.Flags().String("regex", "", "Custom regex to parse logs (use with text format)")
+	rootCmd.Flags().String("regex-preset", "", "Regex preset to use")
+	rootCmd.Flags().String("jq", "", "A jq expression to apply to parsed logs")
+	rootCmd.Flags().String("jq-preset", "", "jq preset to use")
+	rootCmd.Flags().String("csv-fields", "", "Comma-separated field names for CSV logs")
+	rootCmd.Flags().Bool("has-csv-header", true, "Whether CSV logs include a header row")
 }
 
 func initConfig() {
@@ -65,6 +77,7 @@ func initConfig() {
 		viper.SetConfigName(".magiclogrc")
 	}
 
+	viper.BindPFlags(rootCmd.Flags())
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
