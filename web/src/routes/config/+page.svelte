@@ -136,7 +136,10 @@
 									type="number"
 									class="w-full rounded border p-2"
 									bind:value={config[key]}
-									on:input={(e) => (config[key] = +e.target.value)}
+									on:input={(e) => {
+										const value = (e.target as HTMLInputElement).value;
+										(config as any)[key] = +value;
+									}}
 								/>
 							{:else if type === 'preset'}
 								<select id={key} class="w-full rounded border p-2" bind:value={config[key]}>

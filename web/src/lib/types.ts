@@ -42,8 +42,8 @@ export type ConfigDefaults = Pick<
 	'regex_presets' | 'jq_presets' | 'has_csv_header' | 'launch' | 'port'
 >;
 
-type ConfigKey = Exclude<keyof Config, 'jq_presets' | 'regex_presets'>;
+type ConfigFieldKey = Exclude<keyof Config, 'jq_presets' | 'regex_presets'>;
 
-export type ConfigValueType = 'string' | 'number' | 'boolean' | 'preset';
+type ConfigFieldValue = 'string' | 'number' | 'boolean' | 'preset';
 
-export type ConfigFieldTypes = Record<ConfigKey, ConfigValueType>;
+export type ConfigFieldTypes = Record<ConfigFieldKey, ConfigFieldValue>;
