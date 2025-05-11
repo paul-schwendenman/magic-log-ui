@@ -56,6 +56,11 @@ func EditConfig() error {
 		return fmt.Errorf("failed to read updated config: %w", err)
 	}
 
+	backupPath := originalPath + ".bak"
+	if err := os.WriteFile(backupPath, originalData, 0644); err != nil {
+		return fmt.Errorf("failed to create backup: %w", err)
+	}
+
 	if err := os.WriteFile(originalPath, editedData, 0644); err != nil {
 		return fmt.Errorf("failed to write updated config: %w", err)
 	}
