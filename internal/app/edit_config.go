@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -61,9 +62,22 @@ func EditConfig() error {
 		return fmt.Errorf("failed to read updated config: %w", err)
 	}
 
-	backupPath := originalPath + ".bak"
-	if err := os.WriteFile(backupPath, originalData, 0644); err != nil {
-		return fmt.Errorf("failed to create backup: %w", err)
+	writeBackup := false
+
+	if _, err := os.Stat(originalPath); err == nil {
+		if !bytes.Equal(originalData, editedData) {
+			writeBackup = true
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to stat config file: %w", err)
+	}
+
+	if writeBackup {
+		backupPath := originalPath + ".bak"
+		if err := os.WriteFile(backupPath, originalData, 0644); err != nil {
+			return fmt.Errorf("failed to create backup: %w", err)
+		}
+		fmt.Println("📦 Backup saved to:", backupPath)
 	}
 
 	if err := os.WriteFile(originalPath, editedData, 0644); err != nil {
