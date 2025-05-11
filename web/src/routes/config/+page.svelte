@@ -100,12 +100,6 @@
 		// For real JQ parsing/validation, do it on backend
 		return null;
 	}
-
-	function coerceDefault(key: string, val: string): any {
-		if (key === 'port') return parseInt(val, 10);
-		if (key === 'launch') return val === 'true';
-		return val;
-	}
 </script>
 
 {#if loading}
