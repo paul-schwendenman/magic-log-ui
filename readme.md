@@ -29,47 +29,47 @@ brew install magic-log
 
 ```
 $ magic-log --help
-Usage:
-magic-log [flags]
-magic-log config [get|set|unset] <key> [value]
+Magic Log is a local-first log parsing and analytics tool.
 
-Flags:
-  -csv-fields string
-        Comma-separated field names for CSV logs (used with --log-format=csv)
-  -db-file string
-        Path to a DuckDB database file.
-  -echo
-        Echo parsed stdin input to stdout
-  -has-csv-header
-        Indicates if CSV logs include a header row (default true)
-  -jq string
-        A jq expression to apply to parsed logs
-  -jq-preset string
-        Regex preset to use.
-  -launch
-        Open the UI in a browser.
-  -list-presets
-        List available regex and jq presets and exit.
-  -log-format string
-        Log format: json, csv or plain text. (default "json")
-  -no-auto-analyze
-        Disable automatic ANALYZE of logs table
-  -port int
-        Port to serve the web UI on. (default 3000)
-  -regex string
-        Custom regex to parse logs. Use with "text" format
-  -regex-preset string
-        Regex preset to use.
-  -version
-        Print version and exit.
+It ingests structured logs (JSON, CSV, or plain text), applies regex or jq filters,
+and stores them in a fast in-memory or on-disk DuckDB database.
 
-Config:
-  The CLI reads config from ~/.magiclogrc by default.
-  You can override the config path using the MAGIC_LOG_CONFIG environment variable.
+By default, running 'magic-log' starts the local web UI for browsing and querying logs.
 
 Examples:
-  MAGIC_LOG_CONFIG=/path/to/custom.toml magic-log --port 4000
-  magic-log config set port 4000
+  magic-log --port 5000 --log-format json
+  magic-log config set jq_preset simple
+  magic-log config validate
+
+Usage:
+  magic-log [flags]
+  magic-log [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  config      Manage configuration settings
+  help        Help about any command
+  presets     List available regex and jq presets
+  server      Start the local web UI and begin ingesting logs
+  version     Print the version and exit
+
+Flags:
+      --config string         config file (default is $HOME/.magiclogrc)
+      --csv-fields string     Comma-separated field names for CSV logs
+      --db-file string        Path to a DuckDB database file
+      --echo                  Echo parsed stdin input to stdout
+      --has-csv-header        Whether CSV logs include a header row (default true)
+  -h, --help                  help for magic-log
+      --jq string             A jq expression to apply to parsed logs
+      --jq-preset string      jq preset to use
+      --launch                Open the UI in a browser
+      --log-format string     Log format: json, csv or plain text (default "json")
+      --no-auto-analyze       Disable automatic ANALYZE of logs table
+      --port int              Port to serve the web UI on (default 3000)
+      --regex string          Custom regex to parse logs (use with text format)
+      --regex-preset string   Regex preset to use
+
+Use "magic-log [command] --help" for more information about a command.
 ```
 
 ## Configuration
