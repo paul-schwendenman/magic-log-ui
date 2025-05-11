@@ -145,9 +145,7 @@ func init() {
 	configUnsetCmd.ValidArgsFunction = app.CompleteConfigUnsetKeys
 
 	configEditCmd.SilenceUsage = true
-	configEditCmd.SilenceErrors = true
 	configValidateCmd.SilenceUsage = true
-	configValidateCmd.SilenceErrors = true
 
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)
