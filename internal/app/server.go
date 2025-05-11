@@ -13,6 +13,7 @@ import (
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
 	"github.com/paul-schwendenman/magic-log-ui/internal/logdb"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -30,6 +31,7 @@ type Config struct {
 }
 
 func Run(config Config, staticFiles embed.FS) {
+	log.Println("⚙️  Using config file:", viper.ConfigFileUsed())
 	ctx := context.Background()
 
 	db := logdb.MustInit(config.DBFile, ctx)

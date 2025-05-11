@@ -7,13 +7,8 @@ import (
 	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 )
 
-var configPath string
-
-func init() {
-	configPath = config.GetConfigPath()
-}
-
 func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
+	configPath := config.GetConfigPath()
 	cfg, err := config.LoadFromFile(configPath)
 	if err != nil {
 		http.Error(w, "Failed to load config", http.StatusInternalServerError)
@@ -24,6 +19,8 @@ func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 func SaveConfigHandler(w http.ResponseWriter, r *http.Request) {
 	var newCfg config.Config
+	configPath := config.GetConfigPath()
+
 	if err := json.NewDecoder(r.Body).Decode(&newCfg); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return

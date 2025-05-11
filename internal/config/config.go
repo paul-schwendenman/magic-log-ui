@@ -2,23 +2,24 @@ package config
 
 import (
 	"bytes"
+	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
-	DBFile       string            `toml:"db_file" json:"db_file,omitempty"`
-	Port         int               `toml:"port" json:"port,omitempty"`
-	Launch       bool              `toml:"launch" json:"launch,omitempty"`
-	LogFormat    string            `toml:"log_format" json:"log_format,omitempty"`
-	RegexPreset  string            `toml:"regex_preset" json:"regex_preset,omitempty"`
-	Regex        string            `toml:"regex" json:"regex,omitempty"`
-	JqFilter     string            `toml:"jq" json:"jq,omitempty"`
-	JqPreset     string            `toml:"jq_preset" json:"jq_preset,omitempty"`
-	CSVFields    string            `toml:"csv_fields" json:"csv_fields,omitempty"`
-	HasCSVHeader bool              `toml:"has_csv_header" json:"has_csv_header,omitempty"`
+	DBFile       string `toml:"db_file" json:"db_file,omitempty"`
+	Port         int    `toml:"port" json:"port,omitempty"`
+	Launch       bool   `toml:"launch" json:"launch,omitempty"`
+	LogFormat    string `toml:"log_format" json:"log_format,omitempty"`
+	RegexPreset  string `toml:"regex_preset" json:"regex_preset,omitempty"`
+	Regex        string `toml:"regex" json:"regex,omitempty"`
+	JqFilter     string `toml:"jq" json:"jq,omitempty"`
+	JqPreset     string `toml:"jq_preset" json:"jq_preset,omitempty"`
+	CSVFields    string `toml:"csv_fields" json:"csv_fields,omitempty"`
+	HasCSVHeader bool   `toml:"has_csv_header" json:"has_csv_header,omitempty"`
 
 	RegexPresets map[string]string `toml:"regex_presets" json:"regex_presets,omitempty"`
 	JQPresets    map[string]string `toml:"jq_presets" json:"jq_presets,omitempty"`
@@ -72,14 +73,14 @@ func SaveToFile(path string, cfg *Config) error {
 }
 
 func GetConfigPath() string {
-	path := os.Getenv("MAGIC_LOG_CONFIG")
-	if path == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return ""
-		}
-		path = filepath.Join(home, ".magiclogrc")
-	}
+	// return viper.ConfigFileUsed()
+	path := viper.ConfigFileUsed()
 
+	if path == "" {
+		panic("❌ config.GetConfigPath() called before viper.ReadInConfig()")
+	}
+	if path == "" {
+		log.Println("⚠️ Viper has no config file loaded.")
+	}
 	return path
 }
