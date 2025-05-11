@@ -110,20 +110,20 @@ as well as any defined regex or jq presets.
 Examples:
   magic-log config validate`,
 	Args: cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.Load()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "❌ Failed to load config:", err)
-			os.Exit(1)
+			return fmt.Errorf("❌ Failed to load config: %w", err)
 		}
 		if errs := cfg.Validate(); len(errs) > 0 {
 			fmt.Fprintln(os.Stderr, "❌ Config is invalid:")
 			for _, e := range errs {
 				fmt.Fprintln(os.Stderr, "   -", e)
 			}
-			os.Exit(1)
+			return fmt.Errorf("configuration validation failed")
 		}
 		fmt.Println("✅ Config is valid")
+		return nil
 	},
 }
 
@@ -199,6 +199,8 @@ func init() {
 
 	configEditCmd.SilenceUsage = true
 	configEditCmd.SilenceErrors = true
+	configValidateCmd.SilenceUsage = true
+	configValidateCmd.SilenceErrors = true
 
 	configCmd.AddCommand(configGetCmd)
 	configCmd.AddCommand(configSetCmd)
