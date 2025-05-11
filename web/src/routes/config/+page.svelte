@@ -23,13 +23,21 @@
 		has_csv_header: 'boolean'
 	};
 
+	const defaultConfig = {
+		jq_presets: {},
+		regex_presets: {},
+		has_csv_header: false,
+		launch: false
+	}
+
 	$: regexPresetOptions = config?.regex_presets ? Object.keys(config.regex_presets) : [];
 	$: jqPresetOptions = config?.jq_presets ? Object.keys(config.jq_presets) : [];
 
 	onMount(async () => {
 		try {
 			const res = await fetch('/api/config');
-			config = await res.json();
+			const rawConfig = await res.json();
+			config = {...defaultConfig, ...rawConfig};
 		} catch (e) {
 			errorMessages = ['Failed to load config.'];
 		} finally {
