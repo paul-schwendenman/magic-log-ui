@@ -27,8 +27,9 @@
 		jq_presets: {},
 		regex_presets: {},
 		has_csv_header: false,
-		launch: false
-	}
+		launch: false,
+		port: 3000
+	};
 
 	$: regexPresetOptions = config?.regex_presets ? Object.keys(config.regex_presets) : [];
 	$: jqPresetOptions = config?.jq_presets ? Object.keys(config.jq_presets) : [];
@@ -37,7 +38,7 @@
 		try {
 			const res = await fetch('/api/config');
 			const rawConfig = await res.json();
-			config = {...defaultConfig, ...rawConfig};
+			config = { ...defaultConfig, ...rawConfig };
 		} catch (e) {
 			errorMessages = ['Failed to load config.'];
 		} finally {
