@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PresetEditor from '$lib/components/PresetEditor.svelte';
-	import type { Config } from '$lib/types';
+	import type { Config, ConfigDefaults, ConfigFieldTypes } from '$lib/types';
 	import { onMount } from 'svelte';
 
 	let config: Config | null = null;
@@ -11,7 +11,7 @@
 	let successMessage = '';
 	let successTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const configFieldTypes: Record<string, 'string' | 'number' | 'boolean' | 'preset'> = {
+	const configFieldTypes: ConfigFieldTypes = {
 		db_file: 'string',
 		port: 'number',
 		launch: 'boolean',
@@ -24,10 +24,7 @@
 		has_csv_header: 'boolean'
 	};
 
-	const defaultConfig: Pick<
-		Config,
-		'regex_presets' | 'jq_presets' | 'has_csv_header' | 'launch' | 'port'
-	> = {
+	const defaultConfig: ConfigDefaults = {
 		jq_presets: {},
 		regex_presets: {},
 		has_csv_header: false,

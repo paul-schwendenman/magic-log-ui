@@ -36,3 +36,12 @@ export type Config = {
 	regex_presets: Record<string, string>;
 	jq_presets: Record<string, string>;
 };
+
+export type ConfigDefaults = Pick<
+	Config,
+	'regex_presets' | 'jq_presets' | 'has_csv_header' | 'launch' | 'port'
+>;
+
+type ConfigKey = Exclude<keyof Config, 'jq_presets' | 'regex_presets'>;
+
+export type ConfigFieldTypes = Record<ConfigKey, 'string' | 'number' | 'boolean' | 'preset'>;
