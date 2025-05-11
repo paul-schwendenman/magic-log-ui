@@ -135,11 +135,24 @@ After editing, the file is validated. If it is valid, it replaces your existing 
 If invalid, the errors are shown and the original config is preserved.`,
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return app.EditConfig()
+		noBackup, _ := cmd.Flags().GetBool("no-backup")
+		noValidate, _ := cmd.Flags().GetBool("no-validate")
+		editorFlag, _ := cmd.Flags().GetString("editor")
+
+		opts := app.EditOptions{
+			Editor:     editorFlag,
+			NoBackup:   noBackup,
+			NoValidate: noValidate,
+		}
+		return app.EditConfig(opts)
 	},
 }
 
 func init() {
+	configEditCmd.Flags().Bool("no-backup", false, "Do not create a .bak file before saving")
+	configEditCmd.Flags().Bool("no-validate", false, "Skip validation of the edited config")
+	configEditCmd.Flags().String("editor", "", "Editor to use instead of $EDITOR")
+
 	configGetCmd.ValidArgsFunction = app.CompleteConfigKeys
 	configSetCmd.ValidArgsFunction = app.CompleteKnownConfigKeys
 	configUnsetCmd.ValidArgsFunction = app.CompleteConfigUnsetKeys

@@ -9,7 +9,13 @@ import (
 	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 )
 
-func EditConfig() error {
+type EditOptions struct {
+	Editor     string
+	NoBackup   bool
+	NoValidate bool
+}
+
+func EditConfig(cfg EditOptions) error {
 	originalPath := config.GetConfigPath()
 
 	originalData := []byte{}
@@ -33,10 +39,14 @@ func EditConfig() error {
 	}
 	tmpFile.Close()
 
-	editor := os.Getenv("EDITOR")
+	editor := cfg.Editor
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+	}
 	if editor == "" {
 		editor = "vi"
 	}
+
 	cmdEdit := exec.Command(editor, tmpFile.Name())
 	cmdEdit.Stdin = os.Stdin
 	cmdEdit.Stdout = os.Stdout
@@ -45,16 +55,18 @@ func EditConfig() error {
 		return fmt.Errorf("editor exited with error: %w", err)
 	}
 
-	editedCfg, err := config.LoadFromFile(tmpFile.Name())
-	if err != nil {
-		return fmt.Errorf("❌ Failed to parse edited config: %w", err)
-	}
-	if errs := editedCfg.Validate(); len(errs) > 0 {
-		fmt.Fprintln(os.Stderr, "❌ Edited config is invalid:")
-		for _, e := range errs {
-			fmt.Fprintln(os.Stderr, "   -", e)
+	if !cfg.NoValidate {
+		editedCfg, err := config.LoadFromFile(tmpFile.Name())
+		if err != nil {
+			return fmt.Errorf("❌ Failed to parse edited config: %w", err)
 		}
-		return fmt.Errorf("aborting due to invalid config")
+		if errs := editedCfg.Validate(); len(errs) > 0 {
+			fmt.Fprintln(os.Stderr, "❌ Edited config is invalid:")
+			for _, e := range errs {
+				fmt.Fprintln(os.Stderr, "   -", e)
+			}
+			return fmt.Errorf("aborting due to invalid config")
+		}
 	}
 
 	editedData, err := os.ReadFile(tmpFile.Name())
@@ -64,12 +76,14 @@ func EditConfig() error {
 
 	writeBackup := false
 
-	if _, err := os.Stat(originalPath); err == nil {
-		if !bytes.Equal(originalData, editedData) {
-			writeBackup = true
+	if !cfg.NoBackup {
+		if _, err := os.Stat(originalPath); err == nil {
+			if !bytes.Equal(originalData, editedData) {
+				writeBackup = true
+			}
+		} else if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to stat config file: %w", err)
 		}
-	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("failed to stat config file: %w", err)
 	}
 
 	if writeBackup {
