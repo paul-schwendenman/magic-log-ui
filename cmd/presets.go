@@ -13,7 +13,15 @@ import (
 var presetsCmd = &cobra.Command{
 	Use:   "presets",
 	Short: "List available regex and jq presets",
-	Args:  cobra.NoArgs,
+	Long: `Lists all configured regex and jq presets from your config file.
+
+Presets allow you to reuse common parsing or transformation logic without
+passing full regex or jq strings every time.
+
+Example:
+  magic-log presets
+`,
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.Load()
 		if err != nil {

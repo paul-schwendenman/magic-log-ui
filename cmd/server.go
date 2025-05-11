@@ -18,8 +18,18 @@ var staticFiles embed.FS
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "Start the log server and ingest process",
-	Long:  ``,
+	Short: "Start the local web UI and begin ingesting logs",
+	Long: `Starts the Magic Log web interface and begins ingesting logs from stdin.
+
+The logs are parsed using the selected format (json, csv, or regex),
+optionally filtered using jq expressions, and stored in a DuckDB database
+(either in-memory or on-disk).
+
+You can also configure presets, query past logs, and auto-analyze your data.
+
+Examples:
+  pnpm dev | magic-log server --port 5000 --log-format json
+  cat logs.txt | magic-log server --regex-preset apache --log-format text`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := app.Config{
 			DBFile:       viper.GetString("db-file"),

@@ -28,13 +28,18 @@ var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "magic-log",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Ingest, filter, and analyze structured logs via a web UI",
+	Long: `Magic Log is a local-first log parsing and analytics tool.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+It ingests structured logs (JSON, CSV, or plain text), applies regex or jq filters,
+and stores them in a fast in-memory or on-disk DuckDB database.
+
+By default, running 'magic-log' starts the local web UI for browsing and querying logs.
+
+Examples:
+  magic-log --port 5000 --log-format json
+  magic-log config set jq_preset simple
+  magic-log config validate`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverCmd.Run(cmd, args)
 	},
