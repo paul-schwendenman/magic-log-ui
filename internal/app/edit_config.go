@@ -11,9 +11,14 @@ import (
 func EditConfig() error {
 	originalPath := config.GetConfigPath()
 
-	originalData, err := os.ReadFile(originalPath)
-	if err != nil {
-		return fmt.Errorf("failed to read config: %w", err)
+	originalData := []byte{}
+	if _, err := os.Stat(originalPath); err == nil {
+		originalData, err = os.ReadFile(originalPath)
+		if err != nil {
+			return fmt.Errorf("failed to read config: %w", err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to stat config: %w", err)
 	}
 
 	tmpFile, err := os.CreateTemp("", "magiclogrc-edit-*.toml")
