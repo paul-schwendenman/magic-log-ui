@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"context"
@@ -13,12 +13,8 @@ import (
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
 	"github.com/paul-schwendenman/magic-log-ui/internal/logdb"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server"
+	"github.com/spf13/viper"
 )
-
-var version = "dev"
-
-//go:embed all:static/*
-var staticFiles embed.FS
 
 type Config struct {
 	DBFile       string
@@ -34,64 +30,8 @@ type Config struct {
 	Version      string
 }
 
-func main() {
-	if len(os.Args) > 1 && os.Args[1] == "config" {
-		handleConfigCommand(os.Args[2:])
-		return
-	}
-
-	final, cfgFile, err := config.ParseArgsAndConfig()
-	if err != nil {
-		log.Fatalf("❌ %v", err)
-	}
-
-	if final.ShowVersion {
-		fmt.Println("magic-log version:", version)
-		return
-	}
-
-	if final.ListPresets {
-		all := getRegexPresets(cfgFile)
-		fmt.Println("📜 Available regexp presets:")
-		for name := range all {
-			fmt.Printf("  - %s\n", name)
-		}
-
-		all = getJqPresets(cfgFile)
-		fmt.Println("📜 Available jq presets:")
-		for name := range all {
-			fmt.Printf("  - %s\n", name)
-		}
-		return
-	}
-
-	resolvedRegex, err := resolveRegex(final.RegexPreset, final.Regex, cfgFile)
-	if err != nil {
-		log.Fatalf("❌ %v", err)
-	}
-
-	resolvedJqFilter, err := resolveJqFilter(final.JqPreset, final.JqFilter, cfgFile)
-	if err != nil {
-		log.Fatalf("❌ %v", err)
-	}
-
-	Run(Config{
-		DBFile:       final.DBFile,
-		Port:         final.Port,
-		Launch:       final.Launch,
-		Echo:         final.Echo,
-		Version:      version,
-		LogFormat:    final.LogFormat,
-		JqFilter:     resolvedJqFilter,
-		CSVFieldsStr: final.CSVFieldsStr,
-		HasCSVHeader: final.HasCSVHeader,
-		AutoAnalyze:  final.AutoAnalyze,
-		ParseRegex:   resolvedRegex,
-	})
-
-}
-
-func Run(config Config) {
+func Run(config Config, staticFiles embed.FS) {
+	log.Println("⚙️  Using config file:", viper.ConfigFileUsed())
 	ctx := context.Background()
 
 	db := logdb.MustInit(config.DBFile, ctx)
@@ -122,13 +62,13 @@ func Run(config Config) {
 	select {}
 }
 
-func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
+func ResolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	if raw != "" && preset == "" {
 		return raw, nil
 	}
 
 	if preset != "" {
-		all := getRegexPresets(cfg)
+		all := GetRegexPresets(cfg)
 		if regex, ok := all[preset]; ok {
 			return regex, nil
 		}
@@ -138,13 +78,13 @@ func resolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 	return "^(?P<message>.*)$", nil
 }
 
-func resolveJqFilter(preset, raw string, cfg *config.Config) (string, error) {
+func ResolveJqFilter(preset, raw string, cfg *config.Config) (string, error) {
 	if raw != "" && preset == "" {
 		return raw, nil
 	}
 
 	if preset != "" {
-		all := getJqPresets(cfg)
+		all := GetJqPresets(cfg)
 		if jqFilter, ok := all[preset]; ok {
 			return jqFilter, nil
 		}
@@ -180,7 +120,7 @@ func isCommandAvailable(name string) bool {
 	return err == nil
 }
 
-func getRegexPresets(cfg *config.Config) map[string]string {
+func GetRegexPresets(cfg *config.Config) map[string]string {
 	regex_presets := map[string]string{
 		"apache": `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`,
 	}
@@ -193,7 +133,7 @@ func getRegexPresets(cfg *config.Config) map[string]string {
 	return regex_presets
 }
 
-func getJqPresets(cfg *config.Config) map[string]string {
+func GetJqPresets(cfg *config.Config) map[string]string {
 	jq_presets := map[string]string{}
 
 	for k, v := range cfg.JQPresets {

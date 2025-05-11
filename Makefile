@@ -3,6 +3,7 @@
 NAME := magic-log
 VERSION ?= dev
 BUILD_DIR := cmd
+ENTRYPOINT := main.go
 WEB_DIR := web
 STATIC_DIR := $(BUILD_DIR)/static
 
@@ -21,7 +22,7 @@ frontend:
 
 
 backend:
-	go build -ldflags "-X main.version=$(VERSION)" -o $(NAME) ./$(BUILD_DIR)
+	go build -ldflags "-X main.version=$(VERSION)" -o $(NAME) ${ENTRYPOINT}
 
 build: frontend backend
 

@@ -21,3 +21,29 @@ export type TimeRangeConfig = {
 	live?: boolean;
 	relative?: boolean;
 };
+
+export type Config = {
+	db_file?: string;
+	port: number;
+	launch: boolean;
+	log_format?: string;
+	regex_preset?: string;
+	regex?: string;
+	jq?: string;
+	jq_preset?: string;
+	csv_fields?: string;
+	has_csv_header: boolean;
+	regex_presets: Record<string, string>;
+	jq_presets: Record<string, string>;
+};
+
+export type ConfigDefaults = Pick<
+	Config,
+	'regex_presets' | 'jq_presets' | 'has_csv_header' | 'launch' | 'port'
+>;
+
+type ConfigFieldKey = Exclude<keyof Config, 'jq_presets' | 'regex_presets'>;
+
+type ConfigFieldValue = 'string' | 'number' | 'boolean' | 'preset';
+
+export type ConfigFieldTypes = Record<ConfigFieldKey, ConfigFieldValue>;

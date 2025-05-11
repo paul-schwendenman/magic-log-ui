@@ -1,8 +1,10 @@
 <script lang="ts">
 	import PresetEditor from '$lib/components/PresetEditor.svelte';
+	import type { Config, ConfigDefaults, ConfigFieldTypes } from '$lib/types';
+	import { typedEntries } from '$lib/utils';
 	import { onMount } from 'svelte';
 
-	let config: any = null;
+	let config: Config | null = null;
 	let loading = true;
 	let saving = false;
 
@@ -10,17 +12,25 @@
 	let successMessage = '';
 	let successTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const defaultsFieldTypes: Record<string, 'string' | 'number' | 'boolean' | 'preset'> = {
+	const configFieldTypes: ConfigFieldTypes = {
 		db_file: 'string',
 		port: 'number',
 		launch: 'boolean',
 		log_format: 'string',
 		regex_preset: 'preset',
 		regex: 'string',
-		jq_filter: 'string',
+		jq: 'string',
 		jq_preset: 'preset',
 		csv_fields: 'string',
-		has_csv_header: 'boolean',
+		has_csv_header: 'boolean'
+	};
+
+	const defaultConfig: ConfigDefaults = {
+		jq_presets: {},
+		regex_presets: {},
+		has_csv_header: false,
+		launch: false,
+		port: 3000
 	};
 
 	$: regexPresetOptions = config?.regex_presets ? Object.keys(config.regex_presets) : [];
@@ -29,7 +39,8 @@
 	onMount(async () => {
 		try {
 			const res = await fetch('/api/config');
-			config = await res.json();
+			const rawConfig: Partial<Config> = await res.json();
+			config = { ...defaultConfig, ...rawConfig };
 		} catch (e) {
 			errorMessages = ['Failed to load config.'];
 		} finally {
@@ -87,12 +98,6 @@
 		// For real JQ parsing/validation, do it on backend
 		return null;
 	}
-
-	function coerceDefault(key: string, val: string): any {
-		if (key === 'port') return parseInt(val, 10);
-		if (key === 'launch') return val === 'true';
-		return val;
-	}
 </script>
 
 {#if loading}
@@ -113,66 +118,50 @@
 			<div class="rounded bg-green-100 p-3 text-green-700">{successMessage}</div>
 		{/if}
 
-		<!-- Defaults -->
-		{#if config?.defaults}
+		{#if config}
 			<section>
 				<h2 class="mb-2 text-xl font-semibold">Defaults</h2>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					{#each Object.entries(config.defaults) as [key, value]}
+					{#each typedEntries(configFieldTypes) as [key, type]}
 						<div>
 							<label for={key} class="block font-medium capitalize">{key}</label>
-							{#if defaultsFieldTypes[key] === 'boolean'}
-								<select
-									id={key}
-									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-								>
+							{#if type === 'boolean'}
+								<select id={key} class="w-full rounded border p-2" bind:value={config[key]}>
 									<option value={true}>true</option>
 									<option value={false}>false</option>
 								</select>
-							{:else if defaultsFieldTypes[key] === 'number'}
+							{:else if type === 'number'}
 								<input
 									id={key}
 									type="number"
 									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-									on:input={(e) => (config.defaults[key] = +e.target.value)}
+									bind:value={config[key]}
+									on:input={(e) => {
+										const value = (e.target as HTMLInputElement).value;
+										(config as any)[key] = +value;
+									}}
 								/>
-							{:else if defaultsFieldTypes[key] === 'preset'}
-								<select
-									id={key}
-									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-								>
+							{:else if type === 'preset'}
+								<select id={key} class="w-full rounded border p-2" bind:value={config[key]}>
 									<option value="">-- select --</option>
 									{#each key === 'regex_preset' ? regexPresetOptions : jqPresetOptions as option}
 										<option value={option}>{option}</option>
 									{/each}
 								</select>
 							{:else}
-								<input
-									id={key}
-									class="w-full rounded border p-2"
-									bind:value={config.defaults[key]}
-								/>
+								<input id={key} class="w-full rounded border p-2" bind:value={config[key]} />
 							{/if}
 						</div>
 					{/each}
 				</div>
 			</section>
-		{/if}
 
-		<!-- Regex Presets -->
-		{#if config?.regex_presets}
 			<PresetEditor
 				title="Regex Presets"
 				bind:presets={config.regex_presets}
 				validateValue={validateRegex}
 			/>
-		{/if}
 
-		<!-- JQ Presets -->
-		{#if config?.jq_presets}
 			<PresetEditor
 				title="JQ Presets"
 				bind:presets={config.jq_presets}
