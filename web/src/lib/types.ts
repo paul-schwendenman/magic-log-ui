@@ -44,4 +44,6 @@ export type ConfigDefaults = Pick<
 
 type ConfigKey = Exclude<keyof Config, 'jq_presets' | 'regex_presets'>;
 
-export type ConfigFieldTypes = Record<ConfigKey, 'string' | 'number' | 'boolean' | 'preset'>;
+export type ConfigValueType = 'string' | 'number' | 'boolean' | 'preset';
+
+export type ConfigFieldTypes = Record<ConfigKey, ConfigValueType>;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PresetEditor from '$lib/components/PresetEditor.svelte';
 	import type { Config, ConfigDefaults, ConfigFieldTypes } from '$lib/types';
+	import { typedEntries } from '$lib/utils';
 	import { onMount } from 'svelte';
 
 	let config: Config | null = null;
@@ -121,7 +122,7 @@
 			<section>
 				<h2 class="mb-2 text-xl font-semibold">Defaults</h2>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					{#each Object.entries(configFieldTypes) as [key, type]}
+					{#each typedEntries(configFieldTypes) as [key, type]}
 						<div>
 							<label for={key} class="block font-medium capitalize">{key}</label>
 							{#if type === 'boolean'}
