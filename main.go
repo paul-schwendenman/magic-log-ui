@@ -18,6 +18,9 @@ package main
 
 import "github.com/paul-schwendenman/magic-log-ui/cmd"
 
+var Version = "dev"
+
 func main() {
+	cmd.Version = Version
 	cmd.Execute()
 }
