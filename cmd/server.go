@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var version = "dev"
-
 //go:embed all:static/*
 var staticFiles embed.FS
 

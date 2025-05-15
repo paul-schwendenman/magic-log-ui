@@ -22,7 +22,7 @@ frontend:
 
 
 backend:
-	go build -ldflags "-X main.version=$(VERSION)" -o $(NAME) ${ENTRYPOINT}
+	go build -ldflags "-X main.Version=$(VERSION)" -o $(NAME) ${ENTRYPOINT}
 
 build: frontend backend
 
