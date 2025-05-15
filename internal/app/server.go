@@ -63,7 +63,7 @@ func Run(config Config, staticFiles embed.FS) {
 }
 
 func ResolveRegex(preset, raw string, cfg *config.Config) (string, error) {
-	if raw != "" && preset == "" {
+	if raw != "" {
 		return raw, nil
 	}
 
@@ -79,7 +79,7 @@ func ResolveRegex(preset, raw string, cfg *config.Config) (string, error) {
 }
 
 func ResolveJqFilter(preset, raw string, cfg *config.Config) (string, error) {
-	if raw != "" && preset == "" {
+	if raw != "" {
 		return raw, nil
 	}
 
