@@ -5,8 +5,10 @@ package cmd
 
 import (
 	"embed"
+	"log"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/app"
+	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,28 +31,42 @@ Examples:
   pnpm dev | magic-log server --port 5000 --log-format json
   cat logs.txt | magic-log server --regex-preset apache --log-format text`,
 	Run: func(cmd *cobra.Command, args []string) {
+		fileCfg, err := config.Load()
+		if err != nil {
+			log.Fatalf("❌ Failed to load config: %v", err)
+		}
+
+		resolvedRegex, err := app.ResolveRegex(
+			viper.GetString("regex_preset"),
+			viper.GetString("regex"),
+			fileCfg,
+		)
+		if err != nil {
+			log.Fatalf("❌ %v", err)
+		}
+
+		resolvedJq, err := app.ResolveJqFilter(
+			viper.GetString("jq_preset"),
+			viper.GetString("jq"),
+			fileCfg,
+		)
+		if err != nil {
+			log.Fatalf("❌ %v", err)
+		}
+
 		cfg := app.Config{
 			DBFile:       viper.GetString("db-file"),
 			Port:         viper.GetInt("port"),
 			Launch:       viper.GetBool("launch"),
 			Echo:         viper.GetBool("echo"),
 			LogFormat:    viper.GetString("log-format"),
-			ParseRegex:   viper.GetString("regex"),
-			JqFilter:     viper.GetString("jq"),
+			ParseRegex:   resolvedRegex,
+			JqFilter:     resolvedJq,
 			CSVFieldsStr: viper.GetString("csv-fields"),
 			HasCSVHeader: viper.GetBool("has-csv-header"),
 			AutoAnalyze:  !viper.GetBool("no-auto-analyze"),
+			Version:      Version,
 		}
-
-		// resolvedRegex, err := app.ResolveRegex(final.RegexPreset, final.Regex, cfgFile)
-		// if err != nil {
-		// 	log.Fatalf("❌ %v", err)
-		// }
-
-		// resolvedJqFilter, err := app.ResolveJqFilter(final.JqPreset, final.JqFilter, cfgFile)
-		// if err != nil {
-		// 	log.Fatalf("❌ %v", err)
-		// }
 
 		app.Run(cfg, staticFiles)
 	},
