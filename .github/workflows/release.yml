@@ -74,7 +74,7 @@ jobs:
       - name: Build backend
         run: |
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
-          go build -ldflags "-X main.version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} main.go
+          go build -ldflags "-X main.Version=${{ github.ref_name }}" -o magic-log-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} main.go
 
       - name: Archive binary and generate checksum
         run: |

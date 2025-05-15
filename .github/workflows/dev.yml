@@ -47,7 +47,7 @@ jobs:
 
       - name: Build backend
         run: |
-          go build -ldflags "-X main.version=dev" -o magic-log ./cmd
+          go build -ldflags "-X main.Version=dev" -o magic-log ./cmd
 
       - name: Run go vet
         run: go vet ./...
