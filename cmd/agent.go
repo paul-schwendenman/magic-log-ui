@@ -4,36 +4,51 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/agent"
+	"github.com/paul-schwendenman/magic-log-ui/internal/app"
+	"github.com/paul-schwendenman/magic-log-ui/internal/config"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var agentCmd = &cobra.Command{
 	Use:   "agent",
 	Short: "Run in agent mode (read logs from stdin and forward to a server)",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-		cfg := agent.Config{
-			Name:       viper.GetString("agent.name"),
-			ServerAddr: viper.GetString("agent.server_addr"),
-			Format:     viper.GetString("agent.format"),
-			Regex:      viper.GetString("agent.regex"),
-			JQ:         viper.GetString("agent.jq"),
-			CSVFields:  viper.GetString("agent.csv_fields"),
-			HasHeader:  viper.GetBool("agent.csv_has_header"),
-			Echo:       viper.GetBool("agent.echo"),
+		fileCfg, err := config.Load()
+		if err != nil {
+			log.Fatalf("❌ Failed to load config: %v", err)
+		}
+
+		parsing, err := config.ResolveParsingOptions(
+			viper.GetString("regex_preset"),
+			viper.GetString("regex"),
+			viper.GetString("jq_preset"),
+			viper.GetString("jq"),
+			fileCfg,
+		)
+		if err != nil {
+			log.Fatalf("❌ %v", err)
+		}
+
+		cfg := agent.AgentConfig{
+			Name:         viper.GetString("name"),
+			ServerAddr:   viper.GetString("server_addr"),
+			LogFormat:    viper.GetString("log_format"),
+			ParseRegex:   parsing.Regex,
+			JqFilter:     parsing.JQ,
+			CSVFieldsStr: viper.GetString("csv_fields"),
+			HasCSVHeader: viper.GetBool("has_csv_header"),
+			Echo:         viper.GetBool("echo"),
 		}
 
 		if cfg.Name == "" {
-			cfg.Name = agent.GenerateDefaultName()
+			cfg.Name = agent.GenerateAgentName()
 		}
 
-		if err := agent.Run(ctx, cfg, os.Stdin); err != nil {
-			log.Fatalf("❌ agent failed: %v", err)
+		if err := app.RunAgent(context.Background(), cfg, os.Stdin); err != nil {
+			log.Fatalf("❌ Agent failed: %v", err)
 		}
 	},
 }
