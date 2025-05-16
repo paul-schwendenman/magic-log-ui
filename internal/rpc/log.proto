@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package magiclog;
+
+option go_package = "internal/rpc;rpc";
+
+service LogIngestor {
+  rpc SendLogs(stream LogBatch) returns (Ack);
+}
+
+message LogBatch {
+  string agent_name = 1;
+  repeated string json_logs = 2;
+}
+
+message Ack {
+  string message = 1;
+}
