@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/rpc"
@@ -16,6 +17,7 @@ type Streamer struct {
 
 	FlushInterval time.Duration
 	RetryDelay    time.Duration
+	MaxRetryDelay time.Duration
 }
 
 func NewStreamer(conn *grpc.ClientConn, agentName string) *Streamer {
@@ -24,6 +26,7 @@ func NewStreamer(conn *grpc.ClientConn, agentName string) *Streamer {
 		AgentName:     agentName,
 		FlushInterval: 2 * time.Second,
 		RetryDelay:    2 * time.Second,
+		MaxRetryDelay: 30 * time.Second,
 	}
 }
 
@@ -55,6 +58,8 @@ func (s *Streamer) Run(ctx context.Context, logChan <-chan string) error {
 }
 
 func (s *Streamer) flushWithRetry(ctx context.Context, logs []string) error {
+	delay := s.RetryDelay
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -65,7 +70,7 @@ func (s *Streamer) flushWithRetry(ctx context.Context, logs []string) error {
 		stream, err := s.Client.SendLogs(ctx)
 		if err != nil {
 			log.Printf("❌ Failed to open stream: %v", err)
-			time.Sleep(s.RetryDelay)
+			delay = s.backoff(delay)
 			continue
 		}
 
@@ -75,10 +80,26 @@ func (s *Streamer) flushWithRetry(ctx context.Context, logs []string) error {
 		})
 		if err != nil {
 			log.Printf("⚠️  Failed to send logs: %v", err)
-			time.Sleep(s.RetryDelay)
+			delay = s.backoff(delay)
 			continue
 		}
 
-		return nil
+		return nil // success!
 	}
+}
+
+func (s *Streamer) backoff(current time.Duration) time.Duration {
+	// Add ±30% jitter
+	jitter := time.Duration(rand.Int63n(int64(current)/3)) - current/6
+	delay := current + jitter
+
+	log.Printf("🔁 Retrying in %v", delay)
+	time.Sleep(delay)
+
+	// Exponential increase, capped
+	next := current * 2
+	if next > s.MaxRetryDelay {
+		next = s.MaxRetryDelay
+	}
+	return next
 }
