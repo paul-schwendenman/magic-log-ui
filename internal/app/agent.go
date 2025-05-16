@@ -3,8 +3,6 @@ package app
 import (
 	"context"
 	"io"
-	"log"
-	"time"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/agent"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
@@ -19,13 +17,6 @@ func RunAgent(ctx context.Context, cfg agent.AgentConfig, input io.Reader) error
 	}
 	defer conn.Close()
 
-	client := rpc.NewLogIngestorClient(conn)
-	stream, err := client.SendLogs(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Reuse ingest parsing logic
 	logChan := make(chan string, 100)
 
 	go func() {
@@ -40,32 +31,6 @@ func RunAgent(ctx context.Context, cfg agent.AgentConfig, input io.Reader) error
 		close(logChan)
 	}()
 
-	// Forward logs to server in batches
-	var buffer []string
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case line, ok := <-logChan:
-			if !ok {
-				return nil // Done
-			}
-			buffer = append(buffer, line)
-		case <-ticker.C:
-			if len(buffer) == 0 {
-				continue
-			}
-			err := stream.Send(&rpc.LogBatch{
-				AgentName: cfg.Name,
-				JsonLogs:  buffer,
-			})
-			if err != nil {
-				log.Printf("⚠️ Failed to send logs: %v", err)
-			}
-			buffer = nil
-		}
-	}
+	streamer := NewStreamer(conn, cfg.Name)
+	return streamer.Run(ctx, logChan)
 }
