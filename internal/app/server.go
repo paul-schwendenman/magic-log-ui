@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/paul-schwendenman/magic-log-ui/internal/config"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
 	"github.com/paul-schwendenman/magic-log-ui/internal/logdb"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server"
@@ -62,38 +61,6 @@ func Run(config Config, staticFiles embed.FS) {
 	select {}
 }
 
-func ResolveRegex(preset, raw string, cfg *config.Config) (string, error) {
-	if raw != "" {
-		return raw, nil
-	}
-
-	if preset != "" {
-		all := GetRegexPresets(cfg)
-		if regex, ok := all[preset]; ok {
-			return regex, nil
-		}
-		return "", fmt.Errorf("unknown preset: %s", preset)
-	}
-
-	return "^(?P<message>.*)$", nil
-}
-
-func ResolveJqFilter(preset, raw string, cfg *config.Config) (string, error) {
-	if raw != "" {
-		return raw, nil
-	}
-
-	if preset != "" {
-		all := GetJqPresets(cfg)
-		if jqFilter, ok := all[preset]; ok {
-			return jqFilter, nil
-		}
-		return "", fmt.Errorf("unknown preset: %s", preset)
-	}
-
-	return "", nil
-}
-
 func launchBrowser(port int) {
 	url := fmt.Sprintf("http://localhost:%d", port)
 
@@ -118,27 +85,4 @@ func launchBrowser(port int) {
 func isCommandAvailable(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
-}
-
-func GetRegexPresets(cfg *config.Config) map[string]string {
-	regex_presets := map[string]string{
-		"apache": `(?P<ip>\S+) (?P<ident>\S+) (?P<user>\S+) \[(?P<time>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d{3}) (?P<size>\d+|-)`,
-	}
-
-	// Merge in user-defined (override if names match)
-	for k, v := range cfg.RegexPresets {
-		regex_presets[k] = v
-	}
-
-	return regex_presets
-}
-
-func GetJqPresets(cfg *config.Config) map[string]string {
-	jq_presets := map[string]string{}
-
-	for k, v := range cfg.JQPresets {
-		jq_presets[k] = v
-	}
-
-	return jq_presets
 }

@@ -36,16 +36,9 @@ Examples:
 			log.Fatalf("❌ Failed to load config: %v", err)
 		}
 
-		resolvedRegex, err := app.ResolveRegex(
+		parsing, err := config.ResolveParsingOptions(
 			viper.GetString("regex_preset"),
 			viper.GetString("regex"),
-			fileCfg,
-		)
-		if err != nil {
-			log.Fatalf("❌ %v", err)
-		}
-
-		resolvedJq, err := app.ResolveJqFilter(
 			viper.GetString("jq_preset"),
 			viper.GetString("jq"),
 			fileCfg,
@@ -60,8 +53,8 @@ Examples:
 			Launch:       viper.GetBool("launch"),
 			Echo:         viper.GetBool("echo"),
 			LogFormat:    viper.GetString("log-format"),
-			ParseRegex:   resolvedRegex,
-			JqFilter:     resolvedJq,
+			ParseRegex:   parsing.Regex,
+			JqFilter:     parsing.JQ,
 			CSVFieldsStr: viper.GetString("csv-fields"),
 			HasCSVHeader: viper.GetBool("has-csv-header"),
 			AutoAnalyze:  !viper.GetBool("no-auto-analyze"),
