@@ -290,3 +290,46 @@ func nullify(s string) interface{} {
 	}
 	return s
 }
+
+func InsertTransformed(stmt *sql.Stmt, rawLine string, entry shared.LogEntry) error {
+	traceID, _ := safeString(entry, "trace_id")
+	level, _ := safeString(entry, "level")
+	message, _ := safeString(entry, "message")
+	if level == "" {
+		level = "info"
+	}
+	if message == "" {
+		message = "(no message)"
+	}
+
+	timestamp := time.Now().UTC()
+	if ts, ok := safeString(entry, "timestamp"); ok {
+		parsedTs, err := time.Parse(time.RFC3339, ts)
+		if err == nil {
+			timestamp = parsedTs
+		}
+	}
+
+	finalLogJson := shared.MustJson(entry)
+
+	id := uuid.New().String()
+
+	_, err := stmt.ExecContext(
+		context.Background(),
+		id,
+		traceID,
+		level,
+		message,
+		rawLine,
+		rawLine, // parsed JSON (not used here, but you can duplicate rawLine)
+		finalLogJson,
+		time.Now().UTC(), // created_at
+		timestamp,        // timestamp from entry
+		nil,              // log_format
+		nil,              // regex
+		nil,              // jq
+		nil,              // csv_fields
+	)
+
+	return err
+}

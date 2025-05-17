@@ -43,6 +43,10 @@ var agentCmd = &cobra.Command{
 			Echo:         viper.GetBool("echo"),
 		}
 
+		if cfg.ServerAddr == "" {
+			log.Fatalf("❌ --server-addr is required (or set it via config/env)")
+		}
+
 		if cfg.Name == "" {
 			cfg.Name = agent.GenerateAgentName()
 		}
@@ -70,4 +74,5 @@ func init() {
 
 	viper.BindPFlags(flags)
 	viper.SetDefault("agent.format", "json")
+	viper.SetDefault("server_addr", "localhost:50051")
 }

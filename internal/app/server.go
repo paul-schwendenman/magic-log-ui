@@ -5,14 +5,19 @@ import (
 	"embed"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
 	"github.com/paul-schwendenman/magic-log-ui/internal/logdb"
+	"github.com/paul-schwendenman/magic-log-ui/internal/rpc"
 	"github.com/paul-schwendenman/magic-log-ui/internal/server"
+
+	server_grpc "github.com/paul-schwendenman/magic-log-ui/internal/server/grpc"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
 type Config struct {
@@ -55,6 +60,22 @@ func Run(config Config, staticFiles embed.FS) {
 	if config.Launch {
 		launchBrowser(config.Port)
 	}
+
+	grpcSrv := grpc.NewServer()
+	rpc.RegisterLogIngestorServer(grpcSrv, &server_grpc.Server{DBStmt: logInsert})
+
+	go func() {
+		lis, err := net.Listen("tcp", ":50051")
+		if err != nil {
+			log.Fatalf("Failed to listen for gRPC: %v", err)
+		}
+
+		log.Printf("🛰️  gRPC server listening at http://%s", lis.Addr())
+
+		if err := grpcSrv.Serve(lis); err != nil {
+			log.Fatalf("gRPC server failed: %v", err)
+		}
+	}()
 
 	go ingest.Start(os.Stdin, logInsert, config.LogFormat, config.ParseRegex, config.JqFilter, config.CSVFieldsStr, config.HasCSVHeader, config.Echo, ctx)
 

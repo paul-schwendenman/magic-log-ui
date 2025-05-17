@@ -6,7 +6,6 @@ import (
 
 	"github.com/paul-schwendenman/magic-log-ui/internal/agent"
 	"github.com/paul-schwendenman/magic-log-ui/internal/ingest"
-	"github.com/paul-schwendenman/magic-log-ui/internal/rpc"
 	"google.golang.org/grpc"
 )
 
@@ -31,6 +30,6 @@ func RunAgent(ctx context.Context, cfg agent.AgentConfig, input io.Reader) error
 		close(logChan)
 	}()
 
-	streamer := NewStreamer(conn, cfg.Name)
+	streamer := agent.NewStreamer(conn, cfg.Name)
 	return streamer.Run(ctx, logChan)
 }
