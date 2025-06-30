@@ -3,6 +3,7 @@ import { derived, writable } from 'svelte/store';
 import { createBufferedLogsStore } from '$lib/stores/bufferedArrayStore';
 import type { LogEntry } from '$lib/types';
 import { useWebSocket } from '$lib/useWebSocket';
+import { compileExpression } from 'filtrex';
 
 export const liveFilter = writable('');
 export const paused = writable(false);
@@ -21,6 +22,14 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 			.toLowerCase()
 			.includes($filter.toLowerCase())
 	);
+});
+
+export const fancyFilteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {
+	if (!$filter.trim()) return $logs;
+
+	const filterFunc = compileExpression($filter);
+
+	return $logs.filter(log => filterFunc(log));
 });
 
 paused.subscribe((p) => liveLogs.setPaused(p));

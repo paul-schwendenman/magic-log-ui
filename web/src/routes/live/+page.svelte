@@ -3,7 +3,7 @@
 	import LogTable from '$lib/components/LogTable.svelte';
 	import WebsocketStatusIndicator from '$lib/components/WebsocketStatusIndicator.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { liveFilter, filteredLiveLogs } from '$lib/stores/liveLogs';
+	import { liveFilter, filteredLiveLogs, fancyFilteredLiveLogs } from '$lib/stores/liveLogs';
 	import { createPaginationStore } from '$lib/stores/paginatedStore';
 
 	let initialVisibility = {
@@ -14,7 +14,7 @@
 		raw: true
 	};
 
-	const logs = createPaginationStore(filteredLiveLogs, 100);
+	const logs = createPaginationStore(fancyFilteredLiveLogs, 100);
 </script>
 
 <h2 class="my-2 text-xl font-bold">
