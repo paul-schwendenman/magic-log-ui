@@ -17,6 +17,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      filtrex:
+        specifier: ^3.1.0
+        version: 3.1.0
     devDependencies:
       '@eslint/compat':
         specifier: ^1.2.5
@@ -1101,6 +1104,9 @@ packages:
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
+
+  filtrex@3.1.0:
+    resolution: {integrity: sha512-mHzZ2wUISETF1OaEcNRiGz1ljuIV8c/C9td9qyAZ+wTwigkAk5RO9YrCxQKk5H9v7joDRFIBik9U5RTK9eXZ/A==}
 
   find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
@@ -2902,6 +2908,8 @@ snapshots:
   fill-range@7.1.1:
     dependencies:
       to-regex-range: 5.0.1
+
+  filtrex@3.1.0: {}
 
   find-up@5.0.0:
     dependencies:
