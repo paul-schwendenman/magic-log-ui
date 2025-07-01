@@ -24,13 +24,34 @@ export const filteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter
 	);
 });
 
-export const fancyFilteredLiveLogs = derived([liveLogs, liveFilter], ([$logs, $filter]) => {
-	if (!$filter.trim()) return $logs;
+export const fancyFilteredLiveLogs = derived(
+	[liveLogs, liveFilter],
+	([$logs, $filter]) => {
+		const trimmed = $filter.trim();
+		if (!trimmed) return $logs;
 
-	const filterFunc = compileExpression($filter);
+		let filterFunc;
 
-	return $logs.filter(log => filterFunc(log));
-});
+		try {
+			filterFunc = compileExpression(trimmed, {
+				extraFunctions: {
+					contains: (text, substr) => typeof text === 'string' && text.includes(substr)
+				}
+			});
+		} catch (err) {
+			console.warn('Invalid filter expression:', err);
+			return $logs; // fallback on parse error
+		}
+
+		return $logs.filter(log => {
+			try {
+				return filterFunc(log);
+			} catch {
+				return false;
+			}
+		});
+	}
+);
 
 paused.subscribe((p) => liveLogs.setPaused(p));
 
